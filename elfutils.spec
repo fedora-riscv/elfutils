@@ -1,8 +1,21 @@
+%define version 0.104
+%define release 3
+
 %define gpl 0
+%if %{?_with_compat:1}%{!?_with_compat:0}
+%define compat 1
+%else
+%define compat 0
+%endif
+
 Summary: A collection of utilities and DSOs to handle compiled objects.
 Name: elfutils
-Version: 0.104
-Release: 2
+Version: %{version}
+%if %{compat}
+Release: 0.%{release}
+%else
+Release: %{release}
+%endif
 %if %{gpl}
 License: GPL
 %else
@@ -11,7 +24,10 @@ License: OSL
 Group: Development/Tools
 #URL: file://home/devel/drepper/
 Source: elfutils-%{version}.tar.gz
+%if %{compat}
 Patch1: elfutils-portability.patch
+Patch2: elfutils-bswap.patch
+%endif
 Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
 %if %{gpl}
@@ -25,8 +41,10 @@ BuildRequires: gcc >= 3.2
 BuildRequires: bison >= 1.875
 BuildRequires: flex >= 2.5.4a
 BuildRequires: bzip2
+%if !%{compat}
 # Need <byteswap.h> that gives unsigned bswap_16 etc.
 BuildRequires: glibc-headers >= 2.3.4-11
+%endif
 
 %define _gnu %{nil}
 %define _program_prefix eu-
@@ -88,7 +106,15 @@ different sections of an ELF file.
 
 %prep
 %setup -q
+
+%if %{compat}
 %patch1 -p1
+%patch2 -p1
+sleep 1
+find . \( -name Makefile.in -o -name aclocal.m4 \) -print | xargs touch
+sleep 1
+find . \( -name configure -o -name config.h.in \) -print | xargs touch
+%endif
 
 %build
 mkdir build-%{_target_platform}
@@ -99,6 +125,7 @@ exec ../configure "$@"
 EOF
 chmod +x configure
 %configure --enable-shared
+make
 cd ..
 
 %install
@@ -106,7 +133,6 @@ rm -rf ${RPM_BUILD_ROOT}
 mkdir -p ${RPM_BUILD_ROOT}%{_prefix}
 
 cd build-%{_target_platform}
-#make check
 %makeinstall
 
 chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/lib*.so*

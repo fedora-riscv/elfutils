@@ -11,9 +11,105 @@
 	* src/strip.c (handle_elf) [! HAVE_FUTIMES]: Use utimes instead.
 	(handle_ar) [! HAVE_FUTIMES]: Likewise.
 
+--- elfutils/Makefile.in
++++ elfutils/Makefile.in
+@@ -127,6 +127,7 @@ SHELL = @SHELL@
+ STRIP = @STRIP@
+ USE_NLS = @USE_NLS@
+ VERSION = @VERSION@
++WEXTRA = @WEXTRA@
+ XGETTEXT = @XGETTEXT@
+ YACC = @YACC@
+ ac_ct_CC = @ac_ct_CC@
+--- elfutils/config/Makefile.in
++++ elfutils/config/Makefile.in
+@@ -105,6 +105,7 @@ SHELL = @SHELL@
+ STRIP = @STRIP@
+ USE_NLS = @USE_NLS@
+ VERSION = @VERSION@
++WEXTRA = @WEXTRA@
+ XGETTEXT = @XGETTEXT@
+ YACC = @YACC@
+ ac_ct_CC = @ac_ct_CC@
+--- elfutils/configure
++++ elfutils/configure
+@@ -277,7 +277,7 @@ PACKAGE_STRING='Red Hat elfutils 0.104'
+ PACKAGE_BUGREPORT='http://bugzilla.redhat.com/bugzilla/'
+ 
+ ac_unique_file="libelf/libelf.h"
+-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar build build_cpu build_vendor build_os host host_cpu host_vendor host_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE RANLIB ac_ct_RANLIB YACC LEX LEXLIB LEX_OUTPUT_ROOT LOCALEDIR DATADIRNAME NATIVE_LD_TRUE NATIVE_LD_FALSE base_cpu MUDFLAP_TRUE MUDFLAP_FALSE USE_NLS MKINSTALLDIRS MSGFMT GMSGFMT XGETTEXT MSGMERGE LIBOBJS LTLIBOBJS'
++ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar build build_cpu build_vendor build_os host host_cpu host_vendor host_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE RANLIB ac_ct_RANLIB YACC LEX LEXLIB LEX_OUTPUT_ROOT WEXTRA LOCALEDIR DATADIRNAME NATIVE_LD_TRUE NATIVE_LD_FALSE base_cpu MUDFLAP_TRUE MUDFLAP_FALSE USE_NLS MKINSTALLDIRS MSGFMT GMSGFMT XGETTEXT MSGMERGE LIBOBJS LTLIBOBJS'
+ ac_subst_files=''
+ 
+ # Initialize some variables set by options.
+@@ -3373,6 +3373,56 @@ echo "$as_me: error: gcc with C99 suppor
+ fi
+ 
+ 
++echo "$as_me:$LINENO: checking for -Wextra option to $CC" >&5
++echo $ECHO_N "checking for -Wextra option to $CC... $ECHO_C" >&6
++if test "${ac_cv_cc_wextra+set}" = set; then
++  echo $ECHO_N "(cached) $ECHO_C" >&6
++else
++  old_CFLAGS="$CFLAGS"
++CFLAGS="$CFLAGS -Wextra"
++cat >conftest.$ac_ext <<_ACEOF
++void foo (void) { }
++_ACEOF
++rm -f conftest.$ac_objext
++if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
++  (eval $ac_compile) 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } &&
++	 { ac_try='test -z "$ac_c_werror_flag"
++			 || test ! -s conftest.err'
++  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
++  (eval $ac_try) 2>&5
++  ac_status=$?
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); }; } &&
++	 { ac_try='test -s conftest.$ac_objext'
++  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
++  (eval $ac_try) 2>&5
++  ac_status=$?
++  echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); }; }; then
++  ac_cv_cc_wextra
++else
++  echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++ac_cv_cc_wextra=no
++fi
++rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
++CFLAGS="$old_CFLAGS"
++fi
++echo "$as_me:$LINENO: result: $ac_cv_cc_wextra" >&5
++echo "${ECHO_T}$ac_cv_cc_wextra" >&6
++
++if test "x$ac_cv_cc_wextra" = yes; then
++  WEXTRA=-Wextra
++fi
++
++
+ LOCALEDIR=$datadir
+ 
+ cat >>confdefs.h <<_ACEOF
+@@ -4818,6 +4868,7 @@ s,@YACC@,$YACC,;t t
+ s,@LEX@,$LEX,;t t
+ s,@LEXLIB@,$LEXLIB,;t t
+ s,@LEX_OUTPUT_ROOT@,$LEX_OUTPUT_ROOT,;t t
++s,@WEXTRA@,$WEXTRA,;t t
+ s,@LOCALEDIR@,$LOCALEDIR,;t t
+ s,@DATADIRNAME@,$DATADIRNAME,;t t
+ s,@NATIVE_LD_TRUE@,$NATIVE_LD_TRUE,;t t
 --- elfutils/configure.ac
 +++ elfutils/configure.ac
-@@ -66,6 +66,15 @@ CFLAGS="$old_CFLAGS"])
+@@ -64,6 +64,15 @@ CFLAGS="$old_CFLAGS"])
  AS_IF([test "x$ac_cv_c99" != xyes],
        AC_MSG_ERROR([gcc with C99 support required]))
  
@@ -42,7 +138,7 @@
  	* dynamicsizehash.c (lookup): Mark val parameter as possibly unused.
 --- elfutils/lib/Makefile.am
 +++ elfutils/lib/Makefile.am
-@@ -17,12 +17,13 @@
+@@ -16,12 +16,13 @@
  ## Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  ##
  DEFS = -D_GNU_SOURCE -DHAVE_CONFIG_H
@@ -57,9 +153,31 @@
  INCLUDES = -I$(srcdir)/../libelf -I..
  
  noinst_LIBRARIES = libeu.a
+--- elfutils/lib/Makefile.in
++++ elfutils/lib/Makefile.in
+@@ -126,6 +126,7 @@ SHELL = @SHELL@
+ STRIP = @STRIP@
+ USE_NLS = @USE_NLS@
+ VERSION = @VERSION@
++WEXTRA = @WEXTRA@
+ XGETTEXT = @XGETTEXT@
+ YACC = @YACC@
+ ac_ct_CC = @ac_ct_CC@
+@@ -168,9 +169,9 @@ sharedstatedir = @sharedstatedir@
+ sysconfdir = @sysconfdir@
+ target_alias = @target_alias@
+ @MUDFLAP_FALSE@AM_CFLAGS = -fpic -Wall -Wshadow -Werror -Wunused \
+-@MUDFLAP_FALSE@	-Wextra $($(*F)_CFLAGS)
++@MUDFLAP_FALSE@	$(WEXTRA) $($(*F)_CFLAGS)
+ @MUDFLAP_TRUE@AM_CFLAGS = -fmudflap -fpic -Wall -Wshadow -Werror \
+-@MUDFLAP_TRUE@	-Wunused -Wextra $($(*F)_CFLAGS)
++@MUDFLAP_TRUE@	-Wunused $(WEXTRA) $($(*F)_CFLAGS)
+ INCLUDES = -I$(srcdir)/../libelf -I..
+ noinst_LIBRARIES = libeu.a
+ libeu_a_SOURCES = xstrdup.c xstrndup.c xmalloc.c next_prime.c crc32.c
 --- elfutils/libasm/Makefile.am
 +++ elfutils/libasm/Makefile.am
-@@ -14,12 +14,13 @@
+@@ -13,12 +13,13 @@
  ## 3001 King Ranch Road, Ukiah, CA 95482.
  ##
  DEFS = -D_GNU_SOURCE -DHAVE_CONFIG_H
@@ -74,6 +192,29 @@
  INCLUDES = -I. -I$(srcdir) -I.. -I$(top_srcdir)/libelf -I$(top_srcdir)/libebl \
  	   -I$(top_srcdir)/lib
  GCC_INCLUDE = -I$(shell $(CC) -print-file-name=include)
+--- elfutils/libasm/Makefile.in
++++ elfutils/libasm/Makefile.in
+@@ -159,6 +159,7 @@ SHELL = @SHELL@
+ STRIP = @STRIP@
+ USE_NLS = @USE_NLS@
+ VERSION = 1
++WEXTRA = @WEXTRA@
+ XGETTEXT = @XGETTEXT@
+ YACC = @YACC@
+ ac_ct_CC = @ac_ct_CC@
+@@ -200,10 +201,10 @@ sbindir = @sbindir@
+ sharedstatedir = @sharedstatedir@
+ sysconfdir = @sysconfdir@
+ target_alias = @target_alias@
+-@MUDFLAP_FALSE@AM_CFLAGS = -Wall -Wshadow -Werror -Wunused -Wextra \
++@MUDFLAP_FALSE@AM_CFLAGS = -Wall -Wshadow -Werror -Wunused $(WEXTRA) \
+ @MUDFLAP_FALSE@	-Wformat=2
+ @MUDFLAP_TRUE@AM_CFLAGS = -fmudflap -Wall -Wshadow -Werror -Wunused \
+-@MUDFLAP_TRUE@	-Wextra -Wformat=2
++@MUDFLAP_TRUE@	$(WEXTRA) -Wformat=2
+ INCLUDES = -I. -I$(srcdir) -I.. -I$(top_srcdir)/libelf -I$(top_srcdir)/libebl \
+ 	   -I$(top_srcdir)/lib
+ 
 --- elfutils/libcpu/Makefile.am
 +++ elfutils/libcpu/Makefile.am
 @@ -13,7 +13,8 @@
@@ -86,9 +227,28 @@
  INCLUDES = -I$(srcdir)
  
  noinst_LIBRARIES = libcpu_i386.a
+--- elfutils/libcpu/Makefile.in
++++ elfutils/libcpu/Makefile.in
+@@ -122,6 +122,7 @@ SHELL = @SHELL@
+ STRIP = @STRIP@
+ USE_NLS = @USE_NLS@
+ VERSION = @VERSION@
++WEXTRA = @WEXTRA@
+ XGETTEXT = @XGETTEXT@
+ YACC = @YACC@
+ ac_ct_CC = @ac_ct_CC@
+@@ -163,7 +164,7 @@ sbindir = @sbindir@
+ sharedstatedir = @sharedstatedir@
+ sysconfdir = @sysconfdir@
+ target_alias = @target_alias@
+-AM_CFLAGS = -Wall -Wshadow -Werror -Wextra -Wformat=2 -Wunused
++AM_CFLAGS = -Wall -Wshadow -Werror $(WEXTRA) -Wformat=2 -Wunused
+ INCLUDES = -I$(srcdir)
+ noinst_LIBRARIES = libcpu_i386.a
+ libcpu_i386_a_SOURCES = i386_dis.c
 --- elfutils/libdw/Makefile.am
 +++ elfutils/libdw/Makefile.am
-@@ -14,12 +14,13 @@
+@@ -13,12 +13,13 @@
  ## 3001 King Ranch Road, Ukiah, CA 95482.
  ##
  DEFS = -D_GNU_SOURCE -DHAVE_CONFIG_H
@@ -103,9 +263,31 @@
  INCLUDES = -I. -I$(srcdir) -I$(srcdir)/../libelf -I.. -I$(srcdir)/../lib
  VERSION = 1
  
+--- elfutils/libdw/Makefile.in
++++ elfutils/libdw/Makefile.in
+@@ -183,6 +183,7 @@ SHELL = @SHELL@
+ STRIP = @STRIP@
+ USE_NLS = @USE_NLS@
+ VERSION = 1
++WEXTRA = @WEXTRA@
+ XGETTEXT = @XGETTEXT@
+ YACC = @YACC@
+ ac_ct_CC = @ac_ct_CC@
+@@ -225,9 +226,9 @@ sharedstatedir = @sharedstatedir@
+ sysconfdir = @sysconfdir@
+ target_alias = @target_alias@
+ @MUDFLAP_FALSE@AM_CFLAGS = -Wall -Werror -Wshadow -Wunused -Wformat=2 \
+-@MUDFLAP_FALSE@	-Wextra -std=gnu99
++@MUDFLAP_FALSE@	$(WEXTRA) -std=gnu99
+ @MUDFLAP_TRUE@AM_CFLAGS = -fmudflap -Wall -Werror -Wshadow -Wunused \
+-@MUDFLAP_TRUE@	-Wformat=2 -Wextra -std=gnu99
++@MUDFLAP_TRUE@	-Wformat=2 $(WEXTRA) -std=gnu99
+ INCLUDES = -I. -I$(srcdir) -I$(srcdir)/../libelf -I.. -I$(srcdir)/../lib
+ lib_LIBRARIES = libdw.a
+ @MUDFLAP_FALSE@noinst_LIBRARIES = libdw_pic.a
 --- elfutils/libebl/Makefile.am
 +++ elfutils/libebl/Makefile.am
-@@ -14,12 +14,13 @@
+@@ -13,12 +13,13 @@
  ## 3001 King Ranch Road, Ukiah, CA 95482.
  ##
  DEFS = -D_GNU_SOURCE -DHAVE_CONFIG_H -DOBJDIR=\"$(shell pwd)\"
@@ -120,9 +302,31 @@
  	     -std=gnu99
  
  INCLUDES = -I$(srcdir) -I$(top_srcdir)/libelf -I$(top_srcdir)/lib -I..
+--- elfutils/libebl/Makefile.in
++++ elfutils/libebl/Makefile.in
+@@ -236,6 +236,7 @@ SHELL = @SHELL@
+ STRIP = @STRIP@
+ USE_NLS = @USE_NLS@
+ VERSION = 1
++WEXTRA = @WEXTRA@
+ XGETTEXT = @XGETTEXT@
+ YACC = @YACC@
+ ac_ct_CC = @ac_ct_CC@
+@@ -278,9 +279,9 @@ sharedstatedir = @sharedstatedir@
+ sysconfdir = @sysconfdir@
+ target_alias = @target_alias@
+ @MUDFLAP_FALSE@AM_CFLAGS = -fpic -Wall -Wshadow -Werror -Wunused \
+-@MUDFLAP_FALSE@	-Wextra -Wformat=2 -std=gnu99
++@MUDFLAP_FALSE@	$(WEXTRA) -Wformat=2 -std=gnu99
+ @MUDFLAP_TRUE@AM_CFLAGS = -fmudflap -fpic -Wall -Wshadow -Werror \
+-@MUDFLAP_TRUE@	-Wunused -Wextra -Wformat=2 -std=gnu99
++@MUDFLAP_TRUE@	-Wunused $(WEXTRA) -Wformat=2 -std=gnu99
+ INCLUDES = -I$(srcdir) -I$(top_srcdir)/libelf -I$(top_srcdir)/lib -I..
+ lib_LIBRARIES = libebl.a
+ modules = i386 sh mips x86_64 ia64 alpha arm sparc ppc ppc64
 --- elfutils/libelf/Makefile.am
 +++ elfutils/libelf/Makefile.am
-@@ -17,12 +17,13 @@
+@@ -16,12 +16,13 @@
  ## Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  ##
  DEFS = -D_GNU_SOURCE -DHAVE_CONFIG_H
@@ -137,9 +341,42 @@
  	     $($(*F)_CFLAGS)
  INCLUDES = -I$(srcdir) -I$(top_srcdir)/lib -I..
  GCC_INCLUDE = -I$(shell $(CC) -print-file-name=include)
+--- elfutils/libelf/Makefile.in
++++ elfutils/libelf/Makefile.in
+@@ -199,6 +199,7 @@ SHELL = @SHELL@
+ STRIP = @STRIP@
+ USE_NLS = @USE_NLS@
+ VERSION = 1
++WEXTRA = @WEXTRA@
+ XGETTEXT = @XGETTEXT@
+ YACC = @YACC@
+ ac_ct_CC = @ac_ct_CC@
+@@ -240,10 +241,10 @@ sbindir = @sbindir@
+ sharedstatedir = @sharedstatedir@
+ sysconfdir = @sysconfdir@
+ target_alias = @target_alias@
+-@MUDFLAP_FALSE@AM_CFLAGS = -Wall -Wshadow -Werror -Wunused -Wextra \
++@MUDFLAP_FALSE@AM_CFLAGS = -Wall -Wshadow -Werror -Wunused $(WEXTRA) \
+ @MUDFLAP_FALSE@	-Wformat=2 -std=gnu99 $($(*F)_CFLAGS)
+ @MUDFLAP_TRUE@AM_CFLAGS = -fpic -fmudflap -Wall -Wshadow -Werror \
+-@MUDFLAP_TRUE@	-Wunused -Wextra -Wformat=2 -std=gnu99 \
++@MUDFLAP_TRUE@	-Wunused $(WEXTRA) -Wformat=2 -std=gnu99 \
+ @MUDFLAP_TRUE@	$($(*F)_CFLAGS)
+ INCLUDES = -I$(srcdir) -I$(top_srcdir)/lib -I..
+ GCC_INCLUDE = -I$(shell $(CC) -print-file-name=include)
+--- elfutils/m4/Makefile.in
++++ elfutils/m4/Makefile.in
+@@ -103,6 +103,7 @@ SHELL = @SHELL@
+ STRIP = @STRIP@
+ USE_NLS = @USE_NLS@
+ VERSION = @VERSION@
++WEXTRA = @WEXTRA@
+ XGETTEXT = @XGETTEXT@
+ YACC = @YACC@
+ ac_ct_CC = @ac_ct_CC@
 --- elfutils/src/Makefile.am
 +++ elfutils/src/Makefile.am
-@@ -15,14 +15,15 @@
+@@ -14,14 +14,15 @@
  ##
  DEFS = -D_GNU_SOURCE -DHAVE_CONFIG_H $(YYDEBUG) \
         -DSRCDIR=\"$(shell cd $(srcdir);pwd)\" -DOBJDIR=\"$(shell pwd)\"
@@ -157,9 +394,45 @@
  	    $(if $($(*F)_no_Wformat),,-Wformat=2)
  endif
  if MUDFLAP
+--- elfutils/src/Makefile.in
++++ elfutils/src/Makefile.in
+@@ -189,6 +189,7 @@ SHELL = @SHELL@
+ STRIP = @STRIP@
+ USE_NLS = @USE_NLS@
+ VERSION = @VERSION@
++WEXTRA = @WEXTRA@
+ XGETTEXT = @XGETTEXT@
+ YACC = @YACC@ -d
+ ac_ct_CC = @ac_ct_CC@
+@@ -232,10 +233,10 @@ sysconfdir = @sysconfdir@
+ target_alias = @target_alias@
+ @MUDFLAP_FALSE@AM_CFLAGS = -Wall -Wshadow -std=gnu99 $(native_ld_cflags) \
+ @MUDFLAP_FALSE@	    $(if $($(*F)_no_Werror),,-Werror) \
+-@MUDFLAP_FALSE@	    $(if $($(*F)_no_Wunused),,-Wunused -Wextra) \
++@MUDFLAP_FALSE@	    $(if $($(*F)_no_Wunused),,-Wunused $(WEXTRA)) \
+ @MUDFLAP_FALSE@	    $(if $($(*F)_no_Wformat),,-Wformat=2)
+ 
+-@MUDFLAP_TRUE@AM_CFLAGS = -Wall -Wshadow -Wunused -Wextra -std=gnu99 -fmudflap \
++@MUDFLAP_TRUE@AM_CFLAGS = -Wall -Wshadow -Wunused $(WEXTRA) -std=gnu99 -fmudflap \
+ @MUDFLAP_TRUE@	    $(native_ld_cflags) $(if $($(*F)_no_Wunused),,-Wunused) \
+ @MUDFLAP_TRUE@	    $(if $($(*F)_no_Wformat),,-Wformat=2)
+ 
 --- elfutils/src/strip.c
 +++ elfutils/src/strip.c
-@@ -245,8 +245,18 @@ process_file (const char *fname)
+@@ -40,6 +40,12 @@
+ #include <libebl.h>
+ #include <system.h>
+ 
++#ifdef HAVE_FUTIMES
++# define FUTIMES(fd, fname, tvp) futimes (fd, tvp)
++#else
++# define FUTIMES(fd, fname, tvp) utimes (fname, tvp)
++#endif
++
+ 
+ /* Name and version of program.  */
+ static void print_version (FILE *stream, struct argp_state *state);
+@@ -245,8 +251,18 @@ process_file (const char *fname)
  
        /* If we have to preserve the timestamp, we need it in the
  	 format utimes() understands.  */
@@ -178,33 +451,31 @@
      }
  
    /* Open the file.  */
-@@ -1677,7 +1687,13 @@ handle_elf (int fd, Elf *elf, const char
+@@ -1677,7 +1693,7 @@ handle_elf (int fd, Elf *elf, const char
    /* If requested, preserve the timestamp.  */
    if (tvp != NULL)
      {
 -      if (futimes (fd, tvp) != 0)
-+      if (
-+#ifdef HAVE_FUTIMES
-+	  futimes (fd, tvp) != 0
-+#else
-+	  utimes (output_fname, tvp) != 0
-+#endif
-+	  )
++      if (FUTIMES (fd, output_fname, tvp) != 0)
  	{
  	  error (0, errno, gettext ("\
  cannot set access and modification date of \"%s\""),
-@@ -1734,7 +1750,13 @@ handle_ar (int fd, Elf *elf, const char 
+@@ -1734,7 +1750,7 @@ handle_ar (int fd, Elf *elf, const char 
  
    if (tvp != NULL)
      {
 -      if (unlikely (futimes (fd, tvp) != 0))
-+	  if (unlikely (
-+#ifdef HAVE_FUTIMES
-+			futimes (fd, tvp)
-+#else
-+			utimes (fname, tvp)
-+#endif
-+			!= 0))
++      if (unlikely (FUTIMES (fd, fname, tvp) != 0))
  	{
  	  error (0, errno, gettext ("\
  cannot set access and modification date of \"%s\""), fname);
+--- elfutils/tests/Makefile.in
++++ elfutils/tests/Makefile.in
+@@ -257,6 +257,7 @@ SHELL = @SHELL@
+ STRIP = @STRIP@
+ USE_NLS = @USE_NLS@
+ VERSION = @VERSION@
++WEXTRA = @WEXTRA@
+ XGETTEXT = @XGETTEXT@
+ YACC = @YACC@
+ ac_ct_CC = @ac_ct_CC@
