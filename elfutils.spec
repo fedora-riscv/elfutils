@@ -1,3 +1,4 @@
+%define _missing_doc_files_terminate_build     0
 %define gpl 0
 Summary: A collection of utilities and DSOs to handle compiled objects.
 Name: elfutils
@@ -183,6 +184,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %changelog
 * Sun Sep 26 2004 Jeff Johnson <jbj@redhat.com> 0.97-2
 - upgrade to 0.97.
+- don't fail on non-existent doco.
 
 * Tue Aug 17 2004 Jakub Jelinek <jakub@redhat.com> 0.95-5
 - upgrade to 0.96.
