@@ -1,5 +1,5 @@
-%define version 0.104
-%define release 3
+%define version 0.106
+%define release 1
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -11,10 +11,10 @@
 Summary: A collection of utilities and DSOs to handle compiled objects.
 Name: elfutils
 Version: %{version}
-%if %{compat}
-Release: 0.%{release}
-%else
+%if !%{compat}
 Release: %{release}
+%else
+Release: 0.%{release}
 %endif
 %if %{gpl}
 License: GPL
@@ -24,9 +24,10 @@ License: OSL
 Group: Development/Tools
 #URL: file://home/devel/drepper/
 Source: elfutils-%{version}.tar.gz
+Patch1: elfutils-0.106-libdw-compile.patch
 %if %{compat}
-Patch1: elfutils-portability.patch
-Patch2: elfutils-bswap.patch
+Patch100: elfutils-portability.patch
+Patch101: elfutils-bswap.patch
 %endif
 Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
@@ -109,9 +110,11 @@ different sections of an ELF file.
 %prep
 %setup -q
 
-%if %{compat}
 %patch1 -p1
-%patch2 -p1
+
+%if %{compat}
+%patch100 -p1
+%patch101 -p1
 sleep 1
 find . \( -name Makefile.in -o -name aclocal.m4 \) -print | xargs touch
 sleep 1
@@ -175,6 +178,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %if %{gpl}
 %doc fake-src/FULL
 %endif
+%{_bindir}/eu-addr2line
 %{_bindir}/eu-elflint
 %{_bindir}/eu-findtextrel
 %{_bindir}/eu-nm
@@ -220,6 +224,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Mon Apr  4 2005 Roland McGrath <roland@redhat.com> - 0.106-1
+- update to 0.106
+
 * Mon Mar 28 2005 Roland McGrath <roland@redhat.com> - 0.104-2
 - update to 0.104
 
