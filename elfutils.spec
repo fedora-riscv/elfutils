@@ -1,7 +1,7 @@
 Summary: A collection of utilities and DSOs to handle compiled objects.
 Name: elfutils
 Version: 0.89
-Release: 2
+Release: 3
 Copyright: OSL
 Group: Development/Tools
 #URL: file://home/devel/drepper
@@ -22,7 +22,7 @@ BuildRequires: sharutils
 Elfutils is a collection of utilities, including ld (a linker),
 nm (for listing symbols from object files), size (for listing the
 section sizes of an object or archive file), strip (for discarding
-symbols), readline (the see the raw ELF file structures), and elflint
+symbols), readelf (to see the raw ELF file structures), and elflint
 (to check for well-formed ELF files).  Also included are numerous
 helper libraries which implement DWARF, ELF, and machine-specific ELF
 handling.
@@ -149,6 +149,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf*.so.*
 
 %changelog
+* Tue Dec 23 2003 Jeff Johnson <jbj@redhat.com> 0.89-3
+- readelf, not readline, in %%description (#111214).
+
 * Fri Sep 26 2003 Bill Nottingham <notting@redhat.com> 0.89-1
 - update to 0.89 (fix eu-strip)
 
