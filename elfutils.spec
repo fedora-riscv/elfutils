@@ -1,13 +1,21 @@
+%define gpl 0
 Summary: A collection of utilities and DSOs to handle compiled objects.
 Name: elfutils
-Version: 0.89
-Release: 3
+Version: 0.94
+Release: 2.1
+%if %{gpl}
+Copyright: GPL
+%else
 Copyright: OSL
+%endif
 Group: Development/Tools
-#URL: file://home/devel/drepper
+#URL: file://home/devel/drepper/
 Source: elfutils-%{version}.tar.gz
 Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
+%if %{gpl}
+Requires: binutils >= 2.14.90.0.4-26.2
+%endif
 
 # ExcludeArch: xxx
 
@@ -31,15 +39,14 @@ handling.
 Summary: Development libraries to handle compiled objects.
 Group: Development/Tools
 Requires: elfutils = %{version}-%{release}
+Requires: elfutils-libelf-devel = %{version}-%{release}
 
 %description devel
 The elfutils-devel package contains the libraries to create
-applications for handling compiled objects.  libelf allows you to
-access the internals of the ELF object file format, so you can see the
-different sections of an ELF file.  libebl provides some higher-level
-ELF access functionality.  libdwarf provides access to the DWARF
-debugging information.  libasm provides a programmable assembler
-interface.
+applications for handling compiled objects.  libebl provides some
+higher-level ELF access functionality.  libdw provides access to
+the DWARF debugging information.  libasm provides a programmable
+assembler interface.
 
 %package libelf
 Summary: Library to read and write ELF files.
@@ -50,6 +57,18 @@ The elfutils-libelf package provides a DSO which allows reading and
 writing ELF files on a high level.  Third party programs depend on
 this package to read internals of ELF files.  The programs of the
 elfutils package use it also to generate new ELF files.
+
+%package libelf-devel
+Summary: Development support for libelf
+Group: Development/Tools
+Requires: elfutils-libelf = %{version}-%{release}
+Conflicts: libelf-devel
+
+%description libelf-devel
+The elfutils-libelf-devel package contains the libraries to create
+applications for handling compiled objects.  libelf allows you to
+access the internals of the ELF object file format, so you can see the
+different sections of an ELF file.
 
 %prep
 %setup -q
@@ -75,22 +94,24 @@ cd build-%{_target_platform}
 %makeinstall
 
 chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/lib*.so*
+%if !%{gpl}
 chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
+%endif
 
 cd ..
 
+%if !%{gpl}
 # XXX Nuke unpackaged files
 { cd ${RPM_BUILD_ROOT}
   rm -f .%{_bindir}/eu-ld
   rm -f .%{_includedir}/elfutils/libasm.h
   rm -f .%{_includedir}/elfutils/libdw.h
-  rm -f .%{_includedir}/elfutils/libdwarf.h
   rm -f .%{_libdir}/libasm-%{version}.so
   rm -f .%{_libdir}/libasm.a
-  rm -f .%{_libdir}/libdw-%{version}.so
+  rm -f .%{_libdir}/libdw.so
   rm -f .%{_libdir}/libdw.a
-  rm -f .%{_libdir}/libdwarf.a
 }
+%endif
 
 %check
 cd build-%{_target_platform}
@@ -109,46 +130,79 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files
 %defattr(-,root,root)
-%doc README TODO libdwarf/AVAILABLE
+%doc README TODO
+%if %{gpl}
+%doc fake-src/FULL
+%endif
 %{_bindir}/eu-elflint
-#%{_bindir}/eu-ld
 %{_bindir}/eu-nm
 %{_bindir}/eu-readelf
 %{_bindir}/eu-size
 %{_bindir}/eu-strip
+%if !%{gpl}
+#%{_bindir}/eu-ld
 #%{_libdir}/libasm-%{version}.so
-#%{_libdir}/libdw-%{version}.so
-%{_libdir}/libdwarf-%{version}.so
+%{_libdir}/libdw-%{version}.so
 #%{_libdir}/libasm*.so.*
-#%{_libdir}/libdw*.so.*
-%{_libdir}/libdwarf*.so.*
+%{_libdir}/libdw*.so.*
 %dir %{_libdir}/elfutils
 %{_libdir}/elfutils/lib*.so
+%endif
 
 %files devel
 %defattr(-,root,root)
 %{_includedir}/dwarf.h
-%{_includedir}/libelf.h
-%{_includedir}/gelf.h
-%{_includedir}/nlist.h
 %dir %{_includedir}/elfutils
 %{_includedir}/elfutils/elf-knowledge.h
+%if !%{gpl}
 %{_includedir}/elfutils/libebl.h
 #%{_libdir}/libasm.a
 %{_libdir}/libebl.a
-%{_libdir}/libelf.a
 #%{_libdir}/libdw.a
 #%{_libdir}/libasm.so
-%{_libdir}/libelf.so
 #%{_libdir}/libdw.so
-#%{_libdir}/libdwarf.so
+%endif
 
 %files libelf
 %defattr(-,root,root)
 %{_libdir}/libelf-%{version}.so
 %{_libdir}/libelf*.so.*
 
+%files libelf-devel
+%defattr(-,root,root)
+%{_includedir}/libelf.h
+%{_includedir}/gelf.h
+%{_includedir}/nlist.h
+%{_libdir}/libelf.a
+%{_libdir}/libelf.so
+
 %changelog
+* Tue Mar 02 2004 Elliot Lee <sopwith@redhat.com>
+- rebuilt
+
+* Fri Feb 13 2004 Elliot Lee <sopwith@redhat.com>
+- rebuilt
+
+* Fri Jan 16 2004 Jakub Jelinek <jakub@redhat.com> 0.94-1
+- upgrade to 0.94
+
+* Fri Jan 16 2004 Jakub Jelinek <jakub@redhat.com> 0.93-1
+- upgrade to 0.93
+
+* Thu Jan  8 2004 Jakub Jelinek <jakub@redhat.com> 0.92-1
+- full version
+- macroized spec file for GPL or OSL builds
+- include only libelf under GPL plus wrapper scripts
+
+* Wed Jan  7 2004 Jakub Jelinek <jakub@redhat.com> 0.91-2
+- macroized spec file for GPL or OSL builds
+
+* Wed Jan  7 2004 Ulrich Drepper <drepper@redhat.com>
+- split elfutils-devel into two packages.
+
+* Wed Jan  7 2004 Jakub Jelinek <jakub@redhat.com> 0.91-1
+- include only libelf under GPL plus wrapper scripts
+
 * Tue Dec 23 2003 Jeff Johnson <jbj@redhat.com> 0.89-3
 - readelf, not readline, in %%description (#111214).
 
