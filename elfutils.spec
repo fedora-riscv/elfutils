@@ -148,6 +148,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %doc fake-src/FULL
 %endif
 %{_bindir}/eu-elflint
+%{_bindir}/eu-findtextrel
 %{_bindir}/eu-nm
 %{_bindir}/eu-readelf
 %{_bindir}/eu-size
@@ -191,7 +192,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
-* Mon Mar 28 2005 Roland McGrath <roland@redhat.com> - 0.104-1
+* Mon Mar 28 2005 Roland McGrath <roland@redhat.com> - 0.104-2
 - update to 0.104
 
 * Wed Mar 23 2005 Jakub Jelinek <jakub@redhat.com> 0.103-2
