@@ -1,8 +1,8 @@
 Summary: A collection of utilities and DSOs to handle compiled objects.
 Name: elfutils
-Version: 0.76
-Release: 3
-Copyright: GPL
+Version: 0.89
+Release: 2
+Copyright: OSL
 Group: Development/Tools
 #URL: file://home/devel/drepper
 Source: elfutils-%{version}.tar.gz
@@ -117,11 +117,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_bindir}/eu-size
 %{_bindir}/eu-strip
 #%{_libdir}/libasm-%{version}.so
-%{_libdir}/libebl-%{version}.so
 #%{_libdir}/libdw-%{version}.so
 %{_libdir}/libdwarf-%{version}.so
 #%{_libdir}/libasm*.so.*
-%{_libdir}/libebl*.so.*
 #%{_libdir}/libdw*.so.*
 %{_libdir}/libdwarf*.so.*
 %dir %{_libdir}/elfutils
@@ -141,7 +139,6 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 #%{_libdir}/libdw.a
 #%{_libdir}/libasm.so
-%{_libdir}/libebl.so
 %{_libdir}/libelf.so
 #%{_libdir}/libdw.so
 #%{_libdir}/libdwarf.so
@@ -152,6 +149,37 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf*.so.*
 
 %changelog
+* Fri Sep 26 2003 Bill Nottingham <notting@redhat.com> 0.89-1
+- update to 0.89 (fix eu-strip)
+
+* Tue Sep 23 2003 Jakub Jelinek <jakub@redhat.com> 0.86-3
+- update to 0.86 (fix eu-strip on s390x/alpha)
+- libebl is an archive now; remove references to DSO
+
+* Mon Jul 14 2003 Jeff Johnson <jbj@redhat.com> 0.84-3
+- upgrade to 0.84 (readelf/elflint improvements, rawhide bugs fixed).
+
+* Fri Jul 11 2003 Jeff Johnson <jbj@redhat.com> 0.83-3
+- upgrade to 0.83 (fix invalid ELf handle on *.so strip, more).
+
+* Wed Jul  9 2003 Jeff Johnson <jbj@redhat.com> 0.82-3
+- upgrade to 0.82 (strip tests fixed on big-endian).
+
+* Tue Jul  8 2003 Jeff Johnson <jbj@redhat.com> 0.81-3
+- upgrade to 0.81 (strip excludes unused symtable entries, test borked).
+
+* Thu Jun 26 2003 Jeff Johnson <jbj@redhat.com> 0.80-3
+- upgrade to 0.80 (debugedit changes for kernel in progress).
+
+* Wed Jun 04 2003 Elliot Lee <sopwith@redhat.com>
+- rebuilt
+
+* Wed May 21 2003 Jeff Johnson <jbj@redhat.com> 0.79-2
+- upgrade to 0.79 (correct formats for size_t, more of libdw "works").
+
+* Mon May 19 2003 Jeff Johnson <jbj@redhat.com> 0.78-2
+- upgrade to 0.78 (libdwarf bugfix, libdw additions).
+
 * Mon Feb 24 2003 Elliot Lee <sopwith@redhat.com>
 - debuginfo rebuild
 
