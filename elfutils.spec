@@ -1,9 +1,13 @@
 %define gpl 0
 Summary: A collection of utilities and DSOs to handle compiled objects.
 Name: elfutils
-Version: 0.97
+Version: 0.99
 Release: 2
-Copyright: OSL
+%if %{gpl}
+License: GPL
+%else
+License: OSL
+%endif
 Group: Development/Tools
 #URL: file://home/devel/drepper/
 Source: elfutils-%{version}.tar.gz
@@ -19,6 +23,7 @@ BuildRoot: %{_tmppath}/%{name}-root
 BuildRequires: gcc >= 3.2
 BuildRequires: bison >= 1.875
 BuildRequires: flex >= 2.5.4a
+BuildRequires: bzip2
 
 %define _gnu %{nil}
 %define _programprefix eu-
@@ -35,7 +40,11 @@ handling.
 %package devel
 Summary: Development libraries to handle compiled objects.
 Group: Development/Tools
-Copyright: OSL
+%if %{gpl}
+License: GPL
+%else
+License: OSL
+%endif
 Requires: elfutils = %{version}-%{release}
 Requires: elfutils-libelf-devel = %{version}-%{release}
 
@@ -50,7 +59,7 @@ assembler interface.
 Summary: Library to read and write ELF files.
 Group: Development/Tools
 %if %{gpl}
-Copyright: GPL
+License: GPL
 %endif
 
 %description libelf
@@ -65,7 +74,7 @@ Group: Development/Tools
 Requires: elfutils-libelf = %{version}-%{release}
 Conflicts: libelf-devel
 %if %{gpl}
-Copyright: GPL
+License: GPL
 %endif
 
 %description libelf-devel
@@ -181,6 +190,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Sat Feb  5 2005 Jeff Johnson <jbj@redhat.com> 0.99-2
+- upgrade to 0.99.
+
 * Sun Sep 26 2004 Jeff Johnson <jbj@redhat.com> 0.97-3
 - upgrade to 0.97.
 
