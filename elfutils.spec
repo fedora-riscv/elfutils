@@ -1,5 +1,5 @@
 %define version 0.106
-%define release 2
+%define release 3
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -159,9 +159,7 @@ cd ..
 
 %check
 cd build-%{_target_platform}
-%ifarch i386 x86_64
 make check
-%endif
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
@@ -226,6 +224,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Mon Apr  4 2005 Roland McGrath <roland@redhat.com> - 0.106-3
+- fix some bugs in new code, reenable make check
+
 * Mon Apr  4 2005 Roland McGrath <roland@redhat.com> - 0.106-2
 - disable make check for most arches, for now
 
