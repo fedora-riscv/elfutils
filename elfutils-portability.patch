@@ -74,6 +74,18 @@
  INCLUDES = -I. -I$(srcdir) -I.. -I$(top_srcdir)/libelf -I$(top_srcdir)/libebl \
  	   -I$(top_srcdir)/lib
  GCC_INCLUDE = -I$(shell $(CC) -print-file-name=include)
+--- elfutils/libcpu/Makefile.am
++++ elfutils/libcpu/Makefile.am
+@@ -13,7 +13,8 @@
+ ## 3001 King Ranch Road, Ukiah, CA 95482.
+ ##
+ DEFS = -D_GNU_SOURCE -DHAVE_CONFIG_H
+-AM_CFLAGS = -Wall -Wshadow -Werror -Wextra -Wformat=2 -Wunused
++WEXTRA = @WEXTRA@
++AM_CFLAGS = -Wall -Wshadow -Werror $(WEXTRA) -Wformat=2 -Wunused
+ INCLUDES = -I$(srcdir)
+ 
+ noinst_LIBRARIES = libcpu_i386.a
 --- elfutils/libdw/Makefile.am
 +++ elfutils/libdw/Makefile.am
 @@ -14,12 +14,13 @@
