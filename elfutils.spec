@@ -1,7 +1,7 @@
 %define gpl 0
 Summary: A collection of utilities and DSOs to handle compiled objects.
 Name: elfutils
-Version: 0.101
+Version: 0.103
 Release: 2
 %if %{gpl}
 License: GPL
@@ -11,8 +11,7 @@ License: OSL
 Group: Development/Tools
 #URL: file://home/devel/drepper/
 Source: elfutils-%{version}.tar.gz
-Patch1: elfutils-%{version}-bswap.patch
-Patch2: elfutils-%{version}-portability.patch
+Patch1: elfutils-portability.patch
 Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
 %if %{gpl}
@@ -26,6 +25,8 @@ BuildRequires: gcc >= 3.2
 BuildRequires: bison >= 1.875
 BuildRequires: flex >= 2.5.4a
 BuildRequires: bzip2
+# Need <byteswap.h> that gives unsigned bswap_16 etc.
+BuildRequires: glibc-headers >= 2.3.4-11
 
 %define _gnu %{nil}
 %define _program_prefix eu-
@@ -87,8 +88,7 @@ different sections of an ELF file.
 
 %prep
 %setup -q
-%patch1 -p0
-%patch2 -p1
+%patch1 -p1
 
 %build
 mkdir build-%{_target_platform}
@@ -121,11 +121,8 @@ cd ..
 { cd ${RPM_BUILD_ROOT}
   rm -f .%{_bindir}/eu-ld
   rm -f .%{_includedir}/elfutils/libasm.h
-  rm -f .%{_includedir}/elfutils/libdw.h
   rm -f .%{_libdir}/libasm-%{version}.so
   rm -f .%{_libdir}/libasm.a
-  rm -f .%{_libdir}/libdw.so
-  rm -f .%{_libdir}/libdw.a
 }
 %endif
 
@@ -172,11 +169,12 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_includedir}/elfutils/elf-knowledge.h
 %if !%{gpl}
 %{_includedir}/elfutils/libebl.h
+%{_includedir}/elfutils/libdw.h
 #%{_libdir}/libasm.a
 %{_libdir}/libebl.a
-#%{_libdir}/libdw.a
+%{_libdir}/libdw.a
 #%{_libdir}/libasm.so
-#%{_libdir}/libdw.so
+%{_libdir}/libdw.so
 %endif
 
 %files libelf
@@ -193,6 +191,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Wed Mar 23 2005 Jakub Jelinek <jakub@redhat.com> 0.103-2
+- update to 0.103
+
 * Wed Feb 16 2005 Jakub Jelinek <jakub@redhat.com> 0.101-2
 - update to 0.101.
 - use %%configure macro to get CFLAGS etc. right
