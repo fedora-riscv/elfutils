@@ -3,7 +3,7 @@
 Summary: A collection of utilities and DSOs to handle compiled objects.
 Name: elfutils
 Version: 0.97
-Release: 2
+Release: 3
 Copyright: OSL
 Group: Development/Tools
 #URL: file://home/devel/drepper/
@@ -182,7 +182,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
-* Sun Sep 26 2004 Jeff Johnson <jbj@redhat.com> 0.97-2
+* Sun Sep 26 2004 Jeff Johnson <jbj@redhat.com> 0.97-3
 - upgrade to 0.97.
 - don't fail on non-existent doco.
 
