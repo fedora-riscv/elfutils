@@ -1,7 +1,7 @@
 %define gpl 0
 Summary: A collection of utilities and DSOs to handle compiled objects.
 Name: elfutils
-Version: 0.99
+Version: 0.101
 Release: 2
 %if %{gpl}
 License: GPL
@@ -11,6 +11,8 @@ License: OSL
 Group: Development/Tools
 #URL: file://home/devel/drepper/
 Source: elfutils-%{version}.tar.gz
+Patch1: elfutils-%{version}-bswap.patch
+Patch2: elfutils-%{version}-portability.patch
 Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
 %if %{gpl}
@@ -85,17 +87,18 @@ different sections of an ELF file.
 
 %prep
 %setup -q
+%patch1 -p0
+%patch2 -p1
 
 %build
 mkdir build-%{_target_platform}
 cd build-%{_target_platform}
-../configure \
-  --prefix=%{_prefix} --exec-prefix=%{_exec_prefix} \
-  --bindir=%{_bindir} --sbindir=%{_sbindir} --sysconfdir=%{_sysconfdir} \
-  --datadir=%{_datadir} --includedir=%{_includedir} --libdir=%{_libdir} \
-  --libexecdir=%{_libexecdir} --localstatedir=%{_localstatedir} \
-  --sharedstatedir=%{_sharedstatedir} --mandir=%{_mandir} \
-  --infodir=%{_infodir} --program-prefix=%{_programprefix} --enable-shared
+cat > configure <<\EOF
+#!/bin/sh
+exec ../configure "$@"
+EOF
+chmod +x configure
+%configure --enable-shared
 cd ..
 
 %install
@@ -190,6 +193,10 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Wed Feb 16 2005 Jakub Jelinek <jakub@redhat.com> 0.101-2
+- update to 0.101.
+- use %%configure macro to get CFLAGS etc. right
+
 * Sat Feb  5 2005 Jeff Johnson <jbj@redhat.com> 0.99-2
 - upgrade to 0.99.
 
