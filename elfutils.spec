@@ -1,6 +1,6 @@
 Summary: A collection of utilities and DSOs to handle compiled objects.
 Name: elfutils
-Version: 0.67
+Version: 0.76
 Release: 3
 Copyright: GPL
 Group: Development/Tools
@@ -8,7 +8,6 @@ Group: Development/Tools
 Source: elfutils-%{version}.tar.gz
 Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
-Patch: elfutils-0.67.patch
 
 # ExcludeArch: xxx
 
@@ -54,7 +53,6 @@ elfutils package use it also to generate new ELF files.
 
 %prep
 %setup -q
-%patch -p1
 
 %build
 mkdir build-%{_target_platform}
@@ -73,6 +71,7 @@ rm -rf ${RPM_BUILD_ROOT}
 mkdir -p ${RPM_BUILD_ROOT}%{_prefix}
 
 cd build-%{_target_platform}
+#make check
 %makeinstall
 
 chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/lib*.so*
@@ -93,12 +92,20 @@ cd ..
   rm -f .%{_libdir}/libdwarf.a
 }
 
+%check
+cd build-%{_target_platform}
+make check
+
 %clean
 rm -rf ${RPM_BUILD_ROOT}
 
 %post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
+
+%post libelf -p /sbin/ldconfig
+
+%postun libelf -p /sbin/ldconfig
 
 %files
 %defattr(-,root,root)
@@ -145,8 +152,50 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf*.so.*
 
 %changelog
-* Mon Dec  9 2002 Jakub Jelinek <jakub@redhat.com> 0.67-3
-- fix a typo in SH_ENTSIZE_HASH.
+* Mon Feb 24 2003 Elliot Lee <sopwith@redhat.com>
+- debuginfo rebuild
+
+* Thu Feb 20 2003 Jeff Johnson <jbj@redhat.com> 0.76-2
+- use the correct way of identifying the section via the sh_info link.
+
+* Sat Feb 15 2003 Jakub Jelinek <jakub@redhat.com> 0.75-2
+- update to 0.75 (eu-strip -g fix)
+
+* Tue Feb 11 2003 Jakub Jelinek <jakub@redhat.com> 0.74-2
+- update to 0.74 (fix for writing with some non-dirty sections)
+
+* Thu Feb  6 2003 Jeff Johnson <jbj@redhat.com> 0.73-3
+- another -0.73 update (with sparc fixes).
+- do "make check" in %%check, not %%install, section.
+
+* Mon Jan 27 2003 Jeff Johnson <jbj@redhat.com> 0.73-2
+- update to 0.73 (with s390 fixes).
+
+* Wed Jan 22 2003 Tim Powers <timp@redhat.com>
+- rebuilt
+
+* Wed Jan 22 2003 Jakub Jelinek <jakub@redhat.com> 0.72-4
+- fix arguments to gelf_getsymshndx and elf_getshstrndx
+- fix other warnings
+- reenable checks on s390x
+
+* Sat Jan 11 2003 Karsten Hopp <karsten@redhat.de> 0.72-3
+- temporarily disable checks on s390x, until someone has
+  time to look at it
+
+* Thu Dec 12 2002 Jakub Jelinek <jakub@redhat.com> 0.72-2
+- update to 0.72
+
+* Wed Dec 11 2002 Jakub Jelinek <jakub@redhat.com> 0.71-2
+- update to 0.71
+
+* Wed Dec 11 2002 Jeff Johnson <jbj@redhat.com> 0.69-4
+- update to 0.69.
+- add "make check" and segfault avoidance patch.
+- elfutils-libelf needs to run ldconfig.
+
+* Tue Dec 10 2002 Jeff Johnson <jbj@redhat.com> 0.68-2
+- update to 0.68.
 
 * Fri Dec  6 2002 Jeff Johnson <jbj@redhat.com> 0.67-2
 - update to 0.67.
