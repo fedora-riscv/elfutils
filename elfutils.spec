@@ -2,7 +2,7 @@
 Summary: A collection of utilities and DSOs to handle compiled objects.
 Name: elfutils
 Version: 0.95
-Release: 2
+Release: 4
 %if %{gpl}
 Copyright: GPL
 %else
@@ -13,6 +13,7 @@ Group: Development/Tools
 Source: elfutils-%{version}.tar.gz
 Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
+Patch: elfutils-0.95-vla-warn.patch
 %if %{gpl}
 Requires: binutils >= 2.14.90.0.4-26.2
 %endif
@@ -73,6 +74,7 @@ different sections of an ELF file.
 
 %prep
 %setup -q
+%patch -p1
 
 %build
 mkdir build-%{_target_platform}
@@ -178,6 +180,13 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Mon Jul  5 2004 Jakub Jelinek <jakub@redhat.com> 0.95-4
+- rebuilt with GCC 3.4.x, workaround VLA + alloca mixing
+  warning
+
+* Tue Jun 15 2004 Elliot Lee <sopwith@redhat.com>
+- rebuilt
+
 * Fri Apr  2 2004 Jeff Johnson <jbj@redhat.com> 0.95-2
 - upgrade to 0.95.
 
