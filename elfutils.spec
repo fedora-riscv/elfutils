@@ -1,8 +1,8 @@
 %define gpl 0
 Summary: A collection of utilities and DSOs to handle compiled objects.
 Name: elfutils
-Version: 0.103
-Release: 2
+Version: 0.104
+Release: 1
 %if %{gpl}
 License: GPL
 %else
@@ -191,6 +191,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Mon Mar 28 2005 Roland McGrath <roland@redhat.com> - 0.104-1
+- update to 0.104
+
 * Wed Mar 23 2005 Jakub Jelinek <jakub@redhat.com> 0.103-2
 - update to 0.103
 
