@@ -28,7 +28,7 @@ BuildRequires: flex >= 2.5.4a
 BuildRequires: bzip2
 
 %define _gnu %{nil}
-%define _programprefix eu-
+%define _program_prefix eu-
 
 %description
 Elfutils is a collection of utilities, including ld (a linker),
