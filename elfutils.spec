@@ -1,8 +1,8 @@
 %define gpl 0
 Summary: A collection of utilities and DSOs to handle compiled objects.
 Name: elfutils
-Version: 0.94
-Release: 2.1
+Version: 0.95
+Release: 2
 %if %{gpl}
 Copyright: GPL
 %else
@@ -21,7 +21,8 @@ Requires: binutils >= 2.14.90.0.4-26.2
 
 BuildRoot: %{_tmppath}/%{name}-root
 BuildRequires: gcc >= 3.2
-BuildRequires: sharutils
+BuildRequires: bison >= 1.875
+BuildRequires: flex >= 2.5.4a
 
 %define _gnu %{nil}
 %define _programprefix eu-
@@ -177,6 +178,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Fri Apr  2 2004 Jeff Johnson <jbj@redhat.com> 0.95-2
+- upgrade to 0.95.
+
 * Tue Mar 02 2004 Elliot Lee <sopwith@redhat.com>
 - rebuilt
 
