@@ -1,8 +1,8 @@
 %define gpl 0
 Summary: A collection of utilities and DSOs to handle compiled objects.
 Name: elfutils
-Version: 0.95
-Release: 4
+Version: 0.96
+Release: 1
 %if %{gpl}
 Copyright: GPL
 %else
@@ -10,10 +10,9 @@ Copyright: OSL
 %endif
 Group: Development/Tools
 #URL: file://home/devel/drepper/
-Source: elfutils-%{version}.tar.gz
+Source: elfutils-%{version}.tar.bz2
 Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
-Patch: elfutils-0.95-vla-warn.patch
 %if %{gpl}
 Requires: binutils >= 2.14.90.0.4-26.2
 %endif
@@ -74,7 +73,6 @@ different sections of an ELF file.
 
 %prep
 %setup -q
-%patch -p1
 
 %build
 mkdir build-%{_target_platform}
@@ -180,6 +178,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Tue Aug 17 2004 Jakub Jelinek <jakub@redhat.com> 0.95-5
+- upgrade to 0.96.
+
 * Mon Jul  5 2004 Jakub Jelinek <jakub@redhat.com> 0.95-4
 - rebuilt with GCC 3.4.x, workaround VLA + alloca mixing
   warning
