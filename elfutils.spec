@@ -37,13 +37,15 @@ Requires: binutils >= 2.14.90.0.4-26.2
 # ExcludeArch: xxx
 
 BuildRoot: %{_tmppath}/%{name}-root
-BuildRequires: gcc >= 3.2
 BuildRequires: bison >= 1.875
 BuildRequires: flex >= 2.5.4a
 BuildRequires: bzip2
 %if !%{compat}
+BuildRequires: gcc >= 3.4
 # Need <byteswap.h> that gives unsigned bswap_16 etc.
 BuildRequires: glibc-headers >= 2.3.4-11
+%else
+BuildRequires: gcc >= 3.2
 %endif
 
 %define _gnu %{nil}
