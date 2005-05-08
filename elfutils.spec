@@ -1,5 +1,5 @@
-%define version 0.106
-%define release 3
+%define version 0.107
+%define release 1
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -24,11 +24,8 @@ License: OSL
 Group: Development/Tools
 #URL: file://home/devel/drepper/
 Source: elfutils-%{version}.tar.gz
-Patch1: elfutils-0.106-libdw-compile.patch
-%if %{compat}
-Patch100: elfutils-portability.patch
-Patch101: elfutils-bswap.patch
-%endif
+Patch1: elfutils-portability.patch
+Patch2: elfutils-bswap.patch
 Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
 %if %{gpl}
@@ -110,11 +107,9 @@ different sections of an ELF file.
 %prep
 %setup -q
 
-%patch1 -p1
-
 %if %{compat}
-%patch100 -p1
-%patch101 -p1
+%patch1 -p1
+%patch2 -p1
 sleep 1
 find . \( -name Makefile.in -o -name aclocal.m4 \) -print | xargs touch
 sleep 1
@@ -224,6 +219,12 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Sun May  8 2005 Roland McGrath <roland@redhat.com> - 0.107-1
+- update to 0.107
+  - readelf: improve DWARF output format
+  - elflint: -d option to support checking separate debuginfo files
+  - strip: fix ET_REL debuginfo files (#156341)
+
 * Mon Apr  4 2005 Roland McGrath <roland@redhat.com> - 0.106-3
 - fix some bugs in new code, reenable make check
 
