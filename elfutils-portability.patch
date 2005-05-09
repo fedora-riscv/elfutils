@@ -84,7 +84,7 @@
 +  ac_status=$?
 +  echo "$as_me:$LINENO: \$? = $ac_status" >&5
 +  (exit $ac_status); }; }; then
-+  ac_cv_cc_wextra
++  ac_cv_cc_wextra=yes
 +else
 +  echo "$as_me: failed program was:" >&5
 +sed 's/^/| /' conftest.$ac_ext >&5
@@ -125,7 +125,7 @@
 +old_CFLAGS="$CFLAGS"
 +CFLAGS="$CFLAGS -Wextra"
 +AC_COMPILE_IFELSE([void foo (void) { }],
-+		  ac_cv_cc_wextra, ac_cv_cc_wextra=no)
++		  ac_cv_cc_wextra=yes, ac_cv_cc_wextra=no)
 +CFLAGS="$old_CFLAGS"])
 +AC_SUBST(WEXTRA)
 +AS_IF([test "x$ac_cv_cc_wextra" = yes], [WEXTRA=-Wextra], [WEXTRA=-W])
