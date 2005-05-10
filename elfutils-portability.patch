@@ -1,5 +1,5 @@
---- elfutils-0.107.orig/ChangeLog
-+++ elfutils-0.107/ChangeLog
+--- elfutils/ChangeLog
++++ elfutils/ChangeLog
 @@ -1,3 +1,16 @@
 +2005-02-07  Roland McGrath  <roland@frob.com>
 +
@@ -17,8 +17,8 @@
  2005-02-22  Ulrich Drepper  <drepper@redhat.com>
  
  	* Makefile.am (all_SUBDIRS): Don't add doc subdir for now.
---- elfutils-0.107.orig/Makefile.in
-+++ elfutils-0.107/Makefile.in
+--- elfutils/Makefile.in
++++ elfutils/Makefile.in
 @@ -127,6 +127,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
@@ -27,8 +27,8 @@
  XGETTEXT = @XGETTEXT@
  YACC = @YACC@
  ac_ct_CC = @ac_ct_CC@
---- elfutils-0.107.orig/config/Makefile.in
-+++ elfutils-0.107/config/Makefile.in
+--- elfutils/config/Makefile.in
++++ elfutils/config/Makefile.in
 @@ -105,6 +105,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
@@ -37,9 +37,9 @@
  XGETTEXT = @XGETTEXT@
  YACC = @YACC@
  ac_ct_CC = @ac_ct_CC@
---- elfutils-0.107.orig/configure
-+++ elfutils-0.107/configure
-@@ -277,7 +277,7 @@ PACKAGE_STRING='Red Hat elfutils 0.107'
+--- elfutils/configure
++++ elfutils/configure
+@@ -277,7 +277,7 @@ PACKAGE_STRING='Red Hat elfutils 0.108'
  PACKAGE_BUGREPORT='http://bugzilla.redhat.com/bugzilla/'
  
  ac_unique_file="libelf/libelf.h"
@@ -115,8 +115,8 @@
  s,@LOCALEDIR@,$LOCALEDIR,;t t
  s,@DATADIRNAME@,$DATADIRNAME,;t t
  s,@NATIVE_LD_TRUE@,$NATIVE_LD_TRUE,;t t
---- elfutils-0.107.orig/configure.ac
-+++ elfutils-0.107/configure.ac
+--- elfutils/configure.ac
++++ elfutils/configure.ac
 @@ -64,6 +64,15 @@ CFLAGS="$old_CFLAGS"])
  AS_IF([test "x$ac_cv_c99" != xyes],
        AC_MSG_ERROR([gcc with C99 support required]))
@@ -133,8 +133,8 @@
  LOCALEDIR=$datadir
  AC_SUBST(LOCALEDIR)
  AC_DEFINE_UNQUOTED(LOCALEDIR, "$LOCALEDIR")
---- elfutils-0.107.orig/lib/ChangeLog
-+++ elfutils-0.107/lib/ChangeLog
+--- elfutils/lib/ChangeLog
++++ elfutils/lib/ChangeLog
 @@ -4,6 +4,11 @@
  	* Makefile.am (libeu_a_SOURCES): Add it.
  	* system.h: Declare crc32_file.
@@ -147,8 +147,8 @@
  2005-04-30  Ulrich Drepper  <drepper@redhat.com>
  
  	* Makefile.am: Use -ffunction-sections for xmalloc.c.
---- elfutils-0.107.orig/lib/Makefile.am
-+++ elfutils-0.107/lib/Makefile.am
+--- elfutils/lib/Makefile.am
++++ elfutils/lib/Makefile.am
 @@ -16,12 +16,13 @@
  ## Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  ##
@@ -164,8 +164,8 @@
  INCLUDES = -I$(srcdir)/../libelf -I..
  
  noinst_LIBRARIES = libeu.a
---- elfutils-0.107.orig/lib/Makefile.in
-+++ elfutils-0.107/lib/Makefile.in
+--- elfutils/lib/Makefile.in
++++ elfutils/lib/Makefile.in
 @@ -127,6 +127,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
@@ -186,8 +186,8 @@
  INCLUDES = -I$(srcdir)/../libelf -I..
  noinst_LIBRARIES = libeu.a
  libeu_a_SOURCES = xstrdup.c xstrndup.c xmalloc.c next_prime.c \
---- elfutils-0.107.orig/libasm/Makefile.am
-+++ elfutils-0.107/libasm/Makefile.am
+--- elfutils/libasm/Makefile.am
++++ elfutils/libasm/Makefile.am
 @@ -13,12 +13,13 @@
  ## 3001 King Ranch Road, Ukiah, CA 95482.
  ##
@@ -203,8 +203,8 @@
  INCLUDES = -I. -I$(srcdir) -I.. -I$(top_srcdir)/libelf -I$(top_srcdir)/libebl \
  	   -I$(top_srcdir)/lib
  GCC_INCLUDE = -I$(shell $(CC) -print-file-name=include)
---- elfutils-0.107.orig/libasm/Makefile.in
-+++ elfutils-0.107/libasm/Makefile.in
+--- elfutils/libasm/Makefile.in
++++ elfutils/libasm/Makefile.in
 @@ -159,6 +159,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
@@ -226,8 +226,8 @@
  INCLUDES = -I. -I$(srcdir) -I.. -I$(top_srcdir)/libelf -I$(top_srcdir)/libebl \
  	   -I$(top_srcdir)/lib
  
---- elfutils-0.107.orig/libcpu/ChangeLog
-+++ elfutils-0.107/libcpu/ChangeLog
+--- elfutils/libcpu/ChangeLog
++++ elfutils/libcpu/ChangeLog
 @@ -1,3 +1,8 @@
 +2005-04-04  Roland McGrath  <roland@redhat.com>
 +
@@ -237,8 +237,8 @@
  2005-02-15  Ulrich Drepper  <drepper@redhat.com>
  
  	* Makefile (AM_CFLAGS): Add -Wunused -Wextra -Wformat=2.
---- elfutils-0.107.orig/libcpu/Makefile.am
-+++ elfutils-0.107/libcpu/Makefile.am
+--- elfutils/libcpu/Makefile.am
++++ elfutils/libcpu/Makefile.am
 @@ -13,7 +13,8 @@
  ## 3001 King Ranch Road, Ukiah, CA 95482.
  ##
@@ -249,8 +249,8 @@
  INCLUDES = -I$(srcdir)
  
  noinst_LIBRARIES = libcpu_i386.a
---- elfutils-0.107.orig/libcpu/Makefile.in
-+++ elfutils-0.107/libcpu/Makefile.in
+--- elfutils/libcpu/Makefile.in
++++ elfutils/libcpu/Makefile.in
 @@ -122,6 +122,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
@@ -268,8 +268,8 @@
  INCLUDES = -I$(srcdir)
  noinst_LIBRARIES = libcpu_i386.a
  libcpu_i386_a_SOURCES = i386_dis.c
---- elfutils-0.107.orig/libdw/Makefile.am
-+++ elfutils-0.107/libdw/Makefile.am
+--- elfutils/libdw/Makefile.am
++++ elfutils/libdw/Makefile.am
 @@ -13,12 +13,13 @@
  ## 3001 King Ranch Road, Ukiah, CA 95482.
  ##
@@ -285,8 +285,8 @@
  INCLUDES = -I. -I$(srcdir) -I$(srcdir)/../libelf -I.. -I$(srcdir)/../lib
  VERSION = 1
  
---- elfutils-0.107.orig/libdw/Makefile.in
-+++ elfutils-0.107/libdw/Makefile.in
+--- elfutils/libdw/Makefile.in
++++ elfutils/libdw/Makefile.in
 @@ -190,6 +190,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
@@ -307,8 +307,8 @@
  INCLUDES = -I. -I$(srcdir) -I$(srcdir)/../libelf -I.. -I$(srcdir)/../lib
  lib_LIBRARIES = libdw.a
  @MUDFLAP_FALSE@noinst_LIBRARIES = libdw_pic.a
---- elfutils-0.107.orig/libebl/Makefile.am
-+++ elfutils-0.107/libebl/Makefile.am
+--- elfutils/libebl/Makefile.am
++++ elfutils/libebl/Makefile.am
 @@ -13,12 +13,13 @@
  ## 3001 King Ranch Road, Ukiah, CA 95482.
  ##
@@ -324,8 +324,8 @@
  	     -std=gnu99
  
  INCLUDES = -I$(srcdir) -I$(top_srcdir)/libelf -I$(top_srcdir)/lib -I..
---- elfutils-0.107.orig/libebl/Makefile.in
-+++ elfutils-0.107/libebl/Makefile.in
+--- elfutils/libebl/Makefile.in
++++ elfutils/libebl/Makefile.in
 @@ -236,6 +236,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
@@ -346,8 +346,8 @@
  INCLUDES = -I$(srcdir) -I$(top_srcdir)/libelf -I$(top_srcdir)/lib -I..
  lib_LIBRARIES = libebl.a
  modules = i386 sh mips x86_64 ia64 alpha arm sparc ppc ppc64
---- elfutils-0.107.orig/libelf/Makefile.am
-+++ elfutils-0.107/libelf/Makefile.am
+--- elfutils/libelf/Makefile.am
++++ elfutils/libelf/Makefile.am
 @@ -16,12 +16,13 @@
  ## Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  ##
@@ -363,8 +363,8 @@
  	     $($(*F)_CFLAGS)
  INCLUDES = -I$(srcdir) -I$(top_srcdir)/lib -I..
  GCC_INCLUDE = -I$(shell $(CC) -print-file-name=include)
---- elfutils-0.107.orig/libelf/Makefile.in
-+++ elfutils-0.107/libelf/Makefile.in
+--- elfutils/libelf/Makefile.in
++++ elfutils/libelf/Makefile.in
 @@ -199,6 +199,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
@@ -386,8 +386,8 @@
  @MUDFLAP_TRUE@	$($(*F)_CFLAGS)
  INCLUDES = -I$(srcdir) -I$(top_srcdir)/lib -I..
  GCC_INCLUDE = -I$(shell $(CC) -print-file-name=include)
---- elfutils-0.107.orig/m4/Makefile.in
-+++ elfutils-0.107/m4/Makefile.in
+--- elfutils/m4/Makefile.in
++++ elfutils/m4/Makefile.in
 @@ -103,6 +103,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
@@ -396,8 +396,8 @@
  XGETTEXT = @XGETTEXT@
  YACC = @YACC@
  ac_ct_CC = @ac_ct_CC@
---- elfutils-0.107.orig/src/Makefile.am
-+++ elfutils-0.107/src/Makefile.am
+--- elfutils/src/Makefile.am
++++ elfutils/src/Makefile.am
 @@ -14,14 +14,15 @@
  ##
  DEFS = -D_GNU_SOURCE -DHAVE_CONFIG_H $(YYDEBUG) \
@@ -416,8 +416,8 @@
  	    $(if $($(*F)_no_Wformat),,-Wformat=2)
  endif
  if MUDFLAP
---- elfutils-0.107.orig/src/Makefile.in
-+++ elfutils-0.107/src/Makefile.in
+--- elfutils/src/Makefile.in
++++ elfutils/src/Makefile.in
 @@ -194,6 +194,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
@@ -439,8 +439,8 @@
  @MUDFLAP_TRUE@	    $(native_ld_cflags) $(if $($(*F)_no_Wunused),,-Wunused) \
  @MUDFLAP_TRUE@	    $(if $($(*F)_no_Wformat),,-Wformat=2)
  
---- elfutils-0.107.orig/src/findtextrel.c
-+++ elfutils-0.107/src/findtextrel.c
+--- elfutils/src/findtextrel.c
++++ elfutils/src/findtextrel.c
 @@ -476,7 +476,11 @@ ptrcompare (const void *p1, const void *
  
  
@@ -454,8 +454,8 @@
  	   GElf_Addr addr, Elf *elf, Elf_Scn *symscn, Dwarf *dw,
  	   const char *fname, bool more_than_one, void **knownsrcs)
  {
---- elfutils-0.107.orig/src/strip.c
-+++ elfutils-0.107/src/strip.c
+--- elfutils/src/strip.c
++++ elfutils/src/strip.c
 @@ -40,6 +40,12 @@
  #include <libebl.h>
  #include <system.h>
@@ -488,7 +488,7 @@
      }
  
    /* Open the file.  */
-@@ -1702,7 +1718,7 @@ handle_elf (int fd, Elf *elf, const char
+@@ -1677,7 +1693,7 @@ handle_elf (int fd, Elf *elf, const char
    /* If requested, preserve the timestamp.  */
    if (tvp != NULL)
      {
@@ -497,7 +497,7 @@
  	{
  	  error (0, errno, gettext ("\
  cannot set access and modification date of '%s'"),
-@@ -1759,7 +1775,7 @@ handle_ar (int fd, Elf *elf, const char 
+@@ -1734,7 +1750,7 @@ handle_ar (int fd, Elf *elf, const char 
  
    if (tvp != NULL)
      {
@@ -506,8 +506,8 @@
  	{
  	  error (0, errno, gettext ("\
  cannot set access and modification date of '%s'"), fname);
---- elfutils-0.107.orig/tests/Makefile.in
-+++ elfutils-0.107/tests/Makefile.in
+--- elfutils/tests/Makefile.in
++++ elfutils/tests/Makefile.in
 @@ -266,6 +266,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@

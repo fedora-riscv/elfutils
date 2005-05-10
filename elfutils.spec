@@ -1,5 +1,5 @@
-%define version 0.107
-%define release 2
+%define version 0.108
+%define release 1
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -26,7 +26,6 @@ Group: Development/Tools
 Source: elfutils-%{version}.tar.gz
 Patch1: elfutils-portability.patch
 Patch2: elfutils-bswap.patch
-Patch3: elfutils-1.07-strip-byteswap.patch
 Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
 %if %{gpl}
@@ -116,8 +115,6 @@ find . \( -name Makefile.in -o -name aclocal.m4 \) -print | xargs touch
 sleep 1
 find . \( -name configure -o -name config.h.in \) -print | xargs touch
 %endif
-
-%patch3 -p1
 
 %build
 mkdir build-%{_target_platform}
@@ -222,6 +219,12 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Mon May  9 2005 Roland McGrath <roland@redhat.com> - 0.108-1
+- update to 0.108
+  - merge strip fixes
+  - sort records in dwarf_getsrclines, fix dwarf_getsrc_die searching
+  - update elf.h from glibc
+
 * Sun May  8 2005 Roland McGrath <roland@redhat.com> - 0.107-2
 - fix strip -f byte-swapping bug
 
