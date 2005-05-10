@@ -13,5 +13,5 @@ elfutils-portability.patch: elfutils-$(VERSION).tar.gz portable.patch
 	patch -p1 -d elfutils-$(VERSION) < portable.patch
 	cd elfutils-$(VERSION); autoreconf
 	diff -rpu elfutils-$(VERSION).orig elfutils-$(VERSION) | \
-	filterdiff --remove-timestamps > $@.new
+	filterdiff --remove-timestamps --strip=1 --addprefix=elfutils/ > $@.new
 	mv $@.new $@
