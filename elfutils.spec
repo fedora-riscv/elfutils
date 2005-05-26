@@ -1,5 +1,5 @@
 %define version 0.108
-%define release 2
+%define release 3
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -222,6 +222,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Wed May 25 2005 Roland McGrath <roland@redhat.com> - 0.108-3
+- more robustification
+
 * Mon May 16 2005 Roland McGrath <roland@redhat.com> - 0.108-2
 - robustification
 
