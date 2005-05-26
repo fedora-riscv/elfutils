@@ -151,6 +151,7 @@ cd ..
   rm -f .%{_bindir}/eu-ld
   rm -f .%{_includedir}/elfutils/libasm.h
   rm -f .%{_libdir}/libasm-%{version}.so
+  rm -f .%{_libdir}/libasm.so*
   rm -f .%{_libdir}/libasm.a
 }
 %endif
