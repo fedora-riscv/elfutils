@@ -1,5 +1,5 @@
 %define version 0.108
-%define release 3
+%define release 4
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -223,6 +223,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Thu Jun  9 2005 Roland McGrath <roland@redhat.com> - 0.108-4
+- eu-strip robustification
+
 * Wed May 25 2005 Roland McGrath <roland@redhat.com> - 0.108-3
 - more robustification
 

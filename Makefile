@@ -1,17 +1,22 @@
 # Makefile for source rpm: elfutils
-# $Id: Makefile,v 1.2 2005/05/08 22:43:51 roland Exp $
+# $Id: Makefile,v 1.3 2005/05/10 05:57:44 roland Exp $
 NAME := elfutils
 SPECFILE = $(firstword $(wildcard *.spec))
 
+TARGETS += elfutils-portability.patch
+
 include ../common/Makefile.common
 
-elfutils-portability.patch: elfutils-$(VERSION).tar.gz portable.patch
-	rm -rf elfutils-$(VERSION) elfutils-$(VERSION).orig
-	tar xzf $<
-	mv elfutils-$(VERSION) elfutils-$(VERSION).orig
-	tar xzf $<
-	patch -p1 -d elfutils-$(VERSION) < portable.patch
-	cd elfutils-$(VERSION); autoreconf
-	diff -rpu elfutils-$(VERSION).orig elfutils-$(VERSION) | \
+master-cvsroot = :gserver:cvs.devel.redhat.com:/cvs/devel
+
+elfutils-portability.patch: elfutils-$(VERSION).tar.gz
+	@rm -rf elfutils-master elfutils-portable
+	cvs -d $(master-cvsroot) -Q export \
+	    -d elfutils-master elfutils
+	cvs -d $(master-cvsroot) -Q export \
+	    -d elfutils-portable -r portable-branch elfutils
+	cd elfutils-master; autoreconf
+	cd elfutils-portable; autoreconf
+	diff -rpu elfutils-master elfutils-portable | \
 	filterdiff --remove-timestamps --strip=1 --addprefix=elfutils/ > $@.new
 	mv $@.new $@
