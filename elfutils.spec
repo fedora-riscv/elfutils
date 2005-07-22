@@ -1,5 +1,5 @@
 %define version 0.109
-%define release 1
+%define release 2
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -209,6 +209,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libdwfl.a
 #%{_libdir}/libasm.so
 %{_libdir}/libdw.so
+%{_libdir}/libdwfl.so
 %endif
 
 %files libelf
@@ -225,7 +226,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
-* Thu Jul 21 2005 Roland McGrath <roland@redhat.com> - 0.109-1
+* Fri Jul 22 2005 Roland McGrath <roland@redhat.com> - 0.109-2
 - update to 0.109
   - verify that libebl modules are from the same build
   - new eu-elflint checks on copy relocations
