@@ -1,5 +1,5 @@
-%define version 0.108
-%define release 5
+%define version 0.109
+%define release 1
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -25,8 +25,7 @@ Group: Development/Tools
 #URL: file://home/devel/drepper/
 Source: elfutils-%{version}.tar.gz
 Patch1: elfutils-portability.patch
-Patch2: elfutils-bswap.patch
-Patch3: elfutils-0.108-robustify.patch
+Patch2: elfutils-0.108-robustify.patch
 Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
 %if %{gpl}
@@ -110,14 +109,13 @@ different sections of an ELF file.
 
 %if %{compat}
 %patch1 -p1
-%patch2 -p1
 sleep 1
 find . \( -name Makefile.in -o -name aclocal.m4 \) -print | xargs touch
 sleep 1
 find . \( -name configure -o -name config.h.in \) -print | xargs touch
 %endif
 
-%patch3 -p1
+%patch2 -p1
 
 %build
 mkdir build-%{_target_platform}
@@ -178,6 +176,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %doc fake-src/FULL
 %endif
 %{_bindir}/eu-addr2line
+%{_bindir}/eu-elfcmp
 %{_bindir}/eu-elflint
 %{_bindir}/eu-findtextrel
 %{_bindir}/eu-nm
@@ -186,10 +185,11 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_bindir}/eu-strip
 %if !%{gpl}
 #%{_bindir}/eu-ld
-#%{_libdir}/libasm-%{version}.so
 %{_libdir}/libdw-%{version}.so
-#%{_libdir}/libasm*.so.*
-%{_libdir}/libdw*.so.*
+%{_libdir}/libdwfl-%{version}.so
+#%{_libdir}/libasm.so.*
+%{_libdir}/libdw.so.*
+%{_libdir}/libdwfl.so.*
 %dir %{_libdir}/elfutils
 %{_libdir}/elfutils/lib*.so
 %endif
@@ -202,9 +202,11 @@ rm -rf ${RPM_BUILD_ROOT}
 %if !%{gpl}
 %{_includedir}/elfutils/libebl.h
 %{_includedir}/elfutils/libdw.h
+%{_includedir}/elfutils/libdwfl.h
 #%{_libdir}/libasm.a
 %{_libdir}/libebl.a
 %{_libdir}/libdw.a
+%{_libdir}/libdwfl.a
 #%{_libdir}/libasm.so
 %{_libdir}/libdw.so
 %endif
@@ -212,7 +214,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %files libelf
 %defattr(-,root,root)
 %{_libdir}/libelf-%{version}.so
-%{_libdir}/libelf*.so.*
+%{_libdir}/libelf.so.*
 
 %files libelf-devel
 %defattr(-,root,root)
@@ -223,6 +225,13 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Thu Jul 21 2005 Roland McGrath <roland@redhat.com> - 0.109-1
+- update to 0.109
+  - verify that libebl modules are from the same build
+  - new eu-elflint checks on copy relocations
+  - new program eu-elfcmp
+  - new experimental libdwfl library
+
 * Thu Jun  9 2005 Roland McGrath <roland@redhat.com> - 0.108-5
 - robustification of eu-strip and eu-readelf
 
