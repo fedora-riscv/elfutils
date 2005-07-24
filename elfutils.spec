@@ -1,5 +1,5 @@
-%define version 0.109
-%define release 2
+%define version 0.110
+%define release 1
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -226,6 +226,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Sun Jul 24 2005 Roland McGrath <roland@redhat.com> - 0.110-1
+- update to 0.110
+
 * Fri Jul 22 2005 Roland McGrath <roland@redhat.com> - 0.109-2
 - update to 0.109
   - verify that libebl modules are from the same build
