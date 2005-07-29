@@ -1,4 +1,4 @@
-%define version 0.110
+%define version 0.111
 %define release 1
 
 %define gpl 0
@@ -186,10 +186,8 @@ rm -rf ${RPM_BUILD_ROOT}
 %if !%{gpl}
 #%{_bindir}/eu-ld
 %{_libdir}/libdw-%{version}.so
-%{_libdir}/libdwfl-%{version}.so
 #%{_libdir}/libasm.so.*
 %{_libdir}/libdw.so.*
-%{_libdir}/libdwfl.so.*
 %dir %{_libdir}/elfutils
 %{_libdir}/elfutils/lib*.so
 %endif
@@ -206,10 +204,8 @@ rm -rf ${RPM_BUILD_ROOT}
 #%{_libdir}/libasm.a
 %{_libdir}/libebl.a
 %{_libdir}/libdw.a
-%{_libdir}/libdwfl.a
 #%{_libdir}/libasm.so
 %{_libdir}/libdw.so
-%{_libdir}/libdwfl.so
 %endif
 
 %files libelf
@@ -226,6 +222,10 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Thu Jul 28 2005 Roland McGrath <roland@redhat.com> - 0.111-1
+- update to 0.111
+  - libdwfl library now merged into libdw
+
 * Sun Jul 24 2005 Roland McGrath <roland@redhat.com> - 0.110-1
 - update to 0.110
 
