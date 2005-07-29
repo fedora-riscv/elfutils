@@ -1,5 +1,5 @@
 %define version 0.111
-%define release 1
+%define release 2
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -222,6 +222,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Fri Jul 29 2005 Roland McGrath <roland@redhat.com> - 0.111-2
+- update portability patch
+
 * Thu Jul 28 2005 Roland McGrath <roland@redhat.com> - 0.111-1
 - update to 0.111
   - libdwfl library now merged into libdw

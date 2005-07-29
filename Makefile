@@ -16,3 +16,13 @@ elfutils-portability.patch: elfutils-$(VERSION).tar.gz
 	diff -rpu elfutils-master elfutils-portable | \
 	filterdiff --remove-timestamps --strip=1 --addprefix=elfutils/ > $@.new
 	mv $@.new $@
+
+elfutils-portable.spec: elfutils.spec
+	(echo '%define _with_compat 1'; cat $<) > $@.new
+	mv -f $@.new $@
+
+portable: elfutils-$(VERSION)-0.$(RELEASE).src.rpm
+elfutils-$(VERSION)-0.$(RELEASE).src.rpm: elfutils-portable.spec \
+					  elfutils-portability.patch \
+					  sources
+	$(RPM_WITH_DIRS) --nodeps -bs $<
