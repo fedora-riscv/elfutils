@@ -1,9 +1,7 @@
 # Makefile for source rpm: elfutils
-# $Id: Makefile,v 1.5 2005/07/21 09:09:19 roland Exp $
+# $Id: Makefile,v 1.6 2005/07/29 00:12:10 roland Exp $
 NAME := elfutils
 SPECFILE = $(firstword $(wildcard *.spec))
-
-TARGETS += elfutils-portability.patch
 
 include ../common/Makefile.common
 
