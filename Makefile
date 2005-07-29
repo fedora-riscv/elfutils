@@ -1,7 +1,7 @@
 # Makefile for source rpm: elfutils
-# $Id: Makefile,v 1.7 2005/07/29 01:56:30 roland Exp $
+# $Id: Makefile,v 1.8 2005/07/29 20:18:25 roland Exp $
 NAME := elfutils
-SPECFILE = $(firstword $(wildcard *.spec))
+SPECFILE = elfutils.spec
 
 include ../common/Makefile.common
 
