@@ -3,8 +3,6 @@
 NAME := elfutils
 SPECFILE = $(firstword $(wildcard *.spec))
 
-TARGETS += elfutils-portability.patch
-
 include ../common/Makefile.common
 
 MONOTONE = monotone
