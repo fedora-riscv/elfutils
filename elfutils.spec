@@ -123,7 +123,7 @@ find . \( -name configure -o -name config.h.in \) -print | xargs touch
 # the makefiles disable some specific warnings for specific code.
 RPM_OPT_FLAGS=${RPM_OPT_FLAGS/-Wall/}
 
-%configure
+%configure CFLAGS="$RPM_OPT_FLAGS"
 make
 
 %install
