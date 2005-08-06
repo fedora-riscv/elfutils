@@ -118,30 +118,24 @@ find . \( -name configure -o -name config.h.in \) -print | xargs touch
 %patch2 -p1
 
 %build
-mkdir build-%{_target_platform}
-cd build-%{_target_platform}
-cat > configure <<\EOF
-#!/bin/sh
-exec ../configure "$@"
-EOF
-chmod +x configure
-%configure --enable-shared
+# Remove -Wall from default flags.  The makefiles enable enough warnings
+# themselves, and they use -Werror.  Appending -Wall defeats the cases where
+# the makefiles disable some specific warnings for specific code.
+RPM_OPT_FLAGS=${RPM_OPT_FLAGS/-Wall/}
+
+%configure
 make
-cd ..
 
 %install
 rm -rf ${RPM_BUILD_ROOT}
 mkdir -p ${RPM_BUILD_ROOT}%{_prefix}
 
-cd build-%{_target_platform}
 %makeinstall
 
 chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/lib*.so*
 %if !%{gpl}
 chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
 %endif
-
-cd ..
 
 %if !%{gpl}
 # XXX Nuke unpackaged files
@@ -156,7 +150,6 @@ cd ..
 %endif
 
 %check
-cd build-%{_target_platform}
 make check
 
 %clean
