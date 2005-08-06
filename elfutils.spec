@@ -1,5 +1,5 @@
-%define version 0.111
-%define release 2
+%define version 0.112
+%define release 1
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -222,6 +222,15 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Sat Aug  6 2005 Roland McGrath <roland@redhat.com> - 0.112-1
+- update to 0.112
+  - elfcmp: some more relaxation.
+  - elflint: many more tests, especially regarding to symbol versioning.
+  - libelf: Add elfXX_offscn and gelf_offscn.
+  - libasm: asm_begin interface changes.
+  - libebl: Add three new interfaces to directly access machine, class,
+    and data encoding information.
+
 * Fri Jul 29 2005 Roland McGrath <roland@redhat.com> - 0.111-2
 - update portability patch
 
