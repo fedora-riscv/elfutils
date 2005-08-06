@@ -25,7 +25,7 @@ Group: Development/Tools
 #URL: file://home/devel/drepper/
 Source: elfutils-%{version}.tar.gz
 Patch1: elfutils-portability.patch
-Patch2: elfutils-0.108-robustify.patch
+Patch2: elfutils-0.112-robustify.patch
 Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
 %if %{gpl}
@@ -147,6 +147,7 @@ cd ..
 # XXX Nuke unpackaged files
 { cd ${RPM_BUILD_ROOT}
   rm -f .%{_bindir}/eu-ld
+  rm -f .%{_bindir}/eu-objdump
   rm -f .%{_includedir}/elfutils/libasm.h
   rm -f .%{_libdir}/libasm-%{version}.so
   rm -f .%{_libdir}/libasm.so*
