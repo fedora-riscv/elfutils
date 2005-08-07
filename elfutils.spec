@@ -1,4 +1,4 @@
-%define version 0.112
+%define version 0.113
 %define release 1
 
 %define gpl 0
@@ -216,6 +216,12 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Sun Aug  7 2005 Roland McGrath <roland@redhat.com> - 0.113-1
+- update to 0.113
+  - elflint: relax a bit.  Allow version definitions for defined symbols
+    against DSO versions also for symbols in nobits sections.
+    Allow .rodata section to have STRINGS and MERGE flag set.
+
 * Sat Aug  6 2005 Roland McGrath <roland@redhat.com> - 0.112-1
 - update to 0.112
   - elfcmp: some more relaxation.
