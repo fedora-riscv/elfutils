@@ -43,9 +43,9 @@ own risk.  All that said, here they is, and if you copy this file:
 
 	ftp://sources.redhat.com/pub/systemtap/elfutils/systemtap-elfutils.repo
 
-into your /etc/yum.repos.d/ directory, then you can get them with:
+into your /etc/yum.repos.d/ directory, then you can get them all with just:
 
-	yum install elfutils-libelf-devel
+	yum install elfutils-devel
 
 
 To compile elfutils from source by hand, simply use elfutils-VERSION.tar.gz
