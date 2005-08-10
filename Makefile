@@ -1,5 +1,5 @@
 # Makefile for source rpm: elfutils
-# $Id: Makefile,v 1.8 2005/07/29 20:18:25 roland Exp $
+# $Id: Makefile,v 1.9 2005/07/29 20:24:01 roland Exp $
 NAME := elfutils
 SPECFILE = elfutils.spec
 
@@ -21,8 +21,43 @@ elfutils-portable.spec: elfutils.spec
 	(echo '%define _with_compat 1'; cat $<) > $@.new
 	mv -f $@.new $@
 
-portable: elfutils-$(VERSION)-0.$(RELEASE).src.rpm
-elfutils-$(VERSION)-0.$(RELEASE).src.rpm: elfutils-portable.spec \
-					  elfutils-portability.patch \
-					  sources
+portable-vr = $(VERSION)-0.$(RELEASE)
+portable.srpm = elfutils-$(portable-vr).src.rpm
+$(portable.srpm): elfutils-portable.spec elfutils-portability.patch sources
 	$(RPM_WITH_DIRS) --nodeps -bs $<
+
+portable-dist = 3.0E-scratch
+portable-beehive = $(redhat)/dist/$(portable-dist)/elfutils/$(portable-vr)
+
+ifeq (,$(wildcard /mnt/redhat/dist/.))
+redhat = datadump.devel.redhat.com::redhat
+rsync-to = devserv.devel.redhat.com:dist/elfutils/devel/systemtap-dist/
+beehive-dep =
+else
+redhat = /mnt/redhat
+$(portable-beehive): $(portable.srpm)
+	$(BHC_CLIENT) $(BHC_FLAGS) dist-$(portable-dist) $<
+rsync-to = $(public)
+beehive-dep = $(portable-beehive)
+portable-build: $(portable-beehive)
+endif
+
+dist-files = README.elfutils systemtap-elfutils.repo \
+	     elfutils-$(VERSION).tar.gz elfutils-portability.patch
+rsync-files = --exclude=tests $(portable-beehive)/
+public = sources.redhat.com:/sourceware/ftp/anonftp/pub/systemtap/elfutils/
+
+RSYNC = RSYNC_RSH=ssh rsync
+
+systemtap-dist: $(beehive-dep) $(dist-files)
+	@mkdir -p $@
+	$(RSYNC) -a --delete --progress $(rsync-files) systemtap-dist/
+	ln $(dist-files) systemtap-dist/
+
+systemtap-dist-createrepo: systemtap-dist
+ifneq ($(wildcard /usr/bin/createrepo),)
+	createrepo -q $<
+endif
+
+systemtap-sync: systemtap-dist-createrepo
+	$(RSYNC) -az --delete --progress systemtap-dist/ $(rsync-to)

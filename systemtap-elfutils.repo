@@ -1,0 +1,5 @@
+[systemtap-elfutils]
+name=FOR SYSTEMTAP DEVELOPMENT ONLY
+baseurl=ftp://sources.redhat.com/pub/systemtap/elfutils/
+enabled=1
+gpgcheck=0
