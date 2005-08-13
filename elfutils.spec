@@ -1,5 +1,5 @@
 %define version 0.113
-%define release 1
+%define release 2
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -22,12 +22,12 @@ License: GPL
 License: OSL
 %endif
 Group: Development/Tools
-#URL: file://home/devel/drepper/
 Source: elfutils-%{version}.tar.gz
 Patch1: elfutils-portability.patch
 Patch2: elfutils-0.112-robustify.patch
 Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
+Requires: elfutils-libs = %{version}-%{release}
 %if %{gpl}
 Requires: binutils >= 2.14.90.0.4-26.2
 %endif
@@ -54,9 +54,21 @@ Elfutils is a collection of utilities, including ld (a linker),
 nm (for listing symbols from object files), size (for listing the
 section sizes of an object or archive file), strip (for discarding
 symbols), readelf (to see the raw ELF file structures), and elflint
-(to check for well-formed ELF files).  Also included are numerous
-helper libraries which implement DWARF, ELF, and machine-specific ELF
-handling.
+(to check for well-formed ELF files).
+
+%if !%{gpl}
+%package libs
+Summary: Libraries to handle compiled objects.
+Group: Development/Tools
+License: OSL
+Requires: elfutils-libelf = %{version}-%{release}
+
+%description libs
+The elfutils-libs package contains libraries which implement DWARF, ELF,
+and machine-specific ELF handling.  These libraries are used by the programs
+in the elfutils package.  The elfutils-devel package enables building
+other programs using these libraries.
+%endif
 
 %package devel
 Summary: Development libraries to handle compiled objects.
@@ -66,7 +78,7 @@ License: GPL
 %else
 License: OSL
 %endif
-Requires: elfutils = %{version}-%{release}
+Requires: elfutils-libs = %{version}-%{release}
 Requires: elfutils-libelf-devel = %{version}-%{release}
 
 %description devel
@@ -155,9 +167,9 @@ make check
 %clean
 rm -rf ${RPM_BUILD_ROOT}
 
-%post -p /sbin/ldconfig
+%post libs -p /sbin/ldconfig
 
-%postun -p /sbin/ldconfig
+%postun libs -p /sbin/ldconfig
 
 %post libelf -p /sbin/ldconfig
 
@@ -179,6 +191,11 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_bindir}/eu-strip
 %if !%{gpl}
 #%{_bindir}/eu-ld
+%endif
+
+%if !%{gpl}
+%files libs
+%defattr(-,root,root)
 %{_libdir}/libdw-%{version}.so
 #%{_libdir}/libasm.so.*
 %{_libdir}/libdw.so.*
@@ -216,11 +233,14 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
-* Sun Aug  7 2005 Roland McGrath <roland@redhat.com> - 0.113-1
+* Sat Aug 13 2005 Roland McGrath <roland@redhat.com> - 0.113-2
 - update to 0.113
   - elflint: relax a bit.  Allow version definitions for defined symbols
     against DSO versions also for symbols in nobits sections.
     Allow .rodata section to have STRINGS and MERGE flag set.
+  - strip: add some more compatibility with binutils.
+  - libdwfl: bug fixes.
+- Separate libdw et al into elfutils-libs subpackage.
 
 * Sat Aug  6 2005 Roland McGrath <roland@redhat.com> - 0.112-1
 - update to 0.112
