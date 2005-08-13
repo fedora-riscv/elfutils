@@ -274,7 +274,7 @@
  libcpu_i386_a_SOURCES = i386_dis.c
 --- elfutils/libdw/ChangeLog
 +++ elfutils/libdw/ChangeLog
-@@ -65,6 +65,11 @@
+@@ -78,6 +78,11 @@
  
  2005-05-31  Roland McGrath  <roland@redhat.com>
  
@@ -327,7 +327,7 @@
  @MUDFLAP_FALSE@noinst_LIBRARIES = libdw_pic.a
 --- elfutils/libdwfl/ChangeLog
 +++ elfutils/libdwfl/ChangeLog
-@@ -43,6 +43,11 @@
+@@ -67,6 +67,11 @@
  
  2005-07-21  Roland McGrath  <roland@redhat.com>
  
@@ -384,7 +384,7 @@
  
 --- elfutils/libebl/ChangeLog
 +++ elfutils/libebl/ChangeLog
-@@ -80,6 +80,11 @@
+@@ -142,6 +142,11 @@
  	* Makefile.am (libebl_*_so_SOURCES): Set to $(*_SRCS) so dependency
  	tracking works right.
  
@@ -415,7 +415,7 @@
  INCLUDES = -I$(srcdir) -I$(top_srcdir)/libelf -I$(top_srcdir)/lib -I..
 --- elfutils/libebl/Makefile.in
 +++ elfutils/libebl/Makefile.in
-@@ -255,6 +255,7 @@ SHELL = @SHELL@
+@@ -256,6 +256,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = 1
@@ -423,7 +423,7 @@
  XGETTEXT = @XGETTEXT@
  YACC = @YACC@
  ac_ct_CC = @ac_ct_CC@
-@@ -297,9 +298,9 @@ sharedstatedir = @sharedstatedir@
+@@ -298,9 +299,9 @@ sharedstatedir = @sharedstatedir@
  sysconfdir = @sysconfdir@
  target_alias = @target_alias@
  @MUDFLAP_FALSE@AM_CFLAGS = -fpic -Wall -Wshadow -Werror -Wunused \
@@ -437,7 +437,7 @@
  modules = i386 sh x86_64 ia64 alpha arm sparc ppc ppc64
 --- elfutils/libelf/ChangeLog
 +++ elfutils/libelf/ChangeLog
-@@ -37,6 +37,11 @@
+@@ -46,6 +46,11 @@
  	If section content hasn't been read yet, do it before looking for the
  	block size.  If no section data present, infer size of section header.
  
@@ -533,7 +533,7 @@
  ac_ct_CC = @ac_ct_CC@
 --- elfutils/src/ChangeLog
 +++ elfutils/src/ChangeLog
-@@ -97,6 +97,11 @@
+@@ -152,6 +152,11 @@
  	* readelf.c (print_debug_loc_section): Fix indentation for larger
  	address size.
  
@@ -581,10 +581,10 @@
 +	     $(if $($(*F)_no_Wunused),,-Wunused $(WEXTRA)) \
  	     $(if $($(*F)_no_Wformat),,-Wformat=2)
  
- INCLUDES = -I$(srcdir) -I$(srcdir)/../libelf -I$(srcdir)/../libebl -I$(srcdir)/../lib -I$(srcdir)/../libdw  -I..
+ INCLUDES = -I$(srcdir) -I$(srcdir)/../libelf -I$(srcdir)/../libebl \
 --- elfutils/src/Makefile.in
 +++ elfutils/src/Makefile.in
-@@ -211,6 +211,7 @@ SHELL = @SHELL@
+@@ -210,6 +210,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
@@ -592,7 +592,7 @@
  XGETTEXT = @XGETTEXT@
  YACC = @YACC@ -d
  ac_ct_CC = @ac_ct_CC@
-@@ -255,12 +256,15 @@ target_alias = @target_alias@
+@@ -254,12 +255,15 @@ target_alias = @target_alias@
  @MUDFLAP_FALSE@AM_CFLAGS = -Wall -Wshadow -std=gnu99 \
  @MUDFLAP_FALSE@	$(native_ld_cflags) $(if \
  @MUDFLAP_FALSE@	$($(*F)_no_Werror),,-Werror) $(if \
@@ -610,8 +610,8 @@
 -@MUDFLAP_TRUE@	$($(*F)_no_Wunused),,-Wunused -Wextra) $(if \
 +@MUDFLAP_TRUE@	$($(*F)_no_Wunused),,-Wunused $(WEXTRA)) $(if \
  @MUDFLAP_TRUE@	$($(*F)_no_Wformat),,-Wformat=2)
- INCLUDES = -I$(srcdir) -I$(srcdir)/../libelf -I$(srcdir)/../libebl -I$(srcdir)/../lib -I$(srcdir)/../libdw  -I..
- AM_YFLAGS = -pld
+ INCLUDES = -I$(srcdir) -I$(srcdir)/../libelf -I$(srcdir)/../libebl \
+ 	   -I$(srcdir)/../libdw -I$(srcdir)/../libdwfl \
 --- elfutils/src/strip.c
 +++ elfutils/src/strip.c
 @@ -40,6 +40,12 @@
@@ -627,7 +627,7 @@
  
  /* Name and version of program.  */
  static void print_version (FILE *stream, struct argp_state *state);
-@@ -269,8 +275,18 @@ process_file (const char *fname)
+@@ -288,8 +294,18 @@ process_file (const char *fname)
  
        /* If we have to preserve the timestamp, we need it in the
  	 format utimes() understands.  */
@@ -646,7 +646,7 @@
      }
  
    /* Open the file.  */
-@@ -1678,7 +1694,7 @@ handle_elf (int fd, Elf *elf, const char
+@@ -1679,7 +1695,7 @@ handle_elf (int fd, Elf *elf, const char
    /* If requested, preserve the timestamp.  */
    if (tvp != NULL)
      {
@@ -655,7 +655,7 @@
  	{
  	  error (0, errno, gettext ("\
  cannot set access and modification date of '%s'"),
-@@ -1735,7 +1751,7 @@ handle_ar (int fd, Elf *elf, const char 
+@@ -1736,7 +1752,7 @@ handle_ar (int fd, Elf *elf, const char 
  
    if (tvp != NULL)
      {
@@ -666,7 +666,7 @@
  cannot set access and modification date of '%s'"), fname);
 --- elfutils/tests/ChangeLog
 +++ elfutils/tests/ChangeLog
-@@ -41,6 +41,11 @@
+@@ -45,6 +45,11 @@
  	* Makefile.am (TESTS): Add run-elflint-test.sh.
  	(EXTRA_DIST): Add run-elflint-test.sh and testfile18.bz2.
  
