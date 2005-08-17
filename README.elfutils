@@ -55,7 +55,8 @@ available here has to be applied before you can compile on an older system:
 	tar xzf elfutils-VERSION.tar.gz
 	patch -p1 -d elfutils-VERSION < elfutils-portability.patch
 	cd elfutils-VERSION
-	./configure && make && make check && make install
+	./configure --program-prefix=eu-devel-
+	make && make check && make install
 
 (That of course installs things under /usr/local, unlike the RPMs.)
 
