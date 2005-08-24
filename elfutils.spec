@@ -1,5 +1,5 @@
-%define version 0.113
-%define release 2
+%define version 0.114
+%define release 1
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -187,6 +187,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_bindir}/eu-elflint
 %{_bindir}/eu-findtextrel
 %{_bindir}/eu-nm
+%{_bindir}/eu-ranlib
 %{_bindir}/eu-readelf
 %{_bindir}/eu-size
 %{_bindir}/eu-strip
@@ -234,6 +235,12 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Wed Aug 24 2005 Roland McGrath <roland@redhat.com> - 0.114-1
+- update to 0.114
+  - new program eu-ranlib
+  - libdw: new calls for inlines
+  - libdwfl: new calls for offline modules
+
 * Sat Aug 13 2005 Roland McGrath <roland@redhat.com> - 0.113-2
 - update to 0.113
   - elflint: relax a bit.  Allow version definitions for defined symbols
