@@ -24,7 +24,7 @@ License: OSL
 Group: Development/Tools
 Source: elfutils-%{version}.tar.gz
 Patch1: elfutils-portability.patch
-Patch2: elfutils-0.112-robustify.patch
+Patch2: elfutils-robustify.patch
 Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
 Requires: elfutils-libs = %{version}-%{release}
