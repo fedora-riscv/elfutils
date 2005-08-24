@@ -1,5 +1,5 @@
 # Makefile for source rpm: elfutils
-# $Id: Makefile,v 1.9 2005/07/29 20:24:01 roland Exp $
+# $Id: Makefile,v 1.10 2005/08/10 07:15:24 roland Exp $
 NAME := elfutils
 SPECFILE = elfutils.spec
 
@@ -51,7 +51,7 @@ RSYNC = RSYNC_RSH=ssh rsync
 
 systemtap-dist: $(beehive-dep) $(dist-files)
 	@mkdir -p $@
-	$(RSYNC) -a --delete --progress $(rsync-files) systemtap-dist/
+	$(RSYNC) -a --delete --progress -v $(rsync-files) systemtap-dist/
 	ln $(dist-files) systemtap-dist/
 
 systemtap-dist-createrepo: systemtap-dist
@@ -60,4 +60,4 @@ ifneq ($(wildcard /usr/bin/createrepo),)
 endif
 
 systemtap-sync: systemtap-dist-createrepo
-	$(RSYNC) -az --delete --progress systemtap-dist/ $(rsync-to)
+	$(RSYNC) -az --delete --progress -v systemtap-dist/ $(rsync-to)
