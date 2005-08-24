@@ -30,7 +30,7 @@
  ac_ct_CC = @ac_ct_CC@
 --- elfutils/configure
 +++ elfutils/configure
-@@ -276,7 +276,7 @@ PACKAGE_STRING='Red Hat elfutils 0.113'
+@@ -276,7 +276,7 @@ PACKAGE_STRING='Red Hat elfutils 0.114'
  PACKAGE_BUGREPORT='http://bugzilla.redhat.com/bugzilla/'
  
  ac_unique_file="libelf/libelf.h"
@@ -274,7 +274,7 @@
  libcpu_i386_a_SOURCES = i386_dis.c
 --- elfutils/libdw/ChangeLog
 +++ elfutils/libdw/ChangeLog
-@@ -78,6 +78,11 @@
+@@ -112,6 +112,11 @@
  
  2005-05-31  Roland McGrath  <roland@redhat.com>
  
@@ -305,7 +305,7 @@
  
 --- elfutils/libdw/Makefile.in
 +++ elfutils/libdw/Makefile.in
-@@ -202,6 +202,7 @@ SHELL = @SHELL@
+@@ -204,6 +204,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = 1
@@ -313,7 +313,7 @@
  XGETTEXT = @XGETTEXT@
  YACC = @YACC@
  ac_ct_CC = @ac_ct_CC@
-@@ -244,9 +245,9 @@ sharedstatedir = @sharedstatedir@
+@@ -246,9 +247,9 @@ sharedstatedir = @sharedstatedir@
  sysconfdir = @sysconfdir@
  target_alias = @target_alias@
  @MUDFLAP_FALSE@AM_CFLAGS = -Wall -Werror -Wshadow -Wunused -Wformat=2 \
@@ -327,7 +327,7 @@
  @MUDFLAP_FALSE@noinst_LIBRARIES = libdw_pic.a
 --- elfutils/libdwfl/ChangeLog
 +++ elfutils/libdwfl/ChangeLog
-@@ -67,6 +67,11 @@
+@@ -180,6 +180,11 @@
  
  2005-07-21  Roland McGrath  <roland@redhat.com>
  
@@ -341,7 +341,7 @@
  	* test2.c (main): Check sscanf result to quiet warning.
 --- elfutils/libdwfl/Makefile.am
 +++ elfutils/libdwfl/Makefile.am
-@@ -15,16 +15,16 @@
+@@ -15,12 +15,13 @@
  ## 3001 King Ranch Road, Ukiah, CA 95482.
  ##
  DEFS = -D_GNU_SOURCE -DHAVE_CONFIG_H
@@ -356,13 +356,9 @@
  INCLUDES = -I. -I$(srcdir) -I$(srcdir)/../libelf -I$(srcdir)/../libebl \
  	   -I$(srcdir)/../libdw -I.. -I$(srcdir)/../lib
  VERSION = 1
--
- noinst_LIBRARIES = libdwfl.a
- if !MUDFLAP
- noinst_LIBRARIES += libdwfl_pic.a
 --- elfutils/libdwfl/Makefile.in
 +++ elfutils/libdwfl/Makefile.in
-@@ -159,6 +159,7 @@ SHELL = @SHELL@
+@@ -161,6 +161,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = 1
@@ -370,7 +366,7 @@
  XGETTEXT = @XGETTEXT@
  YACC = @YACC@
  ac_ct_CC = @ac_ct_CC@
-@@ -201,9 +202,9 @@ sharedstatedir = @sharedstatedir@
+@@ -203,9 +204,9 @@ sharedstatedir = @sharedstatedir@
  sysconfdir = @sysconfdir@
  target_alias = @target_alias@
  @MUDFLAP_FALSE@AM_CFLAGS = -Wall -Werror -Wshadow -Wunused -Wformat=2 \
@@ -384,7 +380,7 @@
  
 --- elfutils/libebl/ChangeLog
 +++ elfutils/libebl/ChangeLog
-@@ -142,6 +142,11 @@
+@@ -148,6 +148,11 @@
  	* Makefile.am (libebl_*_so_SOURCES): Set to $(*_SRCS) so dependency
  	tracking works right.
  
@@ -437,7 +433,7 @@
  modules = i386 sh x86_64 ia64 alpha arm sparc ppc ppc64
 --- elfutils/libelf/ChangeLog
 +++ elfutils/libelf/ChangeLog
-@@ -46,6 +46,11 @@
+@@ -62,6 +62,11 @@
  	If section content hasn't been read yet, do it before looking for the
  	block size.  If no section data present, infer size of section header.
  
@@ -479,18 +475,30 @@
  if MUDFLAP
  AM_CFLAGS = -fmudflap
  else
-@@ -24,7 +25,7 @@ endif
+@@ -24,7 +25,10 @@ endif
  if BUILD_STATIC
  AM_CFLAGS += -fpic
  endif
 -AM_CFLAGS += -Wall -Wshadow -Werror -Wunused -Wextra -Wformat=2 -std=gnu99 \
++if BUILD_STATIC
++AM_CFLAGS += -fpic
++endif
 +AM_CFLAGS += -Wall -Wshadow -Werror -Wunused $(WEXTRA) -Wformat=2 -std=gnu99 \
  	     $($(*F)_CFLAGS)
  INCLUDES = -I$(srcdir) -I$(top_srcdir)/lib -I..
  GCC_INCLUDE = -I$(shell $(CC) -print-file-name=include)
 --- elfutils/libelf/Makefile.in
 +++ elfutils/libelf/Makefile.in
-@@ -207,6 +207,7 @@ SHELL = @SHELL@
+@@ -40,7 +40,7 @@ PRE_UNINSTALL = :
+ POST_UNINSTALL = :
+ build_triplet = @build@
+ host_triplet = @host@
+-@BUILD_STATIC_TRUE@am__append_1 = -fpic
++@BUILD_STATIC_TRUE@am__append_1 = -fpic -fpic
+ @MUDFLAP_FALSE@noinst_PROGRAMS = $(am__EXEEXT_1)
+ @MUDFLAP_TRUE@am_libelf_pic_a_OBJECTS =
+ subdir = libelf
+@@ -208,6 +208,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = 1
@@ -498,7 +506,7 @@
  XGETTEXT = @XGETTEXT@
  YACC = @YACC@
  ac_ct_CC = @ac_ct_CC@
-@@ -249,10 +250,10 @@ sharedstatedir = @sharedstatedir@
+@@ -250,10 +251,10 @@ sharedstatedir = @sharedstatedir@
  sysconfdir = @sysconfdir@
  target_alias = @target_alias@
  @MUDFLAP_FALSE@AM_CFLAGS = $(am__append_1) -Wall -Wshadow -Werror \
@@ -533,7 +541,7 @@
  ac_ct_CC = @ac_ct_CC@
 --- elfutils/src/ChangeLog
 +++ elfutils/src/ChangeLog
-@@ -152,6 +152,11 @@
+@@ -179,6 +179,11 @@
  	* readelf.c (print_debug_loc_section): Fix indentation for larger
  	address size.
  
@@ -562,18 +570,15 @@
  {
 --- elfutils/src/Makefile.am
 +++ elfutils/src/Makefile.am
-@@ -14,14 +14,17 @@
+@@ -14,6 +14,7 @@
  ##
  DEFS = -D_GNU_SOURCE -DHAVE_CONFIG_H $(YYDEBUG) \
         -DSRCDIR=\"$(shell cd $(srcdir);pwd)\" -DOBJDIR=\"$(shell pwd)\"
 +WEXTRA = @WEXTRA@
  if MUDFLAP
--AM_CFLAGS = -fmudflap
-+AM_CFLAGS = -Wall -Wshadow -Wunused $(WEXTRA) -std=gnu99 -fmudflap \
-+	    $(native_ld_cflags) $(if $($(*F)_no_Wunused),,-Wunused) \
-+	    $(if $($(*F)_no_Wformat),,-Wformat=2)
+ AM_CFLAGS = -fmudflap
  else
- AM_CFLAGS =
+@@ -21,7 +22,7 @@ AM_CFLAGS =
  endif
  AM_CFLAGS += -Wall -Wshadow -std=gnu99 $(native_ld_cflags) \
  	     $(if $($(*F)_no_Werror),,-Werror) \
@@ -584,7 +589,7 @@
  INCLUDES = -I$(srcdir) -I$(srcdir)/../libelf -I$(srcdir)/../libebl \
 --- elfutils/src/Makefile.in
 +++ elfutils/src/Makefile.in
-@@ -210,6 +210,7 @@ SHELL = @SHELL@
+@@ -215,6 +215,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
@@ -592,20 +597,15 @@
  XGETTEXT = @XGETTEXT@
  YACC = @YACC@ -d
  ac_ct_CC = @ac_ct_CC@
-@@ -254,12 +255,15 @@ target_alias = @target_alias@
+@@ -259,12 +260,12 @@ target_alias = @target_alias@
  @MUDFLAP_FALSE@AM_CFLAGS = -Wall -Wshadow -std=gnu99 \
  @MUDFLAP_FALSE@	$(native_ld_cflags) $(if \
  @MUDFLAP_FALSE@	$($(*F)_no_Werror),,-Werror) $(if \
 -@MUDFLAP_FALSE@	$($(*F)_no_Wunused),,-Wunused -Wextra) $(if \
 +@MUDFLAP_FALSE@	$($(*F)_no_Wunused),,-Wunused $(WEXTRA)) $(if \
  @MUDFLAP_FALSE@	$($(*F)_no_Wformat),,-Wformat=2)
--@MUDFLAP_TRUE@AM_CFLAGS = -fmudflap -Wall -Wshadow -std=gnu99 \
--@MUDFLAP_TRUE@	$(native_ld_cflags) $(if \
-+@MUDFLAP_TRUE@AM_CFLAGS = -Wall -Wshadow -Wunused $(WEXTRA) -std=gnu99 \
-+@MUDFLAP_TRUE@	-fmudflap $(native_ld_cflags) $(if \
-+@MUDFLAP_TRUE@	$($(*F)_no_Wunused),,-Wunused) $(if \
-+@MUDFLAP_TRUE@	$($(*F)_no_Wformat),,-Wformat=2) -Wall -Wshadow \
-+@MUDFLAP_TRUE@	-std=gnu99 $(native_ld_cflags) $(if \
+ @MUDFLAP_TRUE@AM_CFLAGS = -fmudflap -Wall -Wshadow -std=gnu99 \
+ @MUDFLAP_TRUE@	$(native_ld_cflags) $(if \
  @MUDFLAP_TRUE@	$($(*F)_no_Werror),,-Werror) $(if \
 -@MUDFLAP_TRUE@	$($(*F)_no_Wunused),,-Wunused -Wextra) $(if \
 +@MUDFLAP_TRUE@	$($(*F)_no_Wunused),,-Wunused $(WEXTRA)) $(if \
@@ -666,7 +666,7 @@
  cannot set access and modification date of '%s'"), fname);
 --- elfutils/tests/ChangeLog
 +++ elfutils/tests/ChangeLog
-@@ -45,6 +45,11 @@
+@@ -86,6 +86,11 @@
  	* Makefile.am (TESTS): Add run-elflint-test.sh.
  	(EXTRA_DIST): Add run-elflint-test.sh and testfile18.bz2.
  
@@ -680,7 +680,7 @@
  	* get-files.c (main): Use correct format specifier.
 --- elfutils/tests/Makefile.am
 +++ elfutils/tests/Makefile.am
-@@ -13,11 +13,12 @@
+@@ -13,12 +13,13 @@
  ## 3001 King Ranch Road, Ukiah, CA 95482.
  ##
  DEFS = -DHAVE_CONFIG_H -D_GNU_SOURCE
@@ -689,6 +689,7 @@
 -AM_CFLAGS = -Wall -Werror -Wextra -std=gnu99 -fmudflap\
 +AM_CFLAGS = -Wall -Werror $(WEXTRA) -std=gnu99 -fmudflap\
  	    $(if $($(*F)_no_Wformat),-Wno-format,-Wformat=2)
+ AM_LDFLAGS = -Wl,-rpath,\$$ORIGIN/../libebl
  else
 -AM_CFLAGS = -Wall -Werror -Wextra -std=gnu99 \
 +AM_CFLAGS = -Wall -Werror $(WEXTRA) -std=gnu99 \
@@ -697,7 +698,7 @@
  endif
 --- elfutils/tests/Makefile.in
 +++ elfutils/tests/Makefile.in
-@@ -276,6 +276,7 @@ SHELL = @SHELL@
+@@ -280,6 +280,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
@@ -705,7 +706,7 @@
  XGETTEXT = @XGETTEXT@
  YACC = @YACC@
  ac_ct_CC = @ac_ct_CC@
-@@ -317,10 +318,10 @@ sbindir = @sbindir@
+@@ -321,10 +322,10 @@ sbindir = @sbindir@
  sharedstatedir = @sharedstatedir@
  sysconfdir = @sysconfdir@
  target_alias = @target_alias@
