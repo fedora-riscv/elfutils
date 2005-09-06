@@ -1,5 +1,5 @@
 %define version 0.115
-%define release 1
+%define release 2
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -236,7 +236,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
-* Mon Sep  5 2005 Roland McGrath <roland@redhat.com> - 0.115-1
+* Mon Sep  5 2005 Roland McGrath <roland@redhat.com> - 0.115-2
 - update to 0.115
   - New program eu-strings.
   - libdw: New function dwarf_getscopes_die.
