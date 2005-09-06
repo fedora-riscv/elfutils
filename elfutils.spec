@@ -1,4 +1,4 @@
-%define version 0.114
+%define version 0.115
 %define release 1
 
 %define gpl 0
@@ -190,6 +190,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_bindir}/eu-ranlib
 %{_bindir}/eu-readelf
 %{_bindir}/eu-size
+%{_bindir}/eu-strings
 %{_bindir}/eu-strip
 %if !%{gpl}
 #%{_bindir}/eu-ld
@@ -235,6 +236,13 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Mon Sep  5 2005 Roland McGrath <roland@redhat.com> - 0.115-1
+- update to 0.115
+  - New program eu-strings.
+  - libdw: New function dwarf_getscopes_die.
+  - libelf: speed-ups of non-mmap reading.
+  - Implement --enable-gcov option for configure.
+
 * Wed Aug 24 2005 Roland McGrath <roland@redhat.com> - 0.114-1
 - update to 0.114
   - new program eu-ranlib
