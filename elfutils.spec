@@ -1,5 +1,5 @@
 %define version 0.115
-%define release 2
+%define release 3
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -56,12 +56,17 @@ section sizes of an object or archive file), strip (for discarding
 symbols), readelf (to see the raw ELF file structures), and elflint
 (to check for well-formed ELF files).
 
+
 %if !%{gpl}
 %package libs
 Summary: Libraries to handle compiled objects.
 Group: Development/Tools
 License: OSL
 Requires: elfutils-libelf = %{version}-%{release}
+Conflicts: elfutils < %{version}-%{release}
+Conflicts: elfutils > %{version}-%{release}
+Conflicts: elfutils-devel < %{version}-%{release}
+Conflicts: elfutils-devel > %{version}-%{release}
 
 %description libs
 The elfutils-libs package contains libraries which implement DWARF, ELF,
@@ -94,6 +99,12 @@ Group: Development/Tools
 %if %{gpl}
 License: GPL
 %endif
+Conflicts: elfutils < %{version}-%{release}
+Conflicts: elfutils > %{version}-%{release}
+Conflicts: elfutils-libs < %{version}-%{release}
+Conflicts: elfutils-libs > %{version}-%{release}
+Conflicts: elfutils-libelf-devel < %{version}-%{release}
+Conflicts: elfutils-libelf-devel > %{version}-%{release}
 
 %description libelf
 The elfutils-libelf package provides a DSO which allows reading and
@@ -236,6 +247,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Fri Sep  9 2005 Roland McGrath <roland@redhat.com> - 0.115-3
+- Update requires/conflicts for better biarch update behavior.
+
 * Mon Sep  5 2005 Roland McGrath <roland@redhat.com> - 0.115-2
 - update to 0.115
   - New program eu-strings.
