@@ -147,7 +147,7 @@ find . \( -name configure -o -name config.h.in \) -print | xargs touch
 RPM_OPT_FLAGS=${RPM_OPT_FLAGS/-Wall/}
 
 %configure CFLAGS="$RPM_OPT_FLAGS"
-make
+make %{?_smp_mflags}
 
 %install
 rm -rf ${RPM_BUILD_ROOT}
