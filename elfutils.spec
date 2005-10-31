@@ -1,5 +1,5 @@
-%define version 0.115
-%define release 3
+%define version 0.116
+%define release 1
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -247,6 +247,12 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Mon Oct 31 2005 Roland McGrath <roland@redhat.com> - 0.116-1
+- update to 0.116
+  - libdw fixes, API changes and additions
+  - libdwfl fixes (#169672)
+  - eu-strip/libelf fix to preserve setuid/setgid permission bits (#167745)
+
 * Fri Sep  9 2005 Roland McGrath <roland@redhat.com> - 0.115-3
 - Update requires/conflicts for better biarch update behavior.
 
