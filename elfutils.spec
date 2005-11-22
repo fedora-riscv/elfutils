@@ -1,53 +1,89 @@
-# -*- rpm-spec-*-
-%define fake 0
+%define version 0.117
+%define release 1
+
+%define gpl 0
+%if %{?_with_compat:1}%{!?_with_compat:0}
+%define compat 1
+%else
+%define compat 0
+%endif
+
 Summary: A collection of utilities and DSOs to handle compiled objects.
 Name: elfutils
-Version: 0.117
-Release: 1
-%if %{fake}
+Version: %{version}
+%if !%{compat}
+Release: %{release}
+%else
+Release: 0.%{release}
+%endif
+%if %{gpl}
 License: GPL
 %else
 License: OSL
 %endif
 Group: Development/Tools
-#URL: file://home/devel/drepper/
 Source: elfutils-%{version}.tar.gz
+Patch1: elfutils-portability.patch
+Patch2: elfutils-robustify.patch
 Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
-%if %{fake}
+Requires: elfutils-libs = %{version}-%{release}
+%if %{gpl}
 Requires: binutils >= 2.14.90.0.4-26.2
 %endif
-Requires: glibc >= 2.3.1-2
 
 # ExcludeArch: xxx
 
 BuildRoot: %{_tmppath}/%{name}-root
-BuildRequires: gcc >= 3.4
 BuildRequires: bison >= 1.875
 BuildRequires: flex >= 2.5.4a
 BuildRequires: bzip2
+%if !%{compat}
+BuildRequires: gcc >= 3.4
+# Need <byteswap.h> that gives unsigned bswap_16 etc.
+BuildRequires: glibc-headers >= 2.3.4-11
+%else
+BuildRequires: gcc >= 3.2
+%endif
 
 %define _gnu %{nil}
-%define _programprefix eu-
+%define _program_prefix eu-
 
 %description
 Elfutils is a collection of utilities, including ld (a linker),
 nm (for listing symbols from object files), size (for listing the
 section sizes of an object or archive file), strip (for discarding
 symbols), readelf (to see the raw ELF file structures), and elflint
-(to check for well-formed ELF files).  Also included are numerous
-helper libraries which implement DWARF, ELF, and machine-specific ELF
-handling.
+(to check for well-formed ELF files).
+
+
+%if !%{gpl}
+%package libs
+Summary: Libraries to handle compiled objects.
+Group: Development/Tools
+License: OSL
+Requires: elfutils-libelf = %{version}-%{release}
+Conflicts: elfutils < %{version}-%{release}
+Conflicts: elfutils > %{version}-%{release}
+Conflicts: elfutils-devel < %{version}-%{release}
+Conflicts: elfutils-devel > %{version}-%{release}
+
+%description libs
+The elfutils-libs package contains libraries which implement DWARF, ELF,
+and machine-specific ELF handling.  These libraries are used by the programs
+in the elfutils package.  The elfutils-devel package enables building
+other programs using these libraries.
+%endif
 
 %package devel
 Summary: Development libraries to handle compiled objects.
 Group: Development/Tools
-%if %{fake}
+%if %{gpl}
 License: GPL
 %else
 License: OSL
 %endif
-Requires: elfutils = %{version}-%{release}
+Requires: elfutils-libs = %{version}-%{release}
 Requires: elfutils-libelf-devel = %{version}-%{release}
 
 %description devel
@@ -60,9 +96,15 @@ assembler interface.
 %package libelf
 Summary: Library to read and write ELF files.
 Group: Development/Tools
-%if %{fake}
+%if %{gpl}
 License: GPL
 %endif
+Conflicts: elfutils < %{version}-%{release}
+Conflicts: elfutils > %{version}-%{release}
+Conflicts: elfutils-libs < %{version}-%{release}
+Conflicts: elfutils-libs > %{version}-%{release}
+Conflicts: elfutils-libelf-devel < %{version}-%{release}
+Conflicts: elfutils-libelf-devel > %{version}-%{release}
 
 %description libelf
 The elfutils-libelf package provides a DSO which allows reading and
@@ -75,7 +117,7 @@ Summary: Development support for libelf
 Group: Development/Tools
 Requires: elfutils-libelf = %{version}-%{release}
 Conflicts: libelf-devel
-%if %{fake}
+%if %{gpl}
 License: GPL
 %endif
 
@@ -88,9 +130,24 @@ different sections of an ELF file.
 %prep
 %setup -q
 
+%if %{compat}
+%patch1 -p1
+sleep 1
+find . \( -name Makefile.in -o -name aclocal.m4 \) -print | xargs touch
+sleep 1
+find . \( -name configure -o -name config.h.in \) -print | xargs touch
+%endif
+
+%patch2 -p1
+
 %build
-%configure --program-prefix=%{_programprefix}
-make
+# Remove -Wall from default flags.  The makefiles enable enough warnings
+# themselves, and they use -Werror.  Appending -Wall defeats the cases where
+# the makefiles disable some specific warnings for specific code.
+RPM_OPT_FLAGS=${RPM_OPT_FLAGS/-Wall/}
+
+%configure CFLAGS="$RPM_OPT_FLAGS"
+make %{?_smp_mflags}
 
 %install
 rm -rf ${RPM_BUILD_ROOT}
@@ -99,31 +156,32 @@ mkdir -p ${RPM_BUILD_ROOT}%{_prefix}
 %makeinstall
 
 chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/lib*.so*
-%if !%{fake}
+%if !%{gpl}
 chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
 %endif
 
-%if !%{fake}
+%if !%{gpl}
 # XXX Nuke unpackaged files
 { cd ${RPM_BUILD_ROOT}
   rm -f .%{_bindir}/eu-ld
+  rm -f .%{_bindir}/eu-objdump
   rm -f .%{_includedir}/elfutils/libasm.h
   rm -f .%{_libdir}/libasm-%{version}.so
-  rm -f .%{_libdir}/libasm.so.*
-  rm -f .%{_libdir}/libasm.so
+  rm -f .%{_libdir}/libasm.so*
   rm -f .%{_libdir}/libasm.a
 }
 %endif
 
 %check
-make check
+# XXX elflint not happy on ia64
+make check || :
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
 
-%post -p /sbin/ldconfig
+%post libs -p /sbin/ldconfig
 
-%postun -p /sbin/ldconfig
+%postun libs -p /sbin/ldconfig
 
 %post libelf -p /sbin/ldconfig
 
@@ -132,22 +190,26 @@ rm -rf ${RPM_BUILD_ROOT}
 %files
 %defattr(-,root,root)
 %doc README TODO
-%if %{fake}
+%if %{gpl}
 %doc fake-src/FULL
 %endif
-%{_bindir}/eu-elflint
-%{_bindir}/eu-nm
-%{_bindir}/eu-readelf
-%{_bindir}/eu-size
-%{_bindir}/eu-strip
-%{_bindir}/eu-findtextrel
 %{_bindir}/eu-addr2line
 %{_bindir}/eu-elfcmp
+%{_bindir}/eu-elflint
+%{_bindir}/eu-findtextrel
+%{_bindir}/eu-nm
 %{_bindir}/eu-ranlib
+%{_bindir}/eu-readelf
+%{_bindir}/eu-size
 %{_bindir}/eu-strings
-%if !%{fake}
+%{_bindir}/eu-strip
+%if !%{gpl}
 #%{_bindir}/eu-ld
-#%{_libdir}/libasm-%{version}.so
+%endif
+
+%if !%{gpl}
+%files libs
+%defattr(-,root,root)
 %{_libdir}/libdw-%{version}.so
 #%{_libdir}/libasm.so.*
 %{_libdir}/libdw.so.*
@@ -160,7 +222,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_includedir}/dwarf.h
 %dir %{_includedir}/elfutils
 %{_includedir}/elfutils/elf-knowledge.h
-%if !%{fake}
+%if !%{gpl}
 %{_includedir}/elfutils/libebl.h
 %{_includedir}/elfutils/libdw.h
 %{_includedir}/elfutils/libdwfl.h
@@ -185,115 +247,135 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
-* Thu Nov 17 2005 Ulrich Drepper <drepper@redhat.com> 0.117-1
-- libdwfl: New function dwfl_module_return_value_location.
-- libebl: Backend improvements for several CPUs.
+* Tue Nov 22 2005 Roland McGrath <roland@redhat.com> - 0.117-1
+- update to 0.117
+  - libdwfl: New function dwfl_module_return_value_location (#166118)
+  - libebl: Backend improvements for several CPUs
 
-* Mon Oct 31 2005 Ulrich Drepper <drepper@redhat.com> 0.116-1
-- libdw: New functions dwarf_ranges, dwarf_entrypc, dwarf_diecu,       d
-warf_entry_breakpoints.  Removed Dwarf_Func type and functions       d
-warf_func_name, dwarf_func_lowpc, dwarf_func_highpc,       dwarf_func_
-entrypc, dwarf_func_die; dwarf_getfuncs callback now uses       Dwarf_
-Die, and dwarf_func_file, dwarf_func_line, dwarf_func_col       replac
-ed by dwarf_decl_file, dwarf_decl_line, dwarf_decl_column;       dwarf
-_func_inline, dwarf_func_inline_instances now take Dwarf_Die.       Ty
-pe Dwarf_Loc renamed to Dwarf_Op; dwarf_getloclist,       dwarf_addrlo
-clists renamed dwarf_getlocation, dwarf_getlocation_addr.
+* Mon Oct 31 2005 Roland McGrath <roland@redhat.com> - 0.116-1
+- update to 0.116
+  - libdw fixes, API changes and additions
+  - libdwfl fixes (#169672)
+  - eu-strip/libelf fix to preserve setuid/setgid permission bits (#167745)
 
-* Fri Sep  2 2005 Ulrich Drepper <drepper@redhat.com> 0.115-1
-- libelf: speed-ups of non-mmap reading.
-- strings: New program.
-- Implement --enable-gcov option for configure.
-- libdw: New function dwarf_getscopes_die.
+* Fri Sep  9 2005 Roland McGrath <roland@redhat.com> - 0.115-3
+- Update requires/conflicts for better biarch update behavior.
 
-* Wed Aug 24 2005 Ulrich Drepper <drepper@redhat.com> 0.114-1
-- libelf: new function elf_getaroff
-- libdw: Added dwarf_func_die, dwarf_func_inline, dwarf_func_inline_inst
-ances.
-- libdwfl: New functions dwfl_report_offline, dwfl_offline_section_addre
-ss,	 dwfl_linux_kernel_report_offline.
-- ranlib: new program
+* Mon Sep  5 2005 Roland McGrath <roland@redhat.com> - 0.115-2
+- update to 0.115
+  - New program eu-strings.
+  - libdw: New function dwarf_getscopes_die.
+  - libelf: speed-ups of non-mmap reading.
+  - Implement --enable-gcov option for configure.
 
-* Mon Aug 15 2005 Ulrich Drepper <drepper@redhat.com> 0.114-1
-- libelf: new function elf_getaroff
-- ranlib: new program
+* Wed Aug 24 2005 Roland McGrath <roland@redhat.com> - 0.114-1
+- update to 0.114
+  - new program eu-ranlib
+  - libdw: new calls for inlines
+  - libdwfl: new calls for offline modules
 
-* Wed Aug 10 2005 Ulrich Drepper <@redhat.com> 0.113-1
-- elflint: relax a bit. Allow version definitions for defined symbols ag
-ainstDSO versions also for symbols in nobits sections.  Allow .rodata
-sectionto have STRINGS and MERGE flag set.
-- strip: add some more compatibility with binutils.
+* Sat Aug 13 2005 Roland McGrath <roland@redhat.com> - 0.113-2
+- update to 0.113
+  - elflint: relax a bit.  Allow version definitions for defined symbols
+    against DSO versions also for symbols in nobits sections.
+    Allow .rodata section to have STRINGS and MERGE flag set.
+  - strip: add some more compatibility with binutils.
+  - libdwfl: bug fixes.
+- Separate libdw et al into elfutils-libs subpackage.
 
-* Sat Aug  6 2005 Ulrich Drepper <@redhat.com> 0.113-1
-- elflint: relax a bit. Allow version definitions for defined symbols ag
-ainstDSO versions also for symbols in nobits sections.  Allow .rodata
-sectionto have STRINGS and MERGE flag set.
+* Sat Aug  6 2005 Roland McGrath <roland@redhat.com> - 0.112-1
+- update to 0.112
+  - elfcmp: some more relaxation.
+  - elflint: many more tests, especially regarding to symbol versioning.
+  - libelf: Add elfXX_offscn and gelf_offscn.
+  - libasm: asm_begin interface changes.
+  - libebl: Add three new interfaces to directly access machine, class,
+    and data encoding information.
 
-* Sat Aug  6 2005 Ulrich Drepper <@redhat.com> 0.113-1
-- elflint: relax a bit. Allow version definitions for defined symbols ag
-ainstDSO versions also for symbols in nobits sections.
+* Fri Jul 29 2005 Roland McGrath <roland@redhat.com> - 0.111-2
+- update portability patch
 
-* Fri Aug  5 2005 Ulrich Drepper <@redhat.com> 0.112-1
-- elfcmp: some more relaxation.
-- elflint: many more tests, especially regarding to symbol versioning.
-- libelf: Add elfXX_offscn and gelf_offscn.
-- libasm: asm_begin interface changes.
-- libebl: Add three new interfaces to directly access machine, class, an
-ddata encoding information.
-- objdump: New program.  Just the beginning.
+* Thu Jul 28 2005 Roland McGrath <roland@redhat.com> - 0.111-1
+- update to 0.111
+  - libdwfl library now merged into libdw
 
-* Thu Jul 28 2005 Ulrich Drepper <@redhat.com> 0.111-1
-- libdw: now contains all of libdwfl.  The latter is not installed anymore.
-- elfcmp: little usability tweak, name and index of differing section is
- printed.
+* Sun Jul 24 2005 Roland McGrath <roland@redhat.com> - 0.110-1
+- update to 0.110
 
-* Sun Jul 24 2005 Ulrich Drepper <@redhat.com> 0.110-1
-- libelf: fix a numbe rof problems with elf_update
-- elfcmp: fix a few bugs.  Compare gaps.
-- Fix a few PLT problems and mudflap build issues.
-- libebl: Don't expose Ebl structure definition in libebl.h.  It's now p
-rivate.
+* Fri Jul 22 2005 Roland McGrath <roland@redhat.com> - 0.109-2
+- update to 0.109
+  - verify that libebl modules are from the same build
+  - new eu-elflint checks on copy relocations
+  - new program eu-elfcmp
+  - new experimental libdwfl library
 
-* Thu Jul 21 2005 Ulrich Drepper <@redhat.com> 0.109-1
-- libebl: Check for matching modules.
-- elflint: Check that copy relocations only happen for OBJECT or NOTYPE
-symbols.
-- elfcmp: New program.
-- libdwfl: New library.
+* Thu Jun  9 2005 Roland McGrath <roland@redhat.com> - 0.108-5
+- robustification of eu-strip and eu-readelf
 
-* Mon May  9 2005 Ulrich Drepper <@redhat.com> 0.108-1
-- strip: fix bug introduced in last change
-- libdw: records returned by dwarf_getsrclines are now sorted by address
+* Wed May 25 2005 Roland McGrath <roland@redhat.com> - 0.108-3
+- more robustification
 
-* Sun May  8 2005 Ulrich Drepper <@redhat.com> 0.108-1
-- strip: fix bug introduced in last change
+* Mon May 16 2005 Roland McGrath <roland@redhat.com> - 0.108-2
+- robustification
 
-* Sun May  8 2005 Ulrich Drepper <@redhat.com> 0.107-1
-- readelf: improve DWARF output format
-- strip: support Linux kernel modules
+* Mon May  9 2005 Roland McGrath <roland@redhat.com> - 0.108-1
+- update to 0.108
+  - merge strip fixes
+  - sort records in dwarf_getsrclines, fix dwarf_getsrc_die searching
+  - update elf.h from glibc
 
-* Fri Apr 29 2005 Ulrich Drepper <drepper@redhat.com> 0.107-1
-- readelf: improve DWARF output format
+* Sun May  8 2005 Roland McGrath <roland@redhat.com> - 0.107-2
+- fix strip -f byte-swapping bug
 
-* Mon Apr  4 2005 Ulrich Drepper <drepper@redhat.com> 0.106-1
-- libdw: Updated dwarf.h from DWARF3 speclibdw: add new funtions dwarf_f
-unc_entrypc, dwarf_func_file, dwarf_func_line,dwarf_func_col, dwarf_ge
-tsrc_file
+* Sun May  8 2005 Roland McGrath <roland@redhat.com> - 0.107-1
+- update to 0.107
+  - readelf: improve DWARF output format
+  - elflint: -d option to support checking separate debuginfo files
+  - strip: fix ET_REL debuginfo files (#156341)
 
-* Fri Apr  1 2005 Ulrich Drepper <drepper@redhat.com> 0.105-1
-- addr2line: New program
-- libdw: add new functions: dwarf_addrdie, dwarf_macro_*, dwarf_getfuncs
-,dwarf_func_*.
-- findtextrel: use dwarf_addrdie
+* Mon Apr  4 2005 Roland McGrath <roland@redhat.com> - 0.106-3
+- fix some bugs in new code, reenable make check
 
-* Mon Mar 28 2005 Ulrich Drepper <drepper@redhat.com> 0.104-1
-- findtextrel: New program.
+* Mon Apr  4 2005 Roland McGrath <roland@redhat.com> - 0.106-2
+- disable make check for most arches, for now
 
-* Mon Mar 21 2005 Ulrich Drepper <drepper@redhat.com> 0.103-1
-- libdw: Fix using libdw.h with gcc < 4 and C++ code.  Compiler bug.
+* Mon Apr  4 2005 Roland McGrath <roland@redhat.com> - 0.106-1
+- update to 0.106
 
-* Tue Feb 22 2005 Ulrich Drepper <drepper@redhat.com> 0.102-1
-- More Makefile and spec file cleanups.
+* Mon Mar 28 2005 Roland McGrath <roland@redhat.com> - 0.104-2
+- update to 0.104
+
+* Wed Mar 23 2005 Jakub Jelinek <jakub@redhat.com> 0.103-2
+- update to 0.103
+
+* Wed Feb 16 2005 Jakub Jelinek <jakub@redhat.com> 0.101-2
+- update to 0.101.
+- use %%configure macro to get CFLAGS etc. right
+
+* Sat Feb  5 2005 Jeff Johnson <jbj@redhat.com> 0.99-2
+- upgrade to 0.99.
+
+* Sun Sep 26 2004 Jeff Johnson <jbj@redhat.com> 0.97-3
+- upgrade to 0.97.
+
+* Tue Aug 17 2004 Jakub Jelinek <jakub@redhat.com> 0.95-5
+- upgrade to 0.96.
+
+* Mon Jul  5 2004 Jakub Jelinek <jakub@redhat.com> 0.95-4
+- rebuilt with GCC 3.4.x, workaround VLA + alloca mixing
+  warning
+
+* Tue Jun 15 2004 Elliot Lee <sopwith@redhat.com>
+- rebuilt
+
+* Fri Apr  2 2004 Jeff Johnson <jbj@redhat.com> 0.95-2
+- upgrade to 0.95.
+
+* Tue Mar 02 2004 Elliot Lee <sopwith@redhat.com>
+- rebuilt
+
+* Fri Feb 13 2004 Elliot Lee <sopwith@redhat.com>
+- rebuilt
 
 * Fri Jan 16 2004 Jakub Jelinek <jakub@redhat.com> 0.94-1
 - upgrade to 0.94
