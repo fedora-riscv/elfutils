@@ -1,5 +1,5 @@
 %define version 0.117
-%define release 1
+%define release 2
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -247,7 +247,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
-* Tue Nov 22 2005 Roland McGrath <roland@redhat.com> - 0.117-1
+* Tue Nov 22 2005 Roland McGrath <roland@redhat.com> - 0.117-2
 - update to 0.117
   - libdwfl: New function dwfl_module_return_value_location (#166118)
   - libebl: Backend improvements for several CPUs
