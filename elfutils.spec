@@ -1,5 +1,5 @@
-%define version 0.117
-%define release 2
+%define version 0.118
+%define release 1
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -146,7 +146,7 @@ find . \( -name configure -o -name config.h.in \) -print | xargs touch
 # the makefiles disable some specific warnings for specific code.
 RPM_OPT_FLAGS=${RPM_OPT_FLAGS/-Wall/}
 
-%configure CFLAGS="$RPM_OPT_FLAGS"
+%configure CFLAGS="$RPM_OPT_FLAGS -fexceptions"
 make %{?_smp_mflags}
 
 %install
@@ -247,6 +247,13 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Sun Nov 27 2005 Roland McGrath <roland@redhat.com> - 0.118-1
+- update to 0.118
+  - elflint: more tests.
+  - libdwfl: New function dwfl_module_register_names.
+  - libebl: New backend hook for register names.
+- Make sure -fexceptions is always in CFLAGS.
+
 * Tue Nov 22 2005 Roland McGrath <roland@redhat.com> - 0.117-2
 - update to 0.117
   - libdwfl: New function dwfl_module_return_value_location (#166118)

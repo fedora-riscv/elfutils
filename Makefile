@@ -1,5 +1,5 @@
 # Makefile for source rpm: elfutils
-# $Id: Makefile,v 1.10 2005/08/10 07:15:24 roland Exp $
+# $Id: Makefile,v 1.11 2005/08/24 22:25:46 roland Exp $
 NAME := elfutils
 SPECFILE = elfutils.spec
 
@@ -25,6 +25,8 @@ portable-vr = $(VERSION)-0.$(RELEASE)
 portable.srpm = elfutils-$(portable-vr).src.rpm
 $(portable.srpm): elfutils-portable.spec elfutils-portability.patch sources
 	$(RPM_WITH_DIRS) --nodeps -bs $<
+
+portable-srpm: $(portable.srpm)
 
 portable-dist = 3.0E-scratch
 portable-beehive = $(redhat)/dist/$(portable-dist)/elfutils/$(portable-vr)
