@@ -26,6 +26,8 @@ portable.srpm = elfutils-$(portable-vr).src.rpm
 $(portable.srpm): elfutils-portable.spec elfutils-portability.patch sources
 	$(RPM_WITH_DIRS) --nodeps -bs $<
 
+portable-srpm: $(portable.srpm)
+
 portable-dist = 3.0E-scratch
 portable-beehive = $(redhat)/dist/$(portable-dist)/elfutils/$(portable-vr)
 
