@@ -23,7 +23,8 @@ elfutils-portable.spec: elfutils.spec
 
 portable-vr = $(VERSION)-0.$(RELEASE)
 portable.srpm = elfutils-$(portable-vr).src.rpm
-$(portable.srpm): elfutils-portable.spec elfutils-portability.patch sources
+$(portable.srpm): elfutils-portable.spec elfutils-portability.patch \
+		  elfutils-$(VERSION).tar.gz
 	$(RPM_WITH_DIRS) --nodeps -bs $<
 
 portable-srpm: $(portable.srpm)
