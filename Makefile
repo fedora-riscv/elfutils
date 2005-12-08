@@ -1,5 +1,5 @@
 # Makefile for source rpm: elfutils
-# $Id: Makefile,v 1.11 2005/08/24 22:25:46 roland Exp $
+# $Id: Makefile,v 1.12 2005/12/07 20:11:06 roland Exp $
 NAME := elfutils
 SPECFILE = elfutils.spec
 
@@ -23,7 +23,8 @@ elfutils-portable.spec: elfutils.spec
 
 portable-vr = $(VERSION)-0.$(RELEASE)
 portable.srpm = elfutils-$(portable-vr).src.rpm
-$(portable.srpm): elfutils-portable.spec elfutils-portability.patch sources
+$(portable.srpm): elfutils-portable.spec elfutils-portability.patch \
+		  elfutils-$(VERSION).tar.gz
 	$(RPM_WITH_DIRS) --nodeps -bs $<
 
 portable-srpm: $(portable.srpm)
