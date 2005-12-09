@@ -1,5 +1,5 @@
 %define version 0.118
-%define release 1
+%define release 1.1
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -12,9 +12,9 @@ Summary: A collection of utilities and DSOs to handle compiled objects.
 Name: elfutils
 Version: %{version}
 %if !%{compat}
-Release: %{release}
+Release: %{release}.1
 %else
-Release: 0.%{release}
+Release: 0.%{release}.1
 %endif
 %if %{gpl}
 License: GPL
@@ -247,6 +247,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Fri Dec 09 2005 Jesse Keating <jkeating@redhat.com>
+- rebuilt
+
 * Sun Nov 27 2005 Roland McGrath <roland@redhat.com> - 0.118-1
 - update to 0.118
   - elflint: more tests.
