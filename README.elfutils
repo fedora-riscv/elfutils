@@ -16,6 +16,17 @@ If you are interested in the elfutils code in general or for any purpose
 other than developing Systemtap, please see http://fedora.redhat.com/ about
 getting involved with Fedora Core Development directly.
 
+To use the elfutils libraries to build Systemtap, you can either use
+installed libraries, or you can build elfutils from source as part of the
+systemtap build.  To use installed libraries, you'll need to have the
+current elfutils version installed on your system where the compiler will
+find it with whatever build flags you pass systemtap's configure script.
+Unless your system already has the current elfutils installed
+(i.e. Rawhide), you'll have to install a nonstandard build either via RPM
+or by hand with "make" as detailed below.  To build the elfutils source
+locally as part of the systemtap build, see systemtap's README about the
+--with-elfutils=... option to systemtap's configure.
+
 You can find the rawhide rpms updated daily on a variety of sites
 (see http://fedora.redhat.com/download/mirrors.html) under core/development.
 What's distributed in this directory is made trivially from those same sources.
@@ -61,5 +72,5 @@ available here has to be applied before you can compile on an older system:
 (That of course installs things under /usr/local, unlike the RPMs.)
 
 
-Caveat emptor.  Carpe noctem.  Eatsom carpnow.
+Caveat emptor.  Carpe noctem.
 Reply to <systemtap@sources.redhat.com>.
