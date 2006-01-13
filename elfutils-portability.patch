@@ -1,6 +1,6 @@
 --- elfutils/backends/ChangeLog
 +++ elfutils/backends/ChangeLog
-@@ -19,6 +19,11 @@
+@@ -38,6 +38,11 @@
  	* sparc_init.c: Likewise.
  	* x86_64_init.c: Likewise.
  
@@ -12,7 +12,7 @@
  2005-11-19  Roland McGrath  <roland@redhat.com>
  
  	* ppc64_reloc.def: REL30 -> ADDR30.
-@@ -41,6 +46,9 @@
+@@ -60,6 +65,9 @@
  	* Makefile.am (uninstall): Don't try to remove $(pkgincludedir).
  	(CLEANFILES): Add libebl_$(m).so.
  
@@ -51,7 +51,7 @@
  libebl_%.map: Makefile
 --- elfutils/backends/Makefile.in
 +++ elfutils/backends/Makefile.in
-@@ -159,6 +159,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -160,6 +160,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -59,7 +59,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -194,6 +195,7 @@ TESTS_RPATH_FALSE = @TESTS_RPATH_FALSE@
+@@ -195,6 +196,7 @@ TESTS_RPATH_FALSE = @TESTS_RPATH_FALSE@
  TESTS_RPATH_TRUE = @TESTS_RPATH_TRUE@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
@@ -67,7 +67,7 @@
  XGETTEXT = @XGETTEXT@
  YACC = @YACC@
  ac_ct_CC = @ac_ct_CC@
-@@ -236,9 +238,9 @@ sharedstatedir = @sharedstatedir@
+@@ -237,9 +239,9 @@ sharedstatedir = @sharedstatedir@
  sysconfdir = @sysconfdir@
  target_alias = @target_alias@
  @MUDFLAP_FALSE@AM_CFLAGS = -fpic -Wall -Wshadow -Werror -Wunused \
@@ -79,7 +79,7 @@
  INCLUDES = -I$(srcdir) -I$(top_srcdir)/libebl \
  	   -I$(top_srcdir)/libelf -I$(top_srcdir)/libdw \
  	   -I$(top_srcdir)/lib -I..
-@@ -594,7 +596,7 @@ uninstall-am: uninstall-info-am
+@@ -597,7 +599,7 @@ uninstall-am: uninstall-info-am
  libebl_%.so: libebl_%_pic.a libebl_%.map $(libelf) $(libdw)
  	$(LINK) -shared -o $@ -Wl,--whole-archive,$<,--no-whole-archive \
  		-Wl,--version-script,$(word 2,$^) \
@@ -136,7 +136,7 @@
  ac_ct_CC = @ac_ct_CC@
 --- elfutils/configure
 +++ elfutils/configure
-@@ -276,7 +276,7 @@ PACKAGE_STRING='Red Hat elfutils 0.118'
+@@ -276,7 +276,7 @@ PACKAGE_STRING='Red Hat elfutils 0.119'
  PACKAGE_BUGREPORT='http://bugzilla.redhat.com/bugzilla/'
  
  ac_unique_file="libelf/libelf.h"
@@ -458,7 +458,7 @@
  libcpu_i386_a_SOURCES = i386_dis.c
 --- elfutils/libdw/ChangeLog
 +++ elfutils/libdw/ChangeLog
-@@ -251,6 +251,11 @@
+@@ -266,6 +266,11 @@
  
  2005-05-31  Roland McGrath  <roland@redhat.com>
  
@@ -522,7 +522,7 @@
  						       $(COMPILE)))
 --- elfutils/libdwfl/ChangeLog
 +++ elfutils/libdwfl/ChangeLog
-@@ -245,6 +245,11 @@
+@@ -259,6 +259,11 @@
  
  2005-07-21  Roland McGrath  <roland@redhat.com>
  
@@ -644,7 +644,7 @@
  
 --- elfutils/libelf/ChangeLog
 +++ elfutils/libelf/ChangeLog
-@@ -103,6 +103,11 @@
+@@ -113,6 +113,11 @@
  	If section content hasn't been read yet, do it before looking for the
  	block size.  If no section data present, infer size of section header.
  
@@ -909,7 +909,7 @@
  cannot set access and modification date of '%s'"), fname);
 --- elfutils/tests/ChangeLog
 +++ elfutils/tests/ChangeLog
-@@ -316,6 +316,11 @@
+@@ -349,6 +349,11 @@
  	* Makefile.am (TESTS): Add run-elflint-test.sh.
  	(EXTRA_DIST): Add run-elflint-test.sh and testfile18.bz2.
  

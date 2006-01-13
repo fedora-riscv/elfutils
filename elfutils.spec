@@ -1,5 +1,5 @@
-%define version 0.118
-%define release 1.1
+%define version 0.119
+%define release 1
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -247,6 +247,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Fri Jan 13 2006 Roland McGrath <roland@redhat.com> - 0.119-1
+- update to 0.119
+
 * Fri Dec 09 2005 Jesse Keating <jkeating@redhat.com>
 - rebuilt
 
