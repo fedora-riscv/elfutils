@@ -12,9 +12,9 @@ Summary: A collection of utilities and DSOs to handle compiled objects.
 Name: elfutils
 Version: %{version}
 %if !%{compat}
-Release: %{release}.1
+Release: %{release}
 %else
-Release: 0.%{release}.1
+Release: 0.%{release}
 %endif
 %if %{gpl}
 License: GPL
