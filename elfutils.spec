@@ -14,7 +14,7 @@ Version: %{version}
 %if !%{compat}
 Release: %{release}
 %else
-Release: 0.%{release}.1
+Release: 0.%{release}
 %endif
 %if %{gpl}
 License: GPL
