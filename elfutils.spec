@@ -1,5 +1,5 @@
 %define version 0.119
-%define release 1.1
+%define release 1.2
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -247,7 +247,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
-* Tue Feb 07 2006 Jesse Keating <jkeating@redhat.com> - 0.119-1.1
+* Tue Feb 07 2006 Jesse Keating <jkeating@redhat.com> - 0.119-1.2
 - rebuilt for new gcc4.1 snapshot and glibc changes
 
 * Fri Jan 13 2006 Roland McGrath <roland@redhat.com> - 0.119-1
