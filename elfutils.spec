@@ -1,5 +1,5 @@
 %define version 0.119
-%define release 1.2
+%define release 1.2.1
 
 %define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -14,7 +14,7 @@ Version: %{version}
 %if !%{compat}
 Release: %{release}
 %else
-Release: 0.%{release}
+Release: 0.%{release}.1
 %endif
 %if %{gpl}
 License: GPL
@@ -247,6 +247,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Fri Feb 10 2006 Jesse Keating <jkeating@redhat.com> - 0.119-1.2.1
+- bump again for double-long bug on ppc(64)
+
 * Tue Feb 07 2006 Jesse Keating <jkeating@redhat.com> - 0.119-1.2
 - rebuilt for new gcc4.1 snapshot and glibc changes
 
