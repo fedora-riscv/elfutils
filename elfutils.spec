@@ -1,7 +1,6 @@
-%define version 0.119
-%define release 1.2.1
+%define version 0.120
+%define release 1
 
-%define gpl 0
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
 %else
@@ -16,11 +15,7 @@ Release: %{release}
 %else
 Release: 0.%{release}.1
 %endif
-%if %{gpl}
 License: GPL
-%else
-License: OSL
-%endif
 Group: Development/Tools
 Source: elfutils-%{version}.tar.gz
 Patch1: elfutils-portability.patch
@@ -28,9 +23,6 @@ Patch2: elfutils-robustify.patch
 Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
 Requires: elfutils-libs = %{version}-%{release}
-%if %{gpl}
-Requires: binutils >= 2.14.90.0.4-26.2
-%endif
 
 # ExcludeArch: xxx
 
@@ -57,7 +49,6 @@ symbols), readelf (to see the raw ELF file structures), and elflint
 (to check for well-formed ELF files).
 
 
-%if !%{gpl}
 %package libs
 Summary: Libraries to handle compiled objects.
 Group: Development/Tools
@@ -73,16 +64,11 @@ The elfutils-libs package contains libraries which implement DWARF, ELF,
 and machine-specific ELF handling.  These libraries are used by the programs
 in the elfutils package.  The elfutils-devel package enables building
 other programs using these libraries.
-%endif
 
 %package devel
 Summary: Development libraries to handle compiled objects.
 Group: Development/Tools
-%if %{gpl}
 License: GPL
-%else
-License: OSL
-%endif
 Requires: elfutils-libs = %{version}-%{release}
 Requires: elfutils-libelf-devel = %{version}-%{release}
 
@@ -96,9 +82,6 @@ assembler interface.
 %package libelf
 Summary: Library to read and write ELF files.
 Group: Development/Tools
-%if %{gpl}
-License: GPL
-%endif
 Conflicts: elfutils < %{version}-%{release}
 Conflicts: elfutils > %{version}-%{release}
 Conflicts: elfutils-libs < %{version}-%{release}
@@ -117,9 +100,6 @@ Summary: Development support for libelf
 Group: Development/Tools
 Requires: elfutils-libelf = %{version}-%{release}
 Conflicts: libelf-devel
-%if %{gpl}
-License: GPL
-%endif
 
 %description libelf-devel
 The elfutils-libelf-devel package contains the libraries to create
@@ -156,11 +136,8 @@ mkdir -p ${RPM_BUILD_ROOT}%{_prefix}
 %makeinstall
 
 chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/lib*.so*
-%if !%{gpl}
 chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
-%endif
 
-%if !%{gpl}
 # XXX Nuke unpackaged files
 { cd ${RPM_BUILD_ROOT}
   rm -f .%{_bindir}/eu-ld
@@ -170,7 +147,6 @@ chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
   rm -f .%{_libdir}/libasm.so*
   rm -f .%{_libdir}/libasm.a
 }
-%endif
 
 %check
 # XXX elflint not happy on ia64
@@ -190,9 +166,6 @@ rm -rf ${RPM_BUILD_ROOT}
 %files
 %defattr(-,root,root)
 %doc README TODO
-%if %{gpl}
-%doc fake-src/FULL
-%endif
 %{_bindir}/eu-addr2line
 %{_bindir}/eu-elfcmp
 %{_bindir}/eu-elflint
@@ -203,11 +176,8 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_bindir}/eu-size
 %{_bindir}/eu-strings
 %{_bindir}/eu-strip
-%if !%{gpl}
 #%{_bindir}/eu-ld
-%endif
 
-%if !%{gpl}
 %files libs
 %defattr(-,root,root)
 %{_libdir}/libdw-%{version}.so
@@ -215,14 +185,12 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libdw.so.*
 %dir %{_libdir}/elfutils
 %{_libdir}/elfutils/lib*.so
-%endif
 
 %files devel
 %defattr(-,root,root)
 %{_includedir}/dwarf.h
 %dir %{_includedir}/elfutils
 %{_includedir}/elfutils/elf-knowledge.h
-%if !%{gpl}
 %{_includedir}/elfutils/libebl.h
 %{_includedir}/elfutils/libdw.h
 %{_includedir}/elfutils/libdwfl.h
@@ -231,7 +199,6 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libdw.a
 #%{_libdir}/libasm.so
 %{_libdir}/libdw.so
-%endif
 
 %files libelf
 %defattr(-,root,root)
@@ -247,6 +214,15 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Tue Apr  4 2006 Roland McGrath <roland@redhat.com> - 0.120-1
+- Update to 0.120
+  - License changed to GPL, with some exceptions for using
+    the libelf, libebl, libdw, and libdwfl library interfaces.
+    Red Hat elfutils is an included package of the Open Invention Network.
+  - dwarf.h updated for DWARF 3.0 final specification.
+  - libelf: Fix corruption in ELF_C_RDWR uses (#187618).
+  - libdwfl: New function dwfl_version; fixes for offline.
+
 * Fri Feb 10 2006 Jesse Keating <jkeating@redhat.com> - 0.119-1.2.1
 - bump again for double-long bug on ppc(64)
 
