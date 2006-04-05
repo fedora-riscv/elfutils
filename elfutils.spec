@@ -1,5 +1,5 @@
 %define version 0.120
-%define release 1
+%define release 2
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -13,7 +13,7 @@ Version: %{version}
 %if !%{compat}
 Release: %{release}
 %else
-Release: 0.%{release}.1
+Release: 0.%{release}
 %endif
 License: GPL
 Group: Development/Tools
@@ -214,7 +214,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
-* Tue Apr  4 2006 Roland McGrath <roland@redhat.com> - 0.120-1
+* Tue Apr  4 2006 Roland McGrath <roland@redhat.com> - 0.120-2
 - Update to 0.120
   - License changed to GPL, with some exceptions for using
     the libelf, libebl, libdw, and libdwfl library interfaces.
