@@ -1,5 +1,5 @@
 %define version 0.120
-%define release 2
+%define release 3
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -214,6 +214,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Thu May 25 2006 Jeremy Katz <katzj@redhat.com> - 0.120-3
+- rebuild to pick up -devel deps
+
 * Tue Apr  4 2006 Roland McGrath <roland@redhat.com> - 0.120-2
 - Update to 0.120
   - License changed to GPL, with some exceptions for using
