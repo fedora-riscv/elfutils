@@ -1,5 +1,5 @@
-%define version 0.120
-%define release 3
+%define version 0.121
+%define release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -214,6 +214,14 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Thu Jun 15 2006 Roland McGrath <roland@redhat.com> - 0.121-1
+- Update to 0.121
+  - libelf: bug fixes for rewriting existing files when using mmap (#187618).
+  - make all installed headers usable in C++ code (#193153).
+  - eu-readelf: better output format.
+  - eu-elflint: fix tests of dynamic section content.
+  - libdw, libdwfl: handle files without aranges info.
+
 * Thu May 25 2006 Jeremy Katz <katzj@redhat.com> - 0.120-3
 - rebuild to pick up -devel deps
 
