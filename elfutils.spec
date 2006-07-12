@@ -1,5 +1,5 @@
-%define version 0.122
-%define release 1
+%define eu_version 0.122
+%define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -9,11 +9,11 @@
 
 Summary: A collection of utilities and DSOs to handle compiled objects.
 Name: elfutils
-Version: %{version}
+Version: %{eu_version}
 %if !%{compat}
-Release: %{release}
+Release: %{eu_release}%{?dist}
 %else
-Release: 0.%{release}.1
+Release: 0.%{eu_release}.1
 %endif
 License: GPL
 Group: Development/Tools
