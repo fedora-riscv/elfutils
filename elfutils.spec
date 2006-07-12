@@ -1,5 +1,5 @@
 %define version 0.121
-%define release 1
+%define release 1.1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -13,7 +13,7 @@ Version: %{version}
 %if !%{compat}
 Release: %{release}
 %else
-Release: 0.%{release}
+Release: 0.%{release}.1
 %endif
 License: GPL
 Group: Development/Tools
@@ -214,6 +214,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Wed Jul 12 2006 Jesse Keating <jkeating@redhat.com> - 0.121-1.1
+- rebuild
+
 * Thu Jun 15 2006 Roland McGrath <roland@redhat.com> - 0.121-1
 - Update to 0.121
   - libelf: bug fixes for rewriting existing files when using mmap (#187618).
