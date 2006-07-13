@@ -20,6 +20,7 @@ Group: Development/Tools
 Source: elfutils-%{version}.tar.gz
 Patch1: elfutils-portability.patch
 Patch2: elfutils-robustify.patch
+Patch3: elfutils-0.122-cast.patch
 Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
 Requires: elfutils-libs = %{version}-%{release}
@@ -109,6 +110,8 @@ different sections of an ELF file.
 
 %prep
 %setup -q
+
+%patch3 -p0
 
 %if %{compat}
 %patch1 -p1
