@@ -1,5 +1,5 @@
 %define eu_version 0.122
-%define eu_release 3
+%define eu_release 4
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -217,6 +217,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Mon Jul 17 2006 Roland McGrath <roland@redhat.com> - 0.122-4
+- Fix warnings in elflint compilation.
+
 * Wed Jul 12 2006 Roland McGrath <roland@redhat.com> - 0.122-3
 - Update to 0.122
   - Fix libdwfl sorting of modules with 64-bit addresses (#198225).
