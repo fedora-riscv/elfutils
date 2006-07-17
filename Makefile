@@ -1,5 +1,5 @@
 # Makefile for source rpm: elfutils
-# $Id: Makefile,v 1.13 2005/12/08 01:48:13 roland Exp $
+# $Id: Makefile,v 1.14 2006/06/15 08:32:05 roland Exp $
 NAME := elfutils
 SPECFILE = elfutils.spec
 
@@ -21,7 +21,7 @@ elfutils-portable.spec: elfutils.spec
 	(echo '%define _with_compat 1'; cat $<) > $@.new
 	mv -f $@.new $@
 
-portable-vr = $(VERSION)-0.$(RELEASE)
+portable-vr = $(VERSION)-0.$(subst $(DIST),,$(RELEASE))
 portable.srpm = elfutils-$(portable-vr).src.rpm
 $(portable.srpm): elfutils-portable.spec elfutils-portability.patch \
 		  elfutils-$(VERSION).tar.gz
