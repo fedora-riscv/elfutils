@@ -13,7 +13,7 @@ Version: %{eu_version}
 %if !%{compat}
 Release: %{eu_release}%{?dist}
 %else
-Release: 0.%{eu_release}.1
+Release: 0.%{eu_release}
 %endif
 License: GPL
 Group: Development/Tools

@@ -21,7 +21,7 @@ elfutils-portable.spec: elfutils.spec
 	(echo '%define _with_compat 1'; cat $<) > $@.new
 	mv -f $@.new $@
 
-portable-vr = $(VERSION)-0.$(RELEASE)
+portable-vr = $(VERSION)-0.$(subst $(DIST),,$(RELEASE))
 portable.srpm = elfutils-$(portable-vr).src.rpm
 $(portable.srpm): elfutils-portable.spec elfutils-portability.patch \
 		  elfutils-$(VERSION).tar.gz
