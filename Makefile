@@ -1,5 +1,5 @@
 # Makefile for source rpm: elfutils
-# $Id: Makefile,v 1.14 2006/06/15 08:32:05 roland Exp $
+# $Id: Makefile,v 1.15 2006/07/17 08:26:47 roland Exp $
 NAME := elfutils
 SPECFILE = elfutils.spec
 
@@ -59,7 +59,7 @@ systemtap-dist: $(beehive-dep) $(dist-files)
 
 systemtap-dist-createrepo: systemtap-dist
 ifneq ($(wildcard /usr/bin/createrepo),)
-	createrepo -q $<
+	createrepo -q `cd $<; /bin/pwd`
 endif
 
 systemtap-sync: systemtap-dist-createrepo
