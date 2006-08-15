@@ -59,7 +59,7 @@ systemtap-dist: $(beehive-dep) $(dist-files)
 
 systemtap-dist-createrepo: systemtap-dist
 ifneq ($(wildcard /usr/bin/createrepo),)
-	createrepo -q $<
+	createrepo -q `cd $<; /bin/pwd`
 endif
 
 systemtap-sync: systemtap-dist-createrepo
