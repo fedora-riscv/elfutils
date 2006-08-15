@@ -1,5 +1,5 @@
-%define eu_version 0.122
-%define eu_release 4
+%define eu_version 0.123
+%define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -20,7 +20,6 @@ Group: Development/Tools
 Source: elfutils-%{version}.tar.gz
 Patch1: elfutils-portability.patch
 Patch2: elfutils-robustify.patch
-Patch3: elfutils-0.122-cast.patch
 Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
 Requires: elfutils-libs = %{version}-%{release}
@@ -110,8 +109,6 @@ different sections of an ELF file.
 
 %prep
 %setup -q
-
-%patch3 -p0
 
 %if %{compat}
 %patch1 -p1
@@ -217,6 +214,14 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Mon Aug 14 2006 Roland McGrath <roland@redhat.com> 0.123-1
+- Update to 0.123
+  - libebl: Backend build fixes, thanks to Stepan Kasal.
+  - libebl: ia64 backend support for register names, return value location
+  - libdwfl: Handle truncated linux kernel module section names.
+  - libdwfl: Look for linux kernel vmlinux files with .debug suffix.
+  - elflint: Fix checks to permit --hash-style=gnu format.
+
 * Mon Jul 17 2006 Roland McGrath <roland@redhat.com> - 0.122-4
 - Fix warnings in elflint compilation.
 
