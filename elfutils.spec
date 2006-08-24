@@ -1,5 +1,5 @@
 %define eu_version 0.123
-%define eu_release 1
+%define eu_release 2
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -17,12 +17,14 @@ Release: 0.%{eu_release}
 %endif
 License: GPL
 Group: Development/Tools
-Source: elfutils-%{version}.tar.gz
+Source0: elfutils-%{version}.tar.gz
+Source1: fake-eu-strip
 Patch1: elfutils-portability.patch
 Patch2: elfutils-robustify.patch
 Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
 Requires: elfutils-libs = %{version}-%{release}
+Requires: /usr/bin/objcopy
 
 # ExcludeArch: xxx
 
@@ -146,7 +148,10 @@ chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
   rm -f .%{_libdir}/libasm-%{version}.so
   rm -f .%{_libdir}/libasm.so*
   rm -f .%{_libdir}/libasm.a
+  mv -f .%{_bindir}/eu-strip .%{_bindir}/eu-strip.bin
 }
+
+install -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_bindir}/eu-strip
 
 %check
 # XXX elflint not happy on ia64
@@ -176,6 +181,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_bindir}/eu-size
 %{_bindir}/eu-strings
 %{_bindir}/eu-strip
+%{_bindir}/eu-strip.bin
 #%{_bindir}/eu-ld
 
 %files libs
@@ -214,6 +220,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
+* Thu Aug 24 2006 Alexandre Oliva <aoliva@redhat.com> 0.123-2
+- Go back to eu-strip wrapper that uses binutils' objcopy.  (#203000)
+
 * Mon Aug 14 2006 Roland McGrath <roland@redhat.com> 0.123-1
 - Update to 0.123
   - libebl: Backend build fixes, thanks to Stepan Kasal.
