@@ -1,5 +1,5 @@
 # Makefile for source rpm: elfutils
-# $Id: Makefile,v 1.15 2006/07/17 08:26:47 roland Exp $
+# $Id: Makefile,v 1.16 2006/08/15 06:50:37 roland Exp $
 NAME := elfutils
 SPECFILE = elfutils.spec
 
@@ -21,7 +21,8 @@ elfutils-portable.spec: elfutils.spec
 	(echo '%define _with_compat 1'; cat $<) > $@.new
 	mv -f $@.new $@
 
-portable-vr = $(VERSION)-0.$(subst $(DIST),,$(RELEASE))
+portable-r = 0.$(subst $(DIST),,$(RELEASE))
+portable-vr = $(VERSION)-$(portable-r)
 portable.srpm = elfutils-$(portable-vr).src.rpm
 $(portable.srpm): elfutils-portable.spec elfutils-portability.patch \
 		  elfutils-$(VERSION).tar.gz
@@ -30,32 +31,33 @@ $(portable.srpm): elfutils-portable.spec elfutils-portability.patch \
 portable-srpm: $(portable.srpm)
 
 portable-dist = 3.0E-scratch
-portable-beehive = $(redhat)/dist/$(portable-dist)/elfutils/$(portable-vr)
+portable-build = \
+	$(redhat)/brewroot/packages/elfutils/$(VERSION)/$(portable-r)
 
 ifeq (,$(wildcard /mnt/redhat/dist/.))
 redhat = datadump.devel.redhat.com::redhat
 rsync-to = devserv.devel.redhat.com:dist/elfutils/devel/systemtap-dist/
-beehive-dep =
+build-dep = $(portable.srpm)
 else
 redhat = /mnt/redhat
-$(portable-beehive): $(portable.srpm)
-	$(BHC_CLIENT) $(BHC_FLAGS) dist-$(portable-dist) $<
+$(portable-build): $(portable.srpm)
+	$(BUILD_CLIENT) $(BUILD_FLAGS) dist-$(portable-dist) $<
 rsync-to = $(public)
-beehive-dep = $(portable-beehive)
-portable-build: $(portable-beehive)
+build-dep = $(portable-build)/src/$(portable.srpm)
+portable-build: $(portable-build)
 endif
 
-dist-files = README.elfutils systemtap-elfutils.repo \
-	     elfutils-$(VERSION).tar.gz elfutils-portability.patch
-rsync-files = --exclude=tests $(portable-beehive)/
+dist-files = README.elfutils systemtap-elfutils.repo
+rsync-files = --exclude=tests --exclude=data $(portable-build)/
 public = sources.redhat.com:/sourceware/ftp/anonftp/pub/systemtap/elfutils/
 
 RSYNC = RSYNC_RSH=ssh rsync
 
-systemtap-dist: $(beehive-dep) $(dist-files)
+systemtap-dist: $(build-dep) $(dist-files)
 	@mkdir -p $@
 	$(RSYNC) -a --delete --progress -v $(rsync-files) systemtap-dist/
 	ln $(dist-files) systemtap-dist/
+	ln -v `rpm -qlp $<` systemtap-dist/
 
 systemtap-dist-createrepo: systemtap-dist
 ifneq ($(wildcard /usr/bin/createrepo),)
