@@ -1,5 +1,5 @@
-%define eu_version 0.123
-%define eu_release 2
+%define eu_version 0.124
+%define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -17,14 +17,16 @@ Release: 0.%{eu_release}
 %endif
 License: GPL
 Group: Development/Tools
-Source0: elfutils-%{version}.tar.gz
-Source1: fake-eu-strip
+Source: elfutils-%{version}.tar.gz
 Patch1: elfutils-portability.patch
 Patch2: elfutils-robustify.patch
 Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf = %{version}-%{release}
 Requires: elfutils-libs = %{version}-%{release}
-Requires: /usr/bin/objcopy
+
+Patch0: elfutils-strip-copy-symtab.patch
+Source2: testfile16.symtab.bz2
+Source3: testfile16.symtab.debug.bz2
 
 # ExcludeArch: xxx
 
@@ -54,7 +56,7 @@ symbols), readelf (to see the raw ELF file structures), and elflint
 %package libs
 Summary: Libraries to handle compiled objects.
 Group: Development/Tools
-License: OSL
+License: GPL
 Requires: elfutils-libelf = %{version}-%{release}
 Conflicts: elfutils < %{version}-%{release}
 Conflicts: elfutils > %{version}-%{release}
@@ -112,6 +114,9 @@ different sections of an ELF file.
 %prep
 %setup -q
 
+%patch0 -p1
+ln %{SOURCE2} %{SOURCE3} tests
+
 %if %{compat}
 %patch1 -p1
 sleep 1
@@ -127,6 +132,12 @@ find . \( -name configure -o -name config.h.in \) -print | xargs touch
 # themselves, and they use -Werror.  Appending -Wall defeats the cases where
 # the makefiles disable some specific warnings for specific code.
 RPM_OPT_FLAGS=${RPM_OPT_FLAGS/-Wall/}
+
+%if %{compat}
+# Some older glibc headers can run afoul of -Werror all by themselves.
+# Disabling the fancy inlines avoids those problems.
+RPM_OPT_FLAGS="$RPM_OPT_FLAGS -D__NO_INLINE__"
+%endif
 
 %configure CFLAGS="$RPM_OPT_FLAGS -fexceptions"
 make %{?_smp_mflags}
@@ -148,10 +159,7 @@ chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
   rm -f .%{_libdir}/libasm-%{version}.so
   rm -f .%{_libdir}/libasm.so*
   rm -f .%{_libdir}/libasm.a
-  mv -f .%{_bindir}/eu-strip .%{_bindir}/eu-strip.bin
 }
-
-install -m 755 %{SOURCE1} $RPM_BUILD_ROOT%{_bindir}/eu-strip
 
 %check
 # XXX elflint not happy on ia64
@@ -181,7 +189,6 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_bindir}/eu-size
 %{_bindir}/eu-strings
 %{_bindir}/eu-strip
-%{_bindir}/eu-strip.bin
 #%{_bindir}/eu-ld
 
 %files libs
@@ -220,8 +227,14 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.so
 
 %changelog
-* Thu Aug 24 2006 Alexandre Oliva <aoliva@redhat.com> 0.123-2
-- Go back to eu-strip wrapper that uses binutils' objcopy.  (#203000)
+* Tue Oct 10 2006 Roland McGrath <roland@redhat.com> - 0.124-1
+- eu-strip -f: copy symtab into debuginfo file when relocs use it (#203000)
+- Update to 0.124
+  - libebl: fix ia64 reloc support (#206981)
+  - libebl: sparc backend support for return value location
+  - libebl, libdwfl: backend register name support extended with more info
+  - libelf, libdw: bug fixes for unaligned accesses on machines that care
+  - readelf, elflint: trivial bugs fixed
 
 * Mon Aug 14 2006 Roland McGrath <roland@redhat.com> 0.123-1
 - Update to 0.123
