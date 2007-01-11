@@ -1,5 +1,5 @@
 # Makefile for source rpm: elfutils
-# $Id: Makefile,v 1.16 2006/08/15 06:50:37 roland Exp $
+# $Id: Makefile,v 1.17 2006/10/10 19:24:29 roland Exp $
 NAME := elfutils
 SPECFILE = elfutils.spec
 
@@ -45,6 +45,7 @@ $(portable-build): $(portable.srpm)
 rsync-to = $(public)
 build-dep = $(portable-build)/src/$(portable.srpm)
 portable-build: $(portable-build)
+$(build-dep): $(portable-build)
 endif
 
 dist-files = README.elfutils systemtap-elfutils.repo
