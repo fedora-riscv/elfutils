@@ -1,5 +1,5 @@
 %define eu_version 0.125
-%define eu_release 1
+%define eu_release 2
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -34,6 +34,8 @@ Requires: elfutils-libs = %{version}-%{release}
 Patch0: elfutils-strip-copy-symtab.patch
 Source2: testfile16.symtab.bz2
 Source3: testfile16.symtab.debug.bz2
+
+Patch3: elfutils-0.125-warn_unused_result.patch
 
 # ExcludeArch: xxx
 
@@ -164,6 +166,7 @@ find . \( -name configure -o -name config.h.in \) -print | xargs touch
 %endif
 
 %patch2 -p1
+%patch3 -p0
 
 %build
 # Remove -Wall from default flags.  The makefiles enable enough warnings
@@ -271,6 +274,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Wed Jan 10 2007 Roland McGrath <roland@redhat.com> - 0.125-2.fc7
+- Fix overeager warn_unused_result build failures.
+
 * Wed Jan 10 2007 Roland McGrath <roland@redhat.com> - 0.125-1
 - Update to 0.125
   - elflint: Compare DT_GNU_HASH tests.
