@@ -1,10 +1,17 @@
-%define eu_version 0.124
+%define eu_version 0.125
 %define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
 %else
 %define compat 0
+%endif
+
+%if "%fedora" >= "7"
+%define separate_devel_static 1
+%endif
+%if "%rhel" >= "6"
+%define separate_devel_static 1
 %endif
 
 Summary: A collection of utilities and DSOs to handle compiled objects.
@@ -75,6 +82,11 @@ Group: Development/Tools
 License: GPL
 Requires: elfutils-libs = %{version}-%{release}
 Requires: elfutils-libelf-devel = %{version}-%{release}
+Conflicts: elfutils-libelf-devel < %{version}-%{release}
+Conflicts: elfutils-libelf-devel > %{version}-%{release}
+%if !0%{?separate_devel_static}
+Requires: elfutils-devel-static = %{version}-%{release}
+%endif
 
 %description devel
 The elfutils-devel package contains the libraries to create
@@ -82,6 +94,18 @@ applications for handling compiled objects.  libebl provides some
 higher-level ELF access functionality.  libdw provides access to
 the DWARF debugging information.  libasm provides a programmable
 assembler interface.
+
+%package devel-static
+Summary: Static archives to handle compiled objects.
+Group: Development/Tools
+Requires: elfutils-devel = %{version}-%{release}
+Conflicts: elfutils-devel < %{version}-%{release}
+Conflicts: elfutils-devel > %{version}-%{release}
+Requires: elfutils-libelf-devel-static = %{version}-%{release}
+
+%description devel-static
+The elfutils-devel-static package contains the static archives
+with the code to handle compiled objects.
 
 %package libelf
 Summary: Library to read and write ELF files.
@@ -104,12 +128,26 @@ Summary: Development support for libelf
 Group: Development/Tools
 Requires: elfutils-libelf = %{version}-%{release}
 Conflicts: libelf-devel
+%if !0%{?separate_devel_static}
+Requires: elfutils-libelf-devel-static = %{version}-%{release}
+%endif
 
 %description libelf-devel
 The elfutils-libelf-devel package contains the libraries to create
 applications for handling compiled objects.  libelf allows you to
 access the internals of the ELF object file format, so you can see the
 different sections of an ELF file.
+
+%package libelf-devel-static
+Summary: Static archive of libelf
+Group: Development/Tools
+Requires: elfutils-libelf-devel = %{version}-%{release}
+Conflicts: elfutils-libelf-devel < %{version}-%{release}
+Conflicts: elfutils-libelf-devel > %{version}-%{release}
+
+%description libelf-devel-static
+The elfutils-libelf-devel-static package contains
+the static archive for libelf.
 
 %prep
 %setup -q
@@ -207,11 +245,14 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_includedir}/elfutils/libebl.h
 %{_includedir}/elfutils/libdw.h
 %{_includedir}/elfutils/libdwfl.h
-#%{_libdir}/libasm.a
 %{_libdir}/libebl.a
-%{_libdir}/libdw.a
 #%{_libdir}/libasm.so
 %{_libdir}/libdw.so
+
+%files devel-static
+%defattr(-,root,root)
+#%{_libdir}/libasm.a
+%{_libdir}/libdw.a
 
 %files libelf
 %defattr(-,root,root)
@@ -223,10 +264,21 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_includedir}/libelf.h
 %{_includedir}/gelf.h
 %{_includedir}/nlist.h
-%{_libdir}/libelf.a
 %{_libdir}/libelf.so
 
+%files libelf-devel-static
+%defattr(-,root,root)
+%{_libdir}/libelf.a
+
 %changelog
+* Wed Jan 10 2007 Roland McGrath <roland@redhat.com> - 0.125-1
+- Update to 0.125
+  - elflint: Compare DT_GNU_HASH tests.
+  - move archives into -static RPMs
+  - libelf, elflint: better support for core file handling
+  - Really fix libdwfl sorting of modules with 64-bit addresses (#220817).
+- Resolves: RHBZ #220817, RHBZ #213792
+
 * Tue Oct 10 2006 Roland McGrath <roland@redhat.com> - 0.124-1
 - eu-strip -f: copy symtab into debuginfo file when relocs use it (#203000)
 - Update to 0.124
