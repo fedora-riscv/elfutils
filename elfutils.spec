@@ -274,7 +274,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
-* Wed Jan 10 2007 Roland McGrath <roland@redhat.com> - 0.125-3.fc7
+* Wed Jan 10 2007 Roland McGrath <roland@redhat.com> - 0.125-3
 - Fix overeager warn_unused_result build failures.
 
 * Wed Jan 10 2007 Roland McGrath <roland@redhat.com> - 0.125-1
