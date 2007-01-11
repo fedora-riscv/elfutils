@@ -45,6 +45,7 @@ $(portable-build): $(portable.srpm)
 rsync-to = $(public)
 build-dep = $(portable-build)/src/$(portable.srpm)
 portable-build: $(portable-build)
+$(build-dep): $(portable-build)
 endif
 
 dist-files = README.elfutils systemtap-elfutils.repo
