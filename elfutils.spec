@@ -1,5 +1,5 @@
-%define eu_version 0.125
-%define eu_release 3
+%define eu_version 0.126
+%define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -34,8 +34,6 @@ Requires: elfutils-libs = %{version}-%{release}
 Patch0: elfutils-strip-copy-symtab.patch
 Source2: testfile16.symtab.bz2
 Source3: testfile16.symtab.debug.bz2
-
-Patch3: elfutils-0.125-warn_unused_result.patch
 
 # ExcludeArch: xxx
 
@@ -166,7 +164,6 @@ find . \( -name configure -o -name config.h.in \) -print | xargs touch
 %endif
 
 %patch2 -p1
-%patch3 -p0
 
 %build
 # Remove -Wall from default flags.  The makefiles enable enough warnings
@@ -181,7 +178,7 @@ RPM_OPT_FLAGS="$RPM_OPT_FLAGS -D__NO_INLINE__"
 %endif
 
 %configure CFLAGS="$RPM_OPT_FLAGS -fexceptions"
-make %{?_smp_mflags}
+make -s %{?_smp_mflags}
 
 %install
 rm -rf ${RPM_BUILD_ROOT}
@@ -203,8 +200,7 @@ chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
 }
 
 %check
-# XXX elflint not happy on ia64
-make check || :
+make check
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
@@ -221,6 +217,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %defattr(-,root,root)
 %doc README TODO
 %{_bindir}/eu-addr2line
+%{_bindir}/eu-ar
 %{_bindir}/eu-elfcmp
 %{_bindir}/eu-elflint
 %{_bindir}/eu-findtextrel
@@ -274,6 +271,13 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Mon Feb  5 2007 Roland McGrath <roland@redhat.com> - 0.126-1
+- Update to 0.126
+  - New program eu-ar.
+  - libdw: fix missing dwarf_getelf (#227206)
+  - libdwfl: dwfl_module_addrname for st_size=0 symbols (#227167, #227231)
+- Resolves: RHBZ #227206, RHBZ #227167, RHBZ #227231
+
 * Wed Jan 10 2007 Roland McGrath <roland@redhat.com> - 0.125-3
 - Fix overeager warn_unused_result build failures.
 
