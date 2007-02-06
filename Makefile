@@ -1,5 +1,5 @@
 # Makefile for source rpm: elfutils
-# $Id: Makefile,v 1.18 2007/01/11 08:51:15 roland Exp $
+# $Id: Makefile,v 1.19 2007/02/06 00:27:55 roland Exp $
 NAME := elfutils
 SPECFILE = elfutils.spec
 
@@ -34,7 +34,7 @@ portable-dist = 3.0E-scratch
 portable-build = \
 	$(redhat)/brewroot/packages/elfutils/$(VERSION)/$(portable-r)
 
-ifeq (,$(wildcard /mnt/redhat/brew/packages/elfutils))
+ifeq (,$(wildcard /mnt/redhat/brewroot/packages/elfutils))
 redhat = datadump.devel.redhat.com::redhat
 rsync-to = devserv.devel.redhat.com:dist/elfutils/devel/systemtap-dist/
 build-dep = $(portable.srpm)
