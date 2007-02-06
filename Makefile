@@ -34,7 +34,7 @@ portable-dist = 3.0E-scratch
 portable-build = \
 	$(redhat)/brewroot/packages/elfutils/$(VERSION)/$(portable-r)
 
-ifeq (,$(wildcard /mnt/redhat/dist/.))
+ifeq (,$(wildcard /mnt/redhat/brew/packages/elfutils))
 redhat = datadump.devel.redhat.com::redhat
 rsync-to = devserv.devel.redhat.com:dist/elfutils/devel/systemtap-dist/
 build-dep = $(portable.srpm)
