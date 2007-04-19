@@ -1,4 +1,4 @@
-%define eu_version 0.126
+%define eu_version 0.127
 %define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -14,7 +14,7 @@
 %define separate_devel_static 1
 %endif
 
-Summary: A collection of utilities and DSOs to handle compiled objects.
+Summary: A collection of utilities and DSOs to handle compiled objects
 Name: elfutils
 Version: %{eu_version}
 %if !%{compat}
@@ -35,9 +35,7 @@ Patch0: elfutils-strip-copy-symtab.patch
 Source2: testfile16.symtab.bz2
 Source3: testfile16.symtab.debug.bz2
 
-# ExcludeArch: xxx
-
-BuildRoot: %{_tmppath}/%{name}-root
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: bison >= 1.875
 BuildRequires: flex >= 2.5.4a
 BuildRequires: bzip2
@@ -146,8 +144,8 @@ Conflicts: elfutils-libelf-devel < %{version}-%{release}
 Conflicts: elfutils-libelf-devel > %{version}-%{release}
 
 %description libelf-devel-static
-The elfutils-libelf-devel-static package contains
-the static archive for libelf.
+The elfutils-libelf-static package contains the static archive
+for libelf.
 
 %prep
 %setup -q
@@ -182,9 +180,7 @@ make -s %{?_smp_mflags}
 
 %install
 rm -rf ${RPM_BUILD_ROOT}
-mkdir -p ${RPM_BUILD_ROOT}%{_prefix}
-
-%makeinstall
+make -s install DESTDIR=${RPM_BUILD_ROOT}
 
 chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/lib*.so*
 chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
@@ -200,7 +196,7 @@ chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
 }
 
 %check
-make check
+make -s check
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
@@ -271,6 +267,12 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Wed Apr 18 2007 Roland McGrath <roland@redhat.com> - 0.127-1
+- Update to 0.127
+  - libdw: new function dwarf_getsrcdirs
+  - libdwfl: new functions dwfl_module_addrsym, dwfl_report_begin_add,
+	     dwfl_module_address_section
+
 * Mon Feb  5 2007 Roland McGrath <roland@redhat.com> - 0.126-1
 - Update to 0.126
   - New program eu-ar.
