@@ -18,7 +18,7 @@ elfutils-portability.patch: elfutils-$(VERSION).tar.gz
 	mv $@.new $@
 
 elfutils-portable.spec: elfutils.spec
-	(echo '%define _with_compat 1'; cat $<) > $@.new
+	(echo '%define _with_compat 1'; sed 's/ check$$/& || :/' $<) > $@.new
 	mv -f $@.new $@
 
 portable-r = 0.$(subst $(DIST),,$(RELEASE))
