@@ -1,9 +1,24 @@
 # Makefile for source rpm: elfutils
-# $Id: Makefile,v 1.21 2007/04/19 16:28:11 roland Exp $
+# $Id: Makefile,v 1.22 2007/04/20 19:25:46 roland Exp $
 NAME := elfutils
 SPECFILE = elfutils.spec
 
-include ../common/Makefile.common
+define find-makefile-common
+for d in common ../common ../../common ; do if [ -f $$d/Makefile.common ] ; then if [ -f $$d/CVS/Root -a -w $$/Makefile.common ] ; then cd $$d ; cvs -Q update ; fi ; echo "$$d/Makefile.common" ; break ; fi ; done
+endef
+
+MAKEFILE_COMMON := $(shell $(find-makefile-common))
+
+ifeq ($(MAKEFILE_COMMON),)
+# attept a checkout
+define checkout-makefile-common
+test -f CVS/Root && { cvs -Q -d $$(cat CVS/Root) checkout common && echo "common/Makefile.common" ; } || { echo "ERROR: I can't figure out how to checkout the 'common' module." ; exit -1 ; } >&2
+endef
+
+MAKEFILE_COMMON := $(shell $(checkout-makefile-common))
+endif
+
+include $(MAKEFILE_COMMON)
 
 MONOTONE = mtn
 
