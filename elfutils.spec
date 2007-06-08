@@ -1,5 +1,5 @@
 %define eu_version 0.128
-%define eu_release 1
+%define eu_release 2
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
