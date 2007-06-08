@@ -56,7 +56,7 @@ build-dep = $(portable.srpm)
 else
 redhat = /mnt/redhat
 $(portable-build): $(portable.srpm)
-	$(BUILD_CLIENT) $(BUILD_FLAGS) dist-$(portable-dist) $<
+	brew build $(BUILD_FLAGS) dist-$(portable-dist) $<
 rsync-to = $(public)
 build-dep = $(portable-build)/src/$(portable.srpm)
 portable-build: $(portable-build)
