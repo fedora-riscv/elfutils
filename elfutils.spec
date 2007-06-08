@@ -1,5 +1,5 @@
-%define eu_version 0.127
-%define eu_release 1
+%define eu_version 0.128
+%define eu_release 2
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -28,8 +28,8 @@ Source: elfutils-%{version}.tar.gz
 Patch1: elfutils-portability.patch
 Patch2: elfutils-robustify.patch
 Obsoletes: libelf libelf-devel
-Requires: elfutils-libelf = %{version}-%{release}
-Requires: elfutils-libs = %{version}-%{release}
+Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
+Requires: elfutils-libs-%{_arch} = %{version}-%{release}
 
 Patch0: elfutils-strip-copy-symtab.patch
 Source2: testfile16.symtab.bz2
@@ -62,11 +62,8 @@ symbols), readelf (to see the raw ELF file structures), and elflint
 Summary: Libraries to handle compiled objects.
 Group: Development/Tools
 License: GPL
-Requires: elfutils-libelf = %{version}-%{release}
-Conflicts: elfutils < %{version}-%{release}
-Conflicts: elfutils > %{version}-%{release}
-Conflicts: elfutils-devel < %{version}-%{release}
-Conflicts: elfutils-devel > %{version}-%{release}
+Provides: elfutils-libs-%{_arch} = %{version}-%{release}
+Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
 
 %description libs
 The elfutils-libs package contains libraries which implement DWARF, ELF,
@@ -78,12 +75,11 @@ other programs using these libraries.
 Summary: Development libraries to handle compiled objects.
 Group: Development/Tools
 License: GPL
-Requires: elfutils-libs = %{version}-%{release}
-Requires: elfutils-libelf-devel = %{version}-%{release}
-Conflicts: elfutils-libelf-devel < %{version}-%{release}
-Conflicts: elfutils-libelf-devel > %{version}-%{release}
+Provides: elfutils-devel-%{_arch} = %{version}-%{release}
+Requires: elfutils-libs-%{_arch} = %{version}-%{release}
+Requires: elfutils-libelf-devel-%{_arch} = %{version}-%{release}
 %if !0%{?separate_devel_static}
-Requires: elfutils-devel-static = %{version}-%{release}
+Requires: elfutils-devel-static-%{_arch} = %{version}-%{release}
 %endif
 
 %description devel
@@ -96,10 +92,9 @@ assembler interface.
 %package devel-static
 Summary: Static archives to handle compiled objects.
 Group: Development/Tools
-Requires: elfutils-devel = %{version}-%{release}
-Conflicts: elfutils-devel < %{version}-%{release}
-Conflicts: elfutils-devel > %{version}-%{release}
-Requires: elfutils-libelf-devel-static = %{version}-%{release}
+Provides: elfutils-devel-static-%{_arch} = %{version}-%{release}
+Requires: elfutils-devel-%{_arch} = %{version}-%{release}
+Requires: elfutils-libelf-devel-static-%{_arch} = %{version}-%{release}
 
 %description devel-static
 The elfutils-devel-static package contains the static archives
@@ -108,12 +103,7 @@ with the code to handle compiled objects.
 %package libelf
 Summary: Library to read and write ELF files.
 Group: Development/Tools
-Conflicts: elfutils < %{version}-%{release}
-Conflicts: elfutils > %{version}-%{release}
-Conflicts: elfutils-libs < %{version}-%{release}
-Conflicts: elfutils-libs > %{version}-%{release}
-Conflicts: elfutils-libelf-devel < %{version}-%{release}
-Conflicts: elfutils-libelf-devel > %{version}-%{release}
+Provides: elfutils-libelf-%{_arch} = %{version}-%{release}
 
 %description libelf
 The elfutils-libelf package provides a DSO which allows reading and
@@ -124,10 +114,11 @@ elfutils package use it also to generate new ELF files.
 %package libelf-devel
 Summary: Development support for libelf
 Group: Development/Tools
-Requires: elfutils-libelf = %{version}-%{release}
+Provides: elfutils-libelf-devel-%{_arch} = %{version}-%{release}
+Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
 Conflicts: libelf-devel
 %if !0%{?separate_devel_static}
-Requires: elfutils-libelf-devel-static = %{version}-%{release}
+Requires: elfutils-libelf-devel-static-%{_arch} = %{version}-%{release}
 %endif
 
 %description libelf-devel
@@ -139,9 +130,8 @@ different sections of an ELF file.
 %package libelf-devel-static
 Summary: Static archive of libelf
 Group: Development/Tools
-Requires: elfutils-libelf-devel = %{version}-%{release}
-Conflicts: elfutils-libelf-devel < %{version}-%{release}
-Conflicts: elfutils-libelf-devel > %{version}-%{release}
+Provides: elfutils-libelf-devel-static-%{_arch} = %{version}-%{release}
+Requires: elfutils-libelf-devel-%{_arch} = %{version}-%{release}
 
 %description libelf-devel-static
 The elfutils-libelf-static package contains the static archive
@@ -151,7 +141,7 @@ for libelf.
 %setup -q
 
 %patch0 -p1
-ln %{SOURCE2} %{SOURCE3} tests
+ln -f %{SOURCE2} %{SOURCE3} tests || cp -f %{SOURCE2} %{SOURCE3} tests
 
 %if %{compat}
 %patch1 -p1
@@ -162,6 +152,9 @@ find . \( -name configure -o -name config.h.in \) -print | xargs touch
 %endif
 
 %patch2 -p1
+
+# XXX trivial patch for 0.128
+sed -i /ifndef/s/PACKAGE/PACKAGE_NAME/ libdwfl/libdwflP.h
 
 %build
 # Remove -Wall from default flags.  The makefiles enable enough warnings
@@ -218,12 +211,14 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_bindir}/eu-elflint
 %{_bindir}/eu-findtextrel
 %{_bindir}/eu-nm
+#%{_bindir}/eu-objdump
 %{_bindir}/eu-ranlib
 %{_bindir}/eu-readelf
 %{_bindir}/eu-size
 %{_bindir}/eu-strings
 %{_bindir}/eu-strip
 #%{_bindir}/eu-ld
+%{_bindir}/eu-unstrip
 
 %files libs
 %defattr(-,root,root)
@@ -267,6 +262,12 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Fri Jun  8 2007 Roland McGrath <roland@redhat.com> - 0.128-2
+- Update to 0.128
+  - new program: unstrip
+  - elfcmp: new option --hash-inexact
+- Replace Conflicts: with Provides/Requires using -arch
+
 * Wed Apr 18 2007 Roland McGrath <roland@redhat.com> - 0.127-1
 - Update to 0.127
   - libdw: new function dwarf_getsrcdirs

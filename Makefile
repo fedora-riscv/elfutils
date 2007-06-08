@@ -1,5 +1,5 @@
 # Makefile for source rpm: elfutils
-# $Id: Makefile,v 1.22 2007/04/20 19:25:46 roland Exp $
+# $Id: Makefile,v 1.24 2007/06/08 21:26:44 roland Exp $
 NAME := elfutils
 SPECFILE = elfutils.spec
 
@@ -56,7 +56,7 @@ build-dep = $(portable.srpm)
 else
 redhat = /mnt/redhat
 $(portable-build): $(portable.srpm)
-	$(BUILD_CLIENT) $(BUILD_FLAGS) dist-$(portable-dist) $<
+	brew build $(BUILD_FLAGS) dist-$(portable-dist) $<
 rsync-to = $(public)
 build-dep = $(portable-build)/src/$(portable.srpm)
 portable-build: $(portable-build)
