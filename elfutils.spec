@@ -141,7 +141,7 @@ for libelf.
 %setup -q
 
 %patch0 -p1
-ln %{SOURCE2} %{SOURCE3} tests
+ln -f %{SOURCE2} %{SOURCE3} tests || cp -f %{SOURCE2} %{SOURCE3} tests
 
 %if %{compat}
 %patch1 -p1
@@ -152,6 +152,9 @@ find . \( -name configure -o -name config.h.in \) -print | xargs touch
 %endif
 
 %patch2 -p1
+
+# XXX trivial patch for 0.128
+sed -i /ifndef/s/PACKAGE/PACKAGE_NAME/ libdwfl/libdwflP.h
 
 %build
 # Remove -Wall from default flags.  The makefiles enable enough warnings
@@ -259,7 +262,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
-* Fri Jun  8 2007 Roland McGrath <roland@redhat.com> - 0.128-1
+* Fri Jun  8 2007 Roland McGrath <roland@redhat.com> - 0.128-2
 - Update to 0.128
   - new program: unstrip
   - elfcmp: new option --hash-inexact
