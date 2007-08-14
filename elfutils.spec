@@ -1,5 +1,5 @@
-%define eu_version 0.128
-%define eu_release 2
+%define eu_version 0.129
+%define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -22,7 +22,7 @@ Release: %{eu_release}%{?dist}
 %else
 Release: 0.%{eu_release}
 %endif
-License: GPL
+License: GPLv2 with exceptions
 Group: Development/Tools
 Source: elfutils-%{version}.tar.gz
 Patch1: elfutils-portability.patch
@@ -153,9 +153,6 @@ find . \( -name configure -o -name config.h.in \) -print | xargs touch
 
 %patch2 -p1
 
-# XXX trivial patch for 0.128
-sed -i /ifndef/s/PACKAGE/PACKAGE_NAME/ libdwfl/libdwflP.h
-
 %build
 # Remove -Wall from default flags.  The makefiles enable enough warnings
 # themselves, and they use -Werror.  Appending -Wall defeats the cases where
@@ -262,6 +259,13 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Tue Aug 14 2007 Roland McGrath <roland@redhat.com> - 0.129-1
+- Update to 0.129
+  - readelf: new options --hex-dump (or -x), --strings (or -p) (#250973)
+  - addr2line: new option --symbols (or -S)
+  - libdw: dwarf_getscopes fixes (#230235)
+  - libdwfl: dwfl_module_addrsym fixes (#249490)
+
 * Fri Jun  8 2007 Roland McGrath <roland@redhat.com> - 0.128-2
 - Update to 0.128
   - new program: unstrip
