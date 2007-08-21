@@ -1,5 +1,5 @@
 %define eu_version 0.129
-%define eu_release 1
+%define eu_release 2
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -34,6 +34,9 @@ Requires: elfutils-libs-%{_arch} = %{version}-%{release}
 Patch0: elfutils-strip-copy-symtab.patch
 Source2: testfile16.symtab.bz2
 Source3: testfile16.symtab.debug.bz2
+
+Patch3: elfutils-0.129-elflint-ppc-got.patch
+
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: bison >= 1.875
@@ -153,6 +156,8 @@ find . \( -name configure -o -name config.h.in \) -print | xargs touch
 
 %patch2 -p1
 
+%patch3 -p0
+
 %build
 # Remove -Wall from default flags.  The makefiles enable enough warnings
 # themselves, and they use -Werror.  Appending -Wall defeats the cases where
@@ -259,6 +264,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Mon Aug 20 2007 Roland McGrath <roland@redhat.com> - 0.129-2
+- Fix false-positive eu-elflint failure on ppc -mbss-plt binaries.
+
 * Tue Aug 14 2007 Roland McGrath <roland@redhat.com> - 0.129-1
 - Update to 0.129
   - readelf: new options --hex-dump (or -x), --strings (or -p) (#250973)
