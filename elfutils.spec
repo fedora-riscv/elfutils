@@ -1,4 +1,4 @@
-%define eu_version 0.129
+%define eu_version 0.130
 %define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -34,6 +34,7 @@ Requires: elfutils-libs-%{_arch} = %{version}-%{release}
 Patch0: elfutils-strip-copy-symtab.patch
 Source2: testfile16.symtab.bz2
 Source3: testfile16.symtab.debug.bz2
+
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: bison >= 1.875
@@ -216,6 +217,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_bindir}/eu-strip
 #%{_bindir}/eu-ld
 %{_bindir}/eu-unstrip
+%{_bindir}/eu-make-debug-archive
 
 %files libs
 %defattr(-,root,root)
@@ -259,6 +261,25 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Tue Oct 16 2007 Roland McGrath <roland@redhat.com> - 0.130-1
+- Update to 0.130
+  - eu-readelf -p option can take an argument like -x for one section
+  - eu-readelf --archive-index (or -c)
+  - eu-readelf -n improved output for core dumps
+  - eu-readelf: handle SHT_NOTE sections without requiring phdrs (#249467)
+  - eu-elflint: ditto
+  - eu-elflint: stricter checks on debug sections
+  - eu-unstrip: new options, --list (or -n), --relocate (or -R)
+  - libelf: new function elf_getdata_rawchunk, replaces gelf_rawchunk;
+	    new functions gelf_getnote, gelf_getauxv, gelf_update_auxv
+  - libebl: backend improvements (#324031)
+  - libdwfl: build_id support, new functions for it
+  - libdwfl: dwfl_module_addrsym fixes (#268761, #268981)
+  - libdwfl offline archive support, new script eu-make-debug-archive
+
+* Mon Aug 20 2007 Roland McGrath <roland@redhat.com> - 0.129-2
+- Fix false-positive eu-elflint failure on ppc -mbss-plt binaries.
+
 * Tue Aug 14 2007 Roland McGrath <roland@redhat.com> - 0.129-1
 - Update to 0.129
   - readelf: new options --hex-dump (or -x), --strings (or -p) (#250973)

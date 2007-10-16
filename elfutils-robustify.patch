@@ -65,9 +65,9 @@ src/
 	(check_symtab, is_rel_dyn, check_rela, check_rel, check_dynamic,
 	check_symtab_shndx, check_hash, check_versym): Robustify.
 
---- elfutils-0.127/src/readelf.c.robustify
-+++ elfutils-0.127/src/readelf.c
-@@ -958,6 +958,8 @@ handle_scngrp (Ebl *ebl, Elf_Scn *scn, G
+--- elfutils-0.130/src/readelf.c.robustify
++++ elfutils-0.130/src/readelf.c
+@@ -1053,6 +1053,8 @@ handle_scngrp (Ebl *ebl, Elf_Scn *scn, G
    Elf32_Word *grpref = (Elf32_Word *) data->d_buf;
  
    GElf_Sym sym_mem;
@@ -76,7 +76,7 @@ src/
    printf ((grpref[0] & GRP_COMDAT)
  	  ? ngettext ("\
  \nCOMDAT section group [%2zu] '%s' with signature '%s' contains %zu entry:\n",
-@@ -970,8 +972,8 @@ handle_scngrp (Ebl *ebl, Elf_Scn *scn, G
+@@ -1065,8 +1067,8 @@ handle_scngrp (Ebl *ebl, Elf_Scn *scn, G
  		      data->d_size / sizeof (Elf32_Word) - 1),
  	  elf_ndxscn (scn),
  	  elf_strptr (ebl->elf, shstrndx, shdr->sh_name),
@@ -87,7 +87,7 @@ src/
  	  ?: gettext ("<INVALID SYMBOL>"),
  	  data->d_size / sizeof (Elf32_Word) - 1);
  
-@@ -1122,7 +1124,8 @@ static void
+@@ -1217,7 +1219,8 @@ static void
  handle_dynamic (Ebl *ebl, Elf_Scn *scn, GElf_Shdr *shdr)
  {
    int class = gelf_getclass (ebl->elf);
@@ -97,7 +97,7 @@ src/
    Elf_Data *data;
    size_t cnt;
    size_t shstrndx;
-@@ -1137,6 +1140,11 @@ handle_dynamic (Ebl *ebl, Elf_Scn *scn, 
+@@ -1232,6 +1235,11 @@ handle_dynamic (Ebl *ebl, Elf_Scn *scn, 
      error (EXIT_FAILURE, 0,
  	   gettext ("cannot get section header string table index"));
  
@@ -109,7 +109,7 @@ src/
    printf (ngettext ("\
  \nDynamic segment contains %lu entry:\n Addr: %#0*" PRIx64 "  Offset: %#08" PRIx64 "  Link to section: [%2u] '%s'\n",
  		    "\
-@@ -1146,9 +1154,7 @@ handle_dynamic (Ebl *ebl, Elf_Scn *scn, 
+@@ -1241,9 +1249,7 @@ handle_dynamic (Ebl *ebl, Elf_Scn *scn, 
  	  class == ELFCLASS32 ? 10 : 18, shdr->sh_addr,
  	  shdr->sh_offset,
  	  (int) shdr->sh_link,
@@ -120,7 +120,7 @@ src/
    fputs_unlocked (gettext ("  Type              Value\n"), stdout);
  
    for (cnt = 0; cnt < shdr->sh_size / shdr->sh_entsize; ++cnt)
-@@ -1666,6 +1672,13 @@ handle_symtab (Ebl *ebl, Elf_Scn *scn, G
+@@ -1761,6 +1767,13 @@ handle_symtab (Ebl *ebl, Elf_Scn *scn, G
      error (EXIT_FAILURE, 0,
  	   gettext ("cannot get section header string table index"));
  
@@ -134,7 +134,7 @@ src/
    /* Now we can compute the number of entries in the section.  */
    unsigned int nsyms = data->d_size / (class == ELFCLASS32
  				       ? sizeof (Elf32_Sym)
-@@ -1676,15 +1689,12 @@ handle_symtab (Ebl *ebl, Elf_Scn *scn, G
+@@ -1771,15 +1784,12 @@ handle_symtab (Ebl *ebl, Elf_Scn *scn, G
  		    nsyms),
  	  (unsigned int) elf_ndxscn (scn),
  	  elf_strptr (ebl->elf, shstrndx, shdr->sh_name), nsyms);
@@ -151,7 +151,7 @@ src/
  
    fputs_unlocked (class == ELFCLASS32
  		  ? gettext ("\
-@@ -1920,7 +1930,13 @@ handle_verneed (Ebl *ebl, Elf_Scn *scn, 
+@@ -2015,7 +2025,13 @@ handle_verneed (Ebl *ebl, Elf_Scn *scn, 
      error (EXIT_FAILURE, 0,
  	   gettext ("cannot get section header string table index"));
  
@@ -166,7 +166,7 @@ src/
    printf (ngettext ("\
  \nVersion needs section [%2u] '%s' contains %d entry:\n Addr: %#0*" PRIx64 "  Offset: %#08" PRIx64 "  Link to section: [%2u] '%s'\n",
  		    "\
-@@ -1931,9 +1947,7 @@ handle_verneed (Ebl *ebl, Elf_Scn *scn, 
+@@ -2026,9 +2042,7 @@ handle_verneed (Ebl *ebl, Elf_Scn *scn, 
  	  class == ELFCLASS32 ? 10 : 18, shdr->sh_addr,
  	  shdr->sh_offset,
  	  (unsigned int) shdr->sh_link,
@@ -177,7 +177,7 @@ src/
  
    unsigned int offset = 0;
    for (int cnt = shdr->sh_info; --cnt >= 0; )
-@@ -1986,8 +2000,14 @@ handle_verdef (Ebl *ebl, Elf_Scn *scn, G
+@@ -2081,8 +2095,14 @@ handle_verdef (Ebl *ebl, Elf_Scn *scn, G
      error (EXIT_FAILURE, 0,
  	   gettext ("cannot get section header string table index"));
  
@@ -193,7 +193,7 @@ src/
    printf (ngettext ("\
  \nVersion definition section [%2u] '%s' contains %d entry:\n Addr: %#0*" PRIx64 "  Offset: %#08" PRIx64 "  Link to section: [%2u] '%s'\n",
  		    "\
-@@ -1999,9 +2019,7 @@ handle_verdef (Ebl *ebl, Elf_Scn *scn, G
+@@ -2094,9 +2114,7 @@ handle_verdef (Ebl *ebl, Elf_Scn *scn, G
  	  class == ELFCLASS32 ? 10 : 18, shdr->sh_addr,
  	  shdr->sh_offset,
  	  (unsigned int) shdr->sh_link,
@@ -204,7 +204,7 @@ src/
  
    unsigned int offset = 0;
    for (int cnt = shdr->sh_info; --cnt >= 0; )
-@@ -2263,8 +2281,14 @@ handle_versym (Ebl *ebl, Elf_Scn *scn, G
+@@ -2358,8 +2376,14 @@ handle_versym (Ebl *ebl, Elf_Scn *scn, G
        filename = NULL;
      }
  
@@ -220,7 +220,7 @@ src/
    printf (ngettext ("\
  \nVersion symbols section [%2u] '%s' contains %d entry:\n Addr: %#0*" PRIx64 "  Offset: %#08" PRIx64 "  Link to section: [%2u] '%s'",
  		    "\
-@@ -2276,9 +2300,7 @@ handle_versym (Ebl *ebl, Elf_Scn *scn, G
+@@ -2371,9 +2395,7 @@ handle_versym (Ebl *ebl, Elf_Scn *scn, G
  	  class == ELFCLASS32 ? 10 : 18, shdr->sh_addr,
  	  shdr->sh_offset,
  	  (unsigned int) shdr->sh_link,
@@ -231,7 +231,7 @@ src/
  
    /* Now we can finally look at the actual contents of this section.  */
    for (unsigned int cnt = 0; cnt < shdr->sh_size / shdr->sh_entsize; ++cnt)
-@@ -2330,7 +2352,17 @@ print_hash_info (Ebl *ebl, Elf_Scn *scn,
+@@ -2425,7 +2447,17 @@ print_hash_info (Ebl *ebl, Elf_Scn *scn,
    for (Elf32_Word cnt = 0; cnt < nbucket; ++cnt)
      ++counts[lengths[cnt]];
  
@@ -250,7 +250,7 @@ src/
    printf (ngettext ("\
  \nHistogram for bucket list length in section [%2u] '%s' (total of %d bucket):\n Addr: %#0*" PRIx64 "  Offset: %#08" PRIx64 "  Link to section: [%2u] '%s'\n",
  		    "\
-@@ -2343,9 +2375,7 @@ print_hash_info (Ebl *ebl, Elf_Scn *scn,
+@@ -2438,9 +2470,7 @@ print_hash_info (Ebl *ebl, Elf_Scn *scn,
  	  shdr->sh_addr,
  	  shdr->sh_offset,
  	  (unsigned int) shdr->sh_link,
@@ -261,7 +261,7 @@ src/
  
    if (extrastr != NULL)
      fputs (extrastr, stdout);
-@@ -3655,6 +3685,16 @@ print_debug_aranges_section (Ebl *ebl __
+@@ -3834,6 +3864,16 @@ print_debug_aranges_section (Dwfl_Module
        return;
      }
  
@@ -546,9 +546,9 @@ src/
  		      size_t hidx = elf_hash (name) % nbucket;
  
  		      if (bucket[hidx] == 0)
---- elfutils-0.127/src/elflint.c.robustify
-+++ elfutils-0.127/src/elflint.c
-@@ -123,6 +123,9 @@ static uint32_t shstrndx;
+--- elfutils-0.130/src/elflint.c.robustify
++++ elfutils-0.130/src/elflint.c
+@@ -126,6 +126,9 @@ static uint32_t shstrndx;
  /* Array to count references in section groups.  */
  static int *scnref;
  
@@ -558,7 +558,7 @@ src/
  
  int
  main (int argc, char *argv[])
-@@ -312,10 +315,19 @@ section_name (Ebl *ebl, int idx)
+@@ -315,10 +318,19 @@ section_name (Ebl *ebl, int idx)
  {
    GElf_Shdr shdr_mem;
    GElf_Shdr *shdr;
@@ -579,7 +579,7 @@ src/
  }
  
  
-@@ -337,10 +349,6 @@ static const int valid_e_machine[] =
+@@ -340,10 +352,6 @@ static const int valid_e_machine[] =
    (sizeof (valid_e_machine) / sizeof (valid_e_machine[0]))
  
  
@@ -590,7 +590,7 @@ src/
  static void
  check_elf_header (Ebl *ebl, GElf_Ehdr *ehdr, size_t size)
  {
-@@ -603,7 +611,8 @@ section [%2d] '%s': symbol table cannot 
+@@ -606,7 +614,8 @@ section [%2d] '%s': symbol table cannot 
  	  }
        }
  
@@ -600,7 +600,7 @@ src/
      ERROR (gettext ("\
  section [%2zu] '%s': entry size is does not match ElfXX_Sym\n"),
  	   cnt, section_name (ebl, cnt));
-@@ -641,7 +650,7 @@ section [%2d] '%s': XINDEX for zeroth en
+@@ -644,7 +653,7 @@ section [%2d] '%s': XINDEX for zeroth en
  	       xndxscnidx, section_name (ebl, xndxscnidx));
      }
  
@@ -609,7 +609,7 @@ src/
      {
        sym = gelf_getsymshndx (data, xndxdata, cnt, &sym_mem, &xndx);
        if (sym == NULL)
-@@ -659,7 +668,8 @@ section [%2d] '%s': symbol %zu: invalid 
+@@ -662,7 +671,8 @@ section [%2d] '%s': symbol %zu: invalid 
        else
  	{
  	  name = elf_strptr (ebl->elf, shdr->sh_link, sym->st_name);
@@ -619,7 +619,7 @@ src/
  	}
  
        if (sym->st_shndx == SHN_XINDEX)
-@@ -981,9 +991,11 @@ is_rel_dyn (Ebl *ebl, const GElf_Ehdr *e
+@@ -992,9 +1002,11 @@ is_rel_dyn (Ebl *ebl, const GElf_Ehdr *e
      {
        GElf_Shdr rcshdr_mem;
        const GElf_Shdr *rcshdr = gelf_getshdr (scn, &rcshdr_mem);
@@ -633,7 +633,7 @@ src/
  	{
  	  /* Found the dynamic section.  Look through it.  */
  	  Elf_Data *d = elf_getdata (scn, NULL);
-@@ -993,7 +1005,9 @@ is_rel_dyn (Ebl *ebl, const GElf_Ehdr *e
+@@ -1004,7 +1016,9 @@ is_rel_dyn (Ebl *ebl, const GElf_Ehdr *e
  	    {
  	      GElf_Dyn dyn_mem;
  	      GElf_Dyn *dyn = gelf_getdyn (d, cnt, &dyn_mem);
@@ -644,7 +644,7 @@ src/
  
  	      if (dyn->d_tag == DT_RELCOUNT)
  		{
-@@ -1007,7 +1021,9 @@ section [%2d] '%s': DT_RELCOUNT used for
+@@ -1018,7 +1032,9 @@ section [%2d] '%s': DT_RELCOUNT used for
  		      /* Does the number specified number of relative
  			 relocations exceed the total number of
  			 relocations?  */
@@ -655,7 +655,7 @@ src/
  			ERROR (gettext ("\
  section [%2d] '%s': DT_RELCOUNT value %d too high for this section\n"),
  			       idx, section_name (ebl, idx),
-@@ -1167,7 +1183,8 @@ section [%2d] '%s': no relocations for m
+@@ -1178,7 +1194,8 @@ section [%2d] '%s': no relocations for m
  	}
      }
  
@@ -665,7 +665,7 @@ src/
      ERROR (gettext (reltype == ELF_T_RELA ? "\
  section [%2d] '%s': section entry size does not match ElfXX_Rela\n" : "\
  section [%2d] '%s': section entry size does not match ElfXX_Rel\n"),
-@@ -1389,7 +1406,8 @@ check_rela (Ebl *ebl, GElf_Ehdr *ehdr, G
+@@ -1401,7 +1418,8 @@ check_rela (Ebl *ebl, GElf_Ehdr *ehdr, G
    Elf_Data *symdata = elf_getdata (symscn, NULL);
    enum load_state state = state_undecided;
  
@@ -675,7 +675,7 @@ src/
      {
        GElf_Rela rela_mem;
        GElf_Rela *rela = gelf_getrela (data, cnt, &rela_mem);
-@@ -1439,7 +1457,8 @@ check_rel (Ebl *ebl, GElf_Ehdr *ehdr, GE
+@@ -1451,7 +1469,8 @@ check_rel (Ebl *ebl, GElf_Ehdr *ehdr, GE
    Elf_Data *symdata = elf_getdata (symscn, NULL);
    enum load_state state = state_undecided;
  
@@ -685,7 +685,7 @@ src/
      {
        GElf_Rel rel_mem;
        GElf_Rel *rel = gelf_getrel (data, cnt, &rel_mem);
-@@ -1543,7 +1562,8 @@ section [%2d] '%s': referenced as string
+@@ -1555,7 +1574,8 @@ section [%2d] '%s': referenced as string
  	   shdr->sh_link, section_name (ebl, shdr->sh_link),
  	   idx, section_name (ebl, idx));
  
@@ -695,7 +695,7 @@ src/
      ERROR (gettext ("\
  section [%2d] '%s': section entry size does not match ElfXX_Dyn\n"),
  	   idx, section_name (ebl, idx));
-@@ -1553,7 +1573,7 @@ section [%2d] '%s': section entry size d
+@@ -1565,7 +1585,7 @@ section [%2d] '%s': section entry size d
  	   idx, section_name (ebl, idx));
  
    bool non_null_warned = false;
@@ -704,7 +704,7 @@ src/
      {
        GElf_Dyn dyn_mem;
        GElf_Dyn *dyn = gelf_getdyn (data, cnt, &dyn_mem);
-@@ -1834,6 +1854,8 @@ section [%2d] '%s': entry size does not 
+@@ -1846,6 +1866,8 @@ section [%2d] '%s': entry size does not 
  	   idx, section_name (ebl, idx));
  
    if (symshdr != NULL
@@ -713,7 +713,7 @@ src/
        && (shdr->sh_size / shdr->sh_entsize
  	  < symshdr->sh_size / symshdr->sh_entsize))
      ERROR (gettext ("\
-@@ -1860,6 +1882,12 @@ section [%2d] '%s': extended section ind
+@@ -1872,6 +1894,12 @@ section [%2d] '%s': extended section ind
      }
  
    Elf_Data *data = elf_getdata (elf_getscn (ebl->elf, idx), NULL);
@@ -726,7 +726,7 @@ src/
  
    if (*((Elf32_Word *) data->d_buf) != 0)
      ERROR (gettext ("symbol 0 should have zero extended section index\n"));
-@@ -1902,7 +1930,7 @@ section [%2d] '%s': hash table section i
+@@ -1914,7 +1942,7 @@ section [%2d] '%s': hash table section i
  
    size_t maxidx = nchain;
  
@@ -735,7 +735,7 @@ src/
      {
        size_t symsize = symshdr->sh_size / symshdr->sh_entsize;
  
-@@ -1913,18 +1941,28 @@ section [%2d] '%s': hash table section i
+@@ -1925,18 +1953,28 @@ section [%2d] '%s': hash table section i
        maxidx = symsize;
      }
  
@@ -766,7 +766,7 @@ src/
  }
  
  
-@@ -1954,18 +1992,28 @@ section [%2d] '%s': hash table section i
+@@ -1966,18 +2004,28 @@ section [%2d] '%s': hash table section i
        maxidx = symsize;
      }
  
@@ -798,7 +798,7 @@ src/
  }
  
  
-@@ -1990,7 +2038,7 @@ section [%2d] '%s': bitmask size not pow
+@@ -2002,7 +2050,7 @@ section [%2d] '%s': bitmask size not pow
    if (shdr->sh_size < (4 + bitmask_words + nbuckets) * sizeof (Elf32_Word))
      {
        ERROR (gettext ("\
@@ -807,7 +807,7 @@ src/
  	     idx, section_name (ebl, idx), (long int) shdr->sh_size,
  	     (long int) ((4 + bitmask_words + nbuckets) * sizeof (Elf32_Word)));
        return;
-@@ -2644,8 +2692,9 @@ section [%2d] '%s' refers in sh_link to 
+@@ -2659,8 +2707,9 @@ section [%2d] '%s' refers in sh_link to 
  
    /* The number of elements in the version symbol table must be the
       same as the number of symbols.  */
@@ -819,15 +819,6 @@ src/
      ERROR (gettext ("\
  section [%2d] '%s' has different number of entries than symbol table [%2d] '%s'\n"),
  	   idx, section_name (ebl, idx),
-@@ -3574,6 +3623,8 @@ phdr[%d]: no note entries defined for th
-     return;
- 
-   char *notemem = gelf_rawchunk (ebl->elf, phdr->p_offset, phdr->p_filesz);
-+  if (notemem == NULL)
-+    return;
- 
-   /* ELF64 files often use note section entries in the 32-bit format.
-      The p_align field is set to 8 in case the 64-bit format is used.
 --- elfutils-0.127/libelf/elf_begin.c.robustify
 +++ elfutils-0.127/libelf/elf_begin.c
 @@ -155,7 +155,8 @@ get_shnum (void *map_address, unsigned c
