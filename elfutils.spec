@@ -1,5 +1,5 @@
 %define eu_version 0.130
-%define eu_release 2
+%define eu_release 3
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -265,7 +265,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
-* Wed Oct 17 2007 Roland McGrath <roland@redhat.com> - 0.130-2
+* Wed Oct 17 2007 Roland McGrath <roland@redhat.com> - 0.130-3
 - Fix ET_REL support.
 - Fix odd indentation in eu-readelf -x output.
 
