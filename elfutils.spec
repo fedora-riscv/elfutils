@@ -1,5 +1,5 @@
 %define eu_version 0.130
-%define eu_release 1
+%define eu_release 2
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -34,6 +34,8 @@ Requires: elfutils-libs-%{_arch} = %{version}-%{release}
 Patch0: elfutils-strip-copy-symtab.patch
 Source2: testfile16.symtab.bz2
 Source3: testfile16.symtab.debug.bz2
+
+Patch3: elfutils-0.130-fixes.patch
 
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -154,6 +156,8 @@ find . \( -name configure -o -name config.h.in \) -print | xargs touch
 
 %patch2 -p1
 
+%patch3 -p0
+
 %build
 # Remove -Wall from default flags.  The makefiles enable enough warnings
 # themselves, and they use -Werror.  Appending -Wall defeats the cases where
@@ -261,6 +265,10 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Wed Oct 17 2007 Roland McGrath <roland@redhat.com> - 0.130-2
+- Fix ET_REL support.
+- Fix odd indentation in eu-readelf -x output.
+
 * Tue Oct 16 2007 Roland McGrath <roland@redhat.com> - 0.130-1
 - Update to 0.130
   - eu-readelf -p option can take an argument like -x for one section
