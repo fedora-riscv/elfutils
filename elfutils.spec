@@ -1,5 +1,5 @@
-%define eu_version 0.130
-%define eu_release 3
+%define eu_version 0.131
+%define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -34,8 +34,6 @@ Requires: elfutils-libs-%{_arch} = %{version}-%{release}
 Patch0: elfutils-strip-copy-symtab.patch
 Source2: testfile16.symtab.bz2
 Source3: testfile16.symtab.debug.bz2
-
-Patch3: elfutils-0.130-fixes.patch
 
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -156,8 +154,6 @@ find . \( -name configure -o -name config.h.in \) -print | xargs touch
 
 %patch2 -p1
 
-%patch3 -p0
-
 %build
 # Remove -Wall from default flags.  The makefiles enable enough warnings
 # themselves, and they use -Werror.  Appending -Wall defeats the cases where
@@ -265,6 +261,14 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Sun Nov 11 2007 Roland McGrath <roland@redhat.com> - 0.131-1
+- Update to 0.131
+  - libdw: DW_FORM_ref_addr support; dwarf_formref entry point now deprecated;
+    	   bug fixes for oddly-formatted DWARF
+  - libdwfl: bug fixes in offline archive support, symbol table handling;
+	     apply partial relocations for dwfl_module_address_section on ET_REL
+  - libebl: powerpc backend support for Altivec registers
+
 * Wed Oct 17 2007 Roland McGrath <roland@redhat.com> - 0.130-3
 - Fix ET_REL support.
 - Fix odd indentation in eu-readelf -x output.
