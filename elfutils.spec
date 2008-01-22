@@ -1,4 +1,4 @@
-%define eu_version 0.131
+%define eu_version 0.132
 %define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -261,6 +261,15 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Mon Jan 21 2008 Roland McGrath <roland@redhat.com> - 0.132-1
+- Update to 0.132
+  - libelf: Use loff_t instead of off64_t in libelf.h header. (#377241)
+  - eu-readelf: Fix handling of ET_REL files in archives.
+  - libcpu: Implement x86 and x86-64 disassembler.
+  - libasm: Add interface for disassembler.
+  - all programs: add debugging of branch prediction.
+  - libelf: new function elf_scnshndx.
+
 * Sun Nov 11 2007 Roland McGrath <roland@redhat.com> - 0.131-1
 - Update to 0.131
   - libdw: DW_FORM_ref_addr support; dwarf_formref entry point now deprecated;
