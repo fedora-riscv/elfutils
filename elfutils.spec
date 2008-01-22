@@ -1,5 +1,5 @@
 %define eu_version 0.132
-%define eu_release 1
+%define eu_release 2
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -261,7 +261,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
-* Mon Jan 21 2008 Roland McGrath <roland@redhat.com> - 0.132-1
+* Mon Jan 21 2008 Roland McGrath <roland@redhat.com> - 0.132-2
 - Update to 0.132
   - libelf: Use loff_t instead of off64_t in libelf.h header. (#377241)
   - eu-readelf: Fix handling of ET_REL files in archives.
