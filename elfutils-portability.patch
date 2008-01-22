@@ -419,7 +419,7 @@
  	   -I$(top_srcdir)/lib
 --- elfutils/libcpu/ChangeLog
 +++ elfutils/libcpu/ChangeLog
-@@ -260,6 +260,11 @@
+@@ -262,6 +262,11 @@
  	* defs/i386.doc: New file.
  	* defs/x86_64: New file.
  
