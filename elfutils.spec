@@ -1,10 +1,17 @@
 %define eu_version 0.132
-%define eu_release 2
+%define eu_release 3
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
 %else
 %define compat 0
+%endif
+
+%if "%fedora" >= "8"
+%define scanf_has_m 1
+%endif
+%if "%rhel" >= "6"
+%define scanf_has_m 1
 %endif
 
 %if "%fedora" >= "7"
@@ -144,6 +151,10 @@ for libelf.
 %patch0 -p1
 ln -f %{SOURCE2} %{SOURCE3} tests || cp -f %{SOURCE2} %{SOURCE3} tests
 
+%if !0%{?scanf_has_m}
+sed -i.scanf-m -e 's/%m/%a/' tests/line2addr.c
+%endif
+
 %if %{compat}
 %patch1 -p1
 sleep 1
@@ -261,7 +272,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
-* Mon Jan 21 2008 Roland McGrath <roland@redhat.com> - 0.132-2
+* Mon Jan 21 2008 Roland McGrath <roland@redhat.com> - 0.132-3
 - Update to 0.132
   - libelf: Use loff_t instead of off64_t in libelf.h header. (#377241)
   - eu-readelf: Fix handling of ET_REL files in archives.
