@@ -34,7 +34,6 @@ Group: Development/Tools
 Source: elfutils-%{version}.tar.gz
 Patch1: elfutils-portability.patch
 Patch2: elfutils-robustify.patch
-Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
 Requires: elfutils-libs-%{_arch} = %{version}-%{release}
 
@@ -112,6 +111,7 @@ with the code to handle compiled objects.
 Summary: Library to read and write ELF files.
 Group: Development/Tools
 Provides: elfutils-libelf-%{_arch} = %{version}-%{release}
+Obsoletes: libelf <= 0.8.2-2
 
 %description libelf
 The elfutils-libelf package provides a DSO which allows reading and
@@ -128,6 +128,7 @@ Conflicts: libelf-devel
 %if !0%{?separate_devel_static}
 Requires: elfutils-libelf-devel-static-%{_arch} = %{version}-%{release}
 %endif
+Obsoletes: libelf-devel <= 0.8.2-2
 
 %description libelf-devel
 The elfutils-libelf-devel package contains the libraries to create
@@ -284,9 +285,9 @@ rm -rf ${RPM_BUILD_ROOT}
 * Sun Nov 11 2007 Roland McGrath <roland@redhat.com> - 0.131-1
 - Update to 0.131
   - libdw: DW_FORM_ref_addr support; dwarf_formref entry point now deprecated;
-    	   bug fixes for oddly-formatted DWARF
+           bug fixes for oddly-formatted DWARF
   - libdwfl: bug fixes in offline archive support, symbol table handling;
-	     apply partial relocations for dwfl_module_address_section on ET_REL
+             apply partial relocations for dwfl_module_address_section on ET_REL
   - libebl: powerpc backend support for Altivec registers
 
 * Wed Oct 17 2007 Roland McGrath <roland@redhat.com> - 0.130-3
@@ -303,7 +304,7 @@ rm -rf ${RPM_BUILD_ROOT}
   - eu-elflint: stricter checks on debug sections
   - eu-unstrip: new options, --list (or -n), --relocate (or -R)
   - libelf: new function elf_getdata_rawchunk, replaces gelf_rawchunk;
-	    new functions gelf_getnote, gelf_getauxv, gelf_update_auxv
+            new functions gelf_getnote, gelf_getauxv, gelf_update_auxv
   - libebl: backend improvements (#324031)
   - libdwfl: build_id support, new functions for it
   - libdwfl: dwfl_module_addrsym fixes (#268761, #268981)
@@ -329,7 +330,7 @@ rm -rf ${RPM_BUILD_ROOT}
 - Update to 0.127
   - libdw: new function dwarf_getsrcdirs
   - libdwfl: new functions dwfl_module_addrsym, dwfl_report_begin_add,
-	     dwfl_module_address_section
+             dwfl_module_address_section
 
 * Mon Feb  5 2007 Roland McGrath <roland@redhat.com> - 0.126-1
 - Update to 0.126
