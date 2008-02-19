@@ -27,7 +27,7 @@ Version: %{eu_version}
 %if !%{compat}
 Release: %{eu_release}%{?dist}
 %else
-Release: 0.%{eu_release}
+Release: 1.%{eu_release}
 %endif
 License: GPLv2 with exceptions
 Group: Development/Tools
@@ -273,6 +273,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Tue Feb 19 2008 Fedora Release Engineering <rel-eng@fedoraproject.org> - 0.132-3
+- Autorebuild for GCC 4.3
+
 * Mon Jan 21 2008 Roland McGrath <roland@redhat.com> - 0.132-3
 - Update to 0.132
   - libelf: Use loff_t instead of off64_t in libelf.h header. (#377241)
