@@ -32,6 +32,7 @@ Release: 0.%{eu_release}
 License: GPLv2 with exceptions
 Group: Development/Tools
 URL: https://fedorahosted.org/elfutils/
+# The Fedora development src.rpm is the canonical place this is published.
 Source: elfutils-%{version}.tar.gz
 Patch1: elfutils-portability.patch
 Patch2: elfutils-robustify.patch
@@ -69,7 +70,6 @@ symbols), readelf (to see the raw ELF file structures), and elflint
 %package libs
 Summary: Libraries to handle compiled objects
 Group: Development/Tools
-License: GPL
 Provides: elfutils-libs-%{_arch} = %{version}-%{release}
 Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
 
@@ -82,7 +82,6 @@ other programs using these libraries.
 %package devel
 Summary: Development libraries to handle compiled objects
 Group: Development/Tools
-License: GPL
 Provides: elfutils-devel-%{_arch} = %{version}-%{release}
 Requires: elfutils-libs-%{_arch} = %{version}-%{release}
 Requires: elfutils-libelf-devel-%{_arch} = %{version}-%{release}
