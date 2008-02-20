@@ -27,10 +27,11 @@ Version: %{eu_version}
 %if !%{compat}
 Release: %{eu_release}%{?dist}
 %else
-Release: 1.%{eu_release}
+Release: 0.%{eu_release}
 %endif
 License: GPLv2 with exceptions
 Group: Development/Tools
+URL: https://fedorahosted.org/elfutils/
 Source: elfutils-%{version}.tar.gz
 Patch1: elfutils-portability.patch
 Patch2: elfutils-robustify.patch
@@ -66,7 +67,7 @@ symbols), readelf (to see the raw ELF file structures), and elflint
 
 
 %package libs
-Summary: Libraries to handle compiled objects.
+Summary: Libraries to handle compiled objects
 Group: Development/Tools
 License: GPL
 Provides: elfutils-libs-%{_arch} = %{version}-%{release}
@@ -79,7 +80,7 @@ in the elfutils package.  The elfutils-devel package enables building
 other programs using these libraries.
 
 %package devel
-Summary: Development libraries to handle compiled objects.
+Summary: Development libraries to handle compiled objects
 Group: Development/Tools
 License: GPL
 Provides: elfutils-devel-%{_arch} = %{version}-%{release}
@@ -97,7 +98,7 @@ the DWARF debugging information.  libasm provides a programmable
 assembler interface.
 
 %package devel-static
-Summary: Static archives to handle compiled objects.
+Summary: Static archives to handle compiled objects
 Group: Development/Tools
 Provides: elfutils-devel-static-%{_arch} = %{version}-%{release}
 Requires: elfutils-devel-%{_arch} = %{version}-%{release}
@@ -108,7 +109,7 @@ The elfutils-devel-static package contains the static archives
 with the code to handle compiled objects.
 
 %package libelf
-Summary: Library to read and write ELF files.
+Summary: Library to read and write ELF files
 Group: Development/Tools
 Provides: elfutils-libelf-%{_arch} = %{version}-%{release}
 Obsoletes: libelf <= 0.8.2-2
@@ -129,6 +130,7 @@ Conflicts: libelf-devel
 Requires: elfutils-libelf-devel-static-%{_arch} = %{version}-%{release}
 %endif
 Obsoletes: libelf-devel <= 0.8.2-2
+Provides: libelf-devel
 
 %description libelf-devel
 The elfutils-libelf-devel package contains the libraries to create
@@ -273,9 +275,6 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
-* Tue Feb 19 2008 Fedora Release Engineering <rel-eng@fedoraproject.org> - 0.132-3
-- Autorebuild for GCC 4.3
-
 * Mon Jan 21 2008 Roland McGrath <roland@redhat.com> - 0.132-3
 - Update to 0.132
   - libelf: Use loff_t instead of off64_t in libelf.h header. (#377241)
