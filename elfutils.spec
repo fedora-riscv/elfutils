@@ -1,5 +1,5 @@
 %define eu_version 0.132
-%define eu_release 3
+%define eu_release 4
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -274,6 +274,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Wed Feb 20 2008 Jesse Keating <jkeating@redhat.com> - 0.132-4
+- Rebuild for GCC 4.3
+
 * Mon Jan 21 2008 Roland McGrath <roland@redhat.com> - 0.132-3
 - Update to 0.132
   - libelf: Use loff_t instead of off64_t in libelf.h header. (#377241)
