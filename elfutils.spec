@@ -1,5 +1,5 @@
-%define eu_version 0.132
-%define eu_release 4
+%define eu_version 0.133
+%define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -192,7 +192,6 @@ chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
 # XXX Nuke unpackaged files
 { cd ${RPM_BUILD_ROOT}
   rm -f .%{_bindir}/eu-ld
-  rm -f .%{_bindir}/eu-objdump
   rm -f .%{_includedir}/elfutils/libasm.h
   rm -f .%{_libdir}/libasm-%{version}.so
   rm -f .%{_libdir}/libasm.so*
@@ -222,7 +221,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_bindir}/eu-elflint
 %{_bindir}/eu-findtextrel
 %{_bindir}/eu-nm
-#%{_bindir}/eu-objdump
+%{_bindir}/eu-objdump
 %{_bindir}/eu-ranlib
 %{_bindir}/eu-readelf
 %{_bindir}/eu-size
@@ -274,8 +273,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
-* Wed Feb 20 2008 Jesse Keating <jkeating@redhat.com> - 0.132-4
-- Rebuild for GCC 4.3
+* Fri Feb 29 2008 Roland McGrath <roland@redhat.com> - 0.133-1
+- Update to 0.133
+- Install eu-objdump, now has limited disassembler support.
 
 * Mon Jan 21 2008 Roland McGrath <roland@redhat.com> - 0.132-3
 - Update to 0.132
