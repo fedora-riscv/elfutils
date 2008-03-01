@@ -1,5 +1,5 @@
-%define eu_version 0.132
-%define eu_release 3
+%define eu_version 0.133
+%define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -31,10 +31,11 @@ Release: 0.%{eu_release}
 %endif
 License: GPLv2 with exceptions
 Group: Development/Tools
+URL: https://fedorahosted.org/elfutils/
+# The Fedora development src.rpm is the canonical place this is published.
 Source: elfutils-%{version}.tar.gz
 Patch1: elfutils-portability.patch
 Patch2: elfutils-robustify.patch
-Obsoletes: libelf libelf-devel
 Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
 Requires: elfutils-libs-%{_arch} = %{version}-%{release}
 
@@ -67,9 +68,8 @@ symbols), readelf (to see the raw ELF file structures), and elflint
 
 
 %package libs
-Summary: Libraries to handle compiled objects.
+Summary: Libraries to handle compiled objects
 Group: Development/Tools
-License: GPL
 Provides: elfutils-libs-%{_arch} = %{version}-%{release}
 Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
 
@@ -80,9 +80,8 @@ in the elfutils package.  The elfutils-devel package enables building
 other programs using these libraries.
 
 %package devel
-Summary: Development libraries to handle compiled objects.
+Summary: Development libraries to handle compiled objects
 Group: Development/Tools
-License: GPL
 Provides: elfutils-devel-%{_arch} = %{version}-%{release}
 Requires: elfutils-libs-%{_arch} = %{version}-%{release}
 Requires: elfutils-libelf-devel-%{_arch} = %{version}-%{release}
@@ -98,7 +97,7 @@ the DWARF debugging information.  libasm provides a programmable
 assembler interface.
 
 %package devel-static
-Summary: Static archives to handle compiled objects.
+Summary: Static archives to handle compiled objects
 Group: Development/Tools
 Provides: elfutils-devel-static-%{_arch} = %{version}-%{release}
 Requires: elfutils-devel-%{_arch} = %{version}-%{release}
@@ -109,9 +108,10 @@ The elfutils-devel-static package contains the static archives
 with the code to handle compiled objects.
 
 %package libelf
-Summary: Library to read and write ELF files.
+Summary: Library to read and write ELF files
 Group: Development/Tools
 Provides: elfutils-libelf-%{_arch} = %{version}-%{release}
+Obsoletes: libelf <= 0.8.2-2
 
 %description libelf
 The elfutils-libelf package provides a DSO which allows reading and
@@ -128,6 +128,8 @@ Conflicts: libelf-devel
 %if !0%{?separate_devel_static}
 Requires: elfutils-libelf-devel-static-%{_arch} = %{version}-%{release}
 %endif
+Obsoletes: libelf-devel <= 0.8.2-2
+Provides: libelf-devel
 
 %description libelf-devel
 The elfutils-libelf-devel package contains the libraries to create
@@ -190,7 +192,6 @@ chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
 # XXX Nuke unpackaged files
 { cd ${RPM_BUILD_ROOT}
   rm -f .%{_bindir}/eu-ld
-  rm -f .%{_bindir}/eu-objdump
   rm -f .%{_includedir}/elfutils/libasm.h
   rm -f .%{_libdir}/libasm-%{version}.so
   rm -f .%{_libdir}/libasm.so*
@@ -220,7 +221,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_bindir}/eu-elflint
 %{_bindir}/eu-findtextrel
 %{_bindir}/eu-nm
-#%{_bindir}/eu-objdump
+%{_bindir}/eu-objdump
 %{_bindir}/eu-ranlib
 %{_bindir}/eu-readelf
 %{_bindir}/eu-size
@@ -272,6 +273,10 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Fri Feb 29 2008 Roland McGrath <roland@redhat.com> - 0.133-1
+- Update to 0.133
+- Install eu-objdump, now has limited disassembler support.
+
 * Mon Jan 21 2008 Roland McGrath <roland@redhat.com> - 0.132-3
 - Update to 0.132
   - libelf: Use loff_t instead of off64_t in libelf.h header. (#377241)
@@ -284,9 +289,9 @@ rm -rf ${RPM_BUILD_ROOT}
 * Sun Nov 11 2007 Roland McGrath <roland@redhat.com> - 0.131-1
 - Update to 0.131
   - libdw: DW_FORM_ref_addr support; dwarf_formref entry point now deprecated;
-    	   bug fixes for oddly-formatted DWARF
+           bug fixes for oddly-formatted DWARF
   - libdwfl: bug fixes in offline archive support, symbol table handling;
-	     apply partial relocations for dwfl_module_address_section on ET_REL
+             apply partial relocations for dwfl_module_address_section on ET_REL
   - libebl: powerpc backend support for Altivec registers
 
 * Wed Oct 17 2007 Roland McGrath <roland@redhat.com> - 0.130-3
@@ -303,7 +308,7 @@ rm -rf ${RPM_BUILD_ROOT}
   - eu-elflint: stricter checks on debug sections
   - eu-unstrip: new options, --list (or -n), --relocate (or -R)
   - libelf: new function elf_getdata_rawchunk, replaces gelf_rawchunk;
-	    new functions gelf_getnote, gelf_getauxv, gelf_update_auxv
+            new functions gelf_getnote, gelf_getauxv, gelf_update_auxv
   - libebl: backend improvements (#324031)
   - libdwfl: build_id support, new functions for it
   - libdwfl: dwfl_module_addrsym fixes (#268761, #268981)
@@ -329,7 +334,7 @@ rm -rf ${RPM_BUILD_ROOT}
 - Update to 0.127
   - libdw: new function dwarf_getsrcdirs
   - libdwfl: new functions dwfl_module_addrsym, dwfl_report_begin_add,
-	     dwfl_module_address_section
+             dwfl_module_address_section
 
 * Mon Feb  5 2007 Roland McGrath <roland@redhat.com> - 0.126-1
 - Update to 0.126
