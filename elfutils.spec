@@ -1,5 +1,5 @@
 %define eu_version 0.133
-%define eu_release 1
+%define eu_release 2
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -129,7 +129,6 @@ Conflicts: libelf-devel
 Requires: elfutils-libelf-devel-static-%{_arch} = %{version}-%{release}
 %endif
 Obsoletes: libelf-devel <= 0.8.2-2
-Provides: libelf-devel
 
 %description libelf-devel
 The elfutils-libelf-devel package contains the libraries to create
@@ -192,10 +191,6 @@ chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
 # XXX Nuke unpackaged files
 { cd ${RPM_BUILD_ROOT}
   rm -f .%{_bindir}/eu-ld
-  rm -f .%{_includedir}/elfutils/libasm.h
-  rm -f .%{_libdir}/libasm-%{version}.so
-  rm -f .%{_libdir}/libasm.so*
-  rm -f .%{_libdir}/libasm.a
 }
 
 %check
@@ -233,8 +228,9 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files libs
 %defattr(-,root,root)
+%{_libdir}/libasm-%{version}.so
+%{_libdir}/libasm.so.*
 %{_libdir}/libdw-%{version}.so
-#%{_libdir}/libasm.so.*
 %{_libdir}/libdw.so.*
 %dir %{_libdir}/elfutils
 %{_libdir}/elfutils/lib*.so
@@ -244,16 +240,17 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_includedir}/dwarf.h
 %dir %{_includedir}/elfutils
 %{_includedir}/elfutils/elf-knowledge.h
+%{_includedir}/elfutils/libasm.h
 %{_includedir}/elfutils/libebl.h
 %{_includedir}/elfutils/libdw.h
 %{_includedir}/elfutils/libdwfl.h
 %{_libdir}/libebl.a
-#%{_libdir}/libasm.so
+%{_libdir}/libasm.so
 %{_libdir}/libdw.so
 
 %files devel-static
 %defattr(-,root,root)
-#%{_libdir}/libasm.a
+%{_libdir}/libasm.a
 %{_libdir}/libdw.a
 
 %files libelf
@@ -273,9 +270,14 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
-* Fri Feb 29 2008 Roland McGrath <roland@redhat.com> - 0.133-1
+* Sun Mar  2 2008 Roland McGrath <roland@redhat.com> - 0.133-2
 - Update to 0.133
-- Install eu-objdump, now has limited disassembler support.
+  - readelf, elflint, libebl: SHT_GNU_ATTRIBUTE section handling (readelf -A)
+  - readelf: core note handling for NT_386_TLS, NT_PPC_SPE, Alpha NT_AUXV
+  - libdwfl: bug fixes and optimization in relocation handling
+  - elfcmp: bug fix for non-allocated section handling
+  - ld: implement newer features of binutils linker.
+- Install eu-objdump and libasm, now has limited disassembler support.
 
 * Mon Jan 21 2008 Roland McGrath <roland@redhat.com> - 0.132-3
 - Update to 0.132
