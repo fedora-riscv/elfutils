@@ -1,5 +1,5 @@
-%define eu_version 0.133
-%define eu_release 3
+%define eu_version 0.134
+%define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -32,8 +32,7 @@ Release: 0.%{eu_release}
 License: GPLv2 with exceptions
 Group: Development/Tools
 URL: https://fedorahosted.org/elfutils/
-# The Fedora development src.rpm is the canonical place this is published.
-Source: elfutils-%{version}.tar.gz
+Source: http://fedorahosted.org/releases/e/l/elfutils/%{name}-%{version}.tar.gz
 Patch1: elfutils-portability.patch
 Patch2: elfutils-robustify.patch
 Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
@@ -124,7 +123,6 @@ Summary: Development support for libelf
 Group: Development/Tools
 Provides: elfutils-libelf-devel-%{_arch} = %{version}-%{release}
 Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
-Conflicts: libelf-devel
 %if !0%{?separate_devel_static}
 Requires: elfutils-libelf-devel-static-%{_arch} = %{version}-%{release}
 %endif
@@ -166,6 +164,8 @@ find . \( -name configure -o -name config.h.in \) -print | xargs touch
 
 %patch2 -p1
 
+find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
+
 %build
 # Remove -Wall from default flags.  The makefiles enable enough warnings
 # themselves, and they use -Werror.  Appending -Wall defeats the cases where
@@ -194,11 +194,7 @@ chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
 }
 
 %check
-# These tests fail in minor ways on sparc, and trying to get them fixed
-# simply resulted in people flaming each other. Disabling for the time being.
-%ifnarch sparc sparcv9 sparc64
 make -s check
-%endif
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
@@ -274,8 +270,11 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
-* Wed Mar 26 2008 Tom "spot" Callaway <tcallawa@redhat.com> - 0.133-3
-- conditionalize tests so that they don't run on sparc
+* Wed Apr  9 2008 Roland McGrath <roland@redhat.com> - 0.134-1
+- Update to 0.134
+  - elflint: backend improvements for sparc, alpha (#204170)
+  - libdwfl, libelf: bug fixes (#439344, #438867, #438263, #438190)
+- Remove Conflicts: libelf-devel from elfutils-libelf-devel. (#435742)
 
 * Sun Mar  2 2008 Roland McGrath <roland@redhat.com> - 0.133-2
 - Update to 0.133

@@ -3,6 +3,10 @@
 NAME := elfutils
 SPECFILE = elfutils.spec
 
+UPSTREAM_CHECKS := sig
+UPSTREAM_FILES = $(NAME)-$(VERSION).tar.gz
+upstream:;
+
 define find-makefile-common
 for d in common ../common ../../common ; do if [ -f $$d/Makefile.common ] ; then if [ -f $$d/CVS/Root -a -w $$/Makefile.common ] ; then cd $$d ; cvs -Q update ; fi ; echo "$$d/Makefile.common" ; break ; fi ; done
 endef
@@ -20,15 +24,23 @@ endif
 
 include $(MAKEFILE_COMMON)
 
+CURL += -k
+
 MONOTONE = mtn
 
-elfutils-portability.patch: elfutils-$(VERSION).tar.gz
-	@rm -rf elfutils-master elfutils-portable
-	$(MONOTONE) checkout -b com.redhat.elfutils elfutils-master
-	$(MONOTONE) checkout -b com.redhat.elfutils.portable elfutils-portable
+branch-portability = portable
+
+elfutils-%.patch: elfutils-$(VERSION).tar.gz Makefile
+	@rm -rf elfutils-master elfutils-$*
+#	$(MONOTONE) checkout -b com.redhat.elfutils elfutils-master
+	$(MONOTONE) checkout -b com.redhat.elfutils \
+		    	     -r t:elfutils-$(VERSION) elfutils-master
+	$(MONOTONE) checkout \
+		    -b com.redhat.elfutils.$(firstword $(branch-$*) $*) \
+		    elfutils-$*
 	cd elfutils-master; autoreconf -i; rm -rf autom4te.cache _MTN
-	cd elfutils-portable; autoreconf -i; rm -rf autom4te.cache _MTN
-	diff -rpu elfutils-master elfutils-portable | \
+	cd elfutils-$*; autoreconf -i; rm -rf autom4te.cache _MTN
+	diff -Nrpu elfutils-master elfutils-$* | \
 	filterdiff --remove-timestamps --strip=1 --addprefix=elfutils/ > $@.new
 	mv $@.new $@
 
