@@ -541,7 +541,7 @@
  						       $(COMPILE)))
 --- elfutils/libdwfl/ChangeLog
 +++ elfutils/libdwfl/ChangeLog
-@@ -787,6 +787,11 @@
+@@ -806,6 +806,11 @@
  
  2005-07-21  Roland McGrath  <roland@redhat.com>
  
@@ -795,7 +795,7 @@
  YACC = @YACC@
 --- elfutils/src/ChangeLog
 +++ elfutils/src/ChangeLog
-@@ -15,6 +15,11 @@
+@@ -34,6 +34,11 @@
  	that matches its PT_LOAD's p_flags &~ PF_W.  On sparc, PF_X really
  	is valid in RELRO.
  
@@ -807,7 +807,7 @@
  2008-02-29  Roland McGrath  <roland@redhat.com>
  
  	* readelf.c (print_attributes): Add a cast.
-@@ -266,6 +271,8 @@
+@@ -285,6 +290,8 @@
  
  	* readelf.c (hex_dump): Fix rounding error in whitespace calculation.
  
@@ -816,7 +816,7 @@
  2007-10-15  Roland McGrath  <roland@redhat.com>
  
  	* make-debug-archive.in: New file.
-@@ -705,6 +712,10 @@
+@@ -724,6 +731,10 @@
  	* elflint.c (valid_e_machine): Add EM_ALPHA.
  	Reported by Christian Aichinger <Greek0@gmx.net>.
  
@@ -827,7 +827,7 @@
  2006-08-08  Ulrich Drepper  <drepper@redhat.com>
  
  	* elflint.c (check_dynamic): Don't require DT_HASH for DT_SYMTAB.
-@@ -781,6 +792,10 @@
+@@ -800,6 +811,10 @@
  	* Makefile.am: Add hacks to create dependency files for non-generic
  	linker.
  
@@ -838,7 +838,7 @@
  2006-06-12  Ulrich Drepper  <drepper@redhat.com>
  
  	* ldgeneric.c (ld_generic_generate_sections): Don't create .interp
-@@ -1129,6 +1144,11 @@
+@@ -1148,6 +1163,11 @@
  	* readelf.c (print_debug_loc_section): Fix indentation for larger
  	address size.
  
@@ -1010,7 +1010,7 @@
      }
  
    /* Open the file.  */
-@@ -1703,7 +1719,7 @@ handle_elf (int fd, Elf *elf, const char
+@@ -1745,7 +1761,7 @@ handle_elf (int fd, Elf *elf, const char
    /* If requested, preserve the timestamp.  */
    if (tvp != NULL)
      {
@@ -1019,7 +1019,7 @@
  	{
  	  error (0, errno, gettext ("\
  cannot set access and modification date of '%s'"),
-@@ -1760,7 +1776,7 @@ handle_ar (int fd, Elf *elf, const char 
+@@ -1802,7 +1818,7 @@ handle_ar (int fd, Elf *elf, const char 
  
    if (tvp != NULL)
      {
@@ -1030,7 +1030,7 @@
  cannot set access and modification date of '%s'"), fname);
 --- elfutils/tests/ChangeLog
 +++ elfutils/tests/ChangeLog
-@@ -32,6 +32,8 @@
+@@ -45,6 +45,8 @@
  
  2008-01-21  Roland McGrath  <roland@redhat.com>
  
@@ -1039,7 +1039,7 @@
  	* testfile45.S.bz2: Add tests for cltq, cqto.
  	* testfile45.expect.bz2: Adjust.
  
-@@ -740,6 +742,11 @@
+@@ -753,6 +755,11 @@
  	* Makefile.am (TESTS): Add run-elflint-test.sh.
  	(EXTRA_DIST): Add run-elflint-test.sh and testfile18.bz2.
  
@@ -1082,7 +1082,7 @@
  endif
 --- elfutils/tests/Makefile.in
 +++ elfutils/tests/Makefile.in
-@@ -334,6 +334,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -335,6 +335,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -1090,7 +1090,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -363,6 +364,7 @@ SHELL = @SHELL@
+@@ -364,6 +365,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
@@ -1098,7 +1098,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  YACC = @YACC@
-@@ -417,10 +419,10 @@ sysconfdir = @sysconfdir@
+@@ -418,10 +420,10 @@ sysconfdir = @sysconfdir@
  target_alias = @target_alias@
  top_builddir = @top_builddir@
  top_srcdir = @top_srcdir@
