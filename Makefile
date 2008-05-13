@@ -30,11 +30,13 @@ MONOTONE = mtn
 
 branch-portability = portable
 
+elfutils-base = t:elfutils-$(VERSION)
+
 elfutils-%.patch: elfutils-$(VERSION).tar.gz Makefile
 	@rm -rf elfutils-master elfutils-$*
 #	$(MONOTONE) checkout -b com.redhat.elfutils elfutils-master
 	$(MONOTONE) checkout -b com.redhat.elfutils \
-		    	     -r t:elfutils-$(VERSION) elfutils-master
+		    	     -r $(elfutils-base) elfutils-master
 	$(MONOTONE) checkout \
 		    -b com.redhat.elfutils.$(firstword $(branch-$*) $*) \
 		    elfutils-$*
