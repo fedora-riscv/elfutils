@@ -1,5 +1,5 @@
-%define eu_version 0.133
-%define eu_release 2
+%define eu_version 0.135
+%define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -32,17 +32,11 @@ Release: 0.%{eu_release}
 License: GPLv2 with exceptions
 Group: Development/Tools
 URL: https://fedorahosted.org/elfutils/
-# The Fedora development src.rpm is the canonical place this is published.
-Source: elfutils-%{version}.tar.gz
+Source: http://fedorahosted.org/releases/e/l/elfutils/%{name}-%{version}.tar.gz
 Patch1: elfutils-portability.patch
 Patch2: elfutils-robustify.patch
 Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
 Requires: elfutils-libs-%{_arch} = %{version}-%{release}
-
-Patch0: elfutils-strip-copy-symtab.patch
-Source2: testfile16.symtab.bz2
-Source3: testfile16.symtab.debug.bz2
-
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: bison >= 1.875
@@ -124,7 +118,6 @@ Summary: Development support for libelf
 Group: Development/Tools
 Provides: elfutils-libelf-devel-%{_arch} = %{version}-%{release}
 Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
-Conflicts: libelf-devel
 %if !0%{?separate_devel_static}
 Requires: elfutils-libelf-devel-static-%{_arch} = %{version}-%{release}
 %endif
@@ -149,22 +142,21 @@ for libelf.
 %prep
 %setup -q
 
-%patch0 -p1
-ln -f %{SOURCE2} %{SOURCE3} tests || cp -f %{SOURCE2} %{SOURCE3} tests
-
 %if !0%{?scanf_has_m}
 sed -i.scanf-m -e 's/%m/%a/' tests/line2addr.c
 %endif
 
 %if %{compat}
-%patch1 -p1
+%patch1 -p1 -b .portability
 sleep 1
 find . \( -name Makefile.in -o -name aclocal.m4 \) -print | xargs touch
 sleep 1
 find . \( -name configure -o -name config.h.in \) -print | xargs touch
 %endif
 
-%patch2 -p1
+%patch2 -p1 -b .robustify
+
+find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
 # Remove -Wall from default flags.  The makefiles enable enough warnings
@@ -270,6 +262,17 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Mon May 12 2008 Roland McGrath <roland@redhat.com> - 0.135-1
+- Update to 0.135
+  - libdwfl: bug fixes
+  - eu-strip: changed handling of ET_REL files wrt symbol tables and relocs
+
+* Wed Apr  9 2008 Roland McGrath <roland@redhat.com> - 0.134-1
+- Update to 0.134
+  - elflint: backend improvements for sparc, alpha (#204170)
+  - libdwfl, libelf: bug fixes (#439344, #438867, #438263, #438190)
+- Remove Conflicts: libelf-devel from elfutils-libelf-devel. (#435742)
+
 * Sun Mar  2 2008 Roland McGrath <roland@redhat.com> - 0.133-2
 - Update to 0.133
   - readelf, elflint, libebl: SHT_GNU_ATTRIBUTE section handling (readelf -A)
