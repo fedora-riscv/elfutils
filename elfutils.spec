@@ -1,5 +1,5 @@
 %define eu_version 0.135
-%define eu_release 1
+%define eu_release 2
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -7,17 +7,17 @@
 %define compat 0
 %endif
 
-%if "%fedora" >= "8"
+%if 0%{?fedora} >= 8
 %define scanf_has_m 1
 %endif
-%if "%rhel" >= "6"
+%if 0%{?rhel} >= 6
 %define scanf_has_m 1
 %endif
 
-%if "%fedora" >= "7"
+%if 0%{?fedora} >= 7
 %define separate_devel_static 1
 %endif
-%if "%rhel" >= "6"
+%if 0%{?rhel} >= 6
 %define separate_devel_static 1
 %endif
 
@@ -262,6 +262,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Mon Jul  7 2008 Tom "spot" Callaway <tcallawa@redhat.com> - 0.135-2
+- fix conditional comparison
+
 * Mon May 12 2008 Roland McGrath <roland@redhat.com> - 0.135-1
 - Update to 0.135
   - libdwfl: bug fixes
