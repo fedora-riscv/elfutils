@@ -1,5 +1,5 @@
-%define eu_version 0.135
-%define eu_release 2
+%define eu_version 0.137
+%define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -262,6 +262,11 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Wed Aug 27 2008 Roland McGrath <roland@redhat.com> - 0.137-1
+- Update to 0.137
+  - libdwfl: bug fixes; new segment interfaces;
+             all the libdwfl-based tools now support --core=COREFILE option
+
 * Mon Jul  7 2008 Tom "spot" Callaway <tcallawa@redhat.com> - 0.135-2
 - fix conditional comparison
 
