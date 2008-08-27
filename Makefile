@@ -24,7 +24,7 @@ endif
 
 include $(MAKEFILE_COMMON)
 
-ifdef CURL
+ifneq (,$(CURL))
 CURL += -k
 endif
 
