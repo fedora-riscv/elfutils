@@ -24,7 +24,9 @@ endif
 
 include $(MAKEFILE_COMMON)
 
+ifdef CURL
 CURL += -k
+endif
 
 MONOTONE = mtn
 
