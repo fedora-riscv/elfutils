@@ -1,5 +1,5 @@
 %define eu_version 0.137
-%define eu_release 1
+%define eu_release 2
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -35,6 +35,7 @@ URL: https://fedorahosted.org/elfutils/
 Source: http://fedorahosted.org/releases/e/l/elfutils/%{name}-%{version}.tar.gz
 Patch1: elfutils-portability.patch
 Patch2: elfutils-robustify.patch
+Patch3: elfutils-0.137-fixes.patch
 Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
 Requires: elfutils-libs-%{_arch} = %{version}-%{release}
 
@@ -156,6 +157,8 @@ find . \( -name configure -o -name config.h.in \) -print | xargs touch
 
 %patch2 -p1 -b .robustify
 
+%patch3 -p1 -b .fixes
+
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
@@ -262,10 +265,11 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
-* Wed Aug 27 2008 Roland McGrath <roland@redhat.com> - 0.137-1
+* Thu Aug 28 2008 Roland McGrath <roland@redhat.com> - 0.137-2
 - Update to 0.137
   - libdwfl: bug fixes; new segment interfaces;
              all the libdwfl-based tools now support --core=COREFILE option
+- Resolves: RHBZ #325021, RHBZ #447416
 
 * Mon Jul  7 2008 Tom "spot" Callaway <tcallawa@redhat.com> - 0.135-2
 - fix conditional comparison
@@ -354,7 +358,6 @@ rm -rf ${RPM_BUILD_ROOT}
   - New program eu-ar.
   - libdw: fix missing dwarf_getelf (#227206)
   - libdwfl: dwfl_module_addrname for st_size=0 symbols (#227167, #227231)
-- Resolves: RHBZ #227206, RHBZ #227167, RHBZ #227231
 
 * Wed Jan 10 2007 Roland McGrath <roland@redhat.com> - 0.125-3
 - Fix overeager warn_unused_result build failures.
