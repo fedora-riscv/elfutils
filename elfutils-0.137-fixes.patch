@@ -1,6 +1,11 @@
 --- elfutils-0.137/libdwfl/ChangeLog
 +++ elfutils-0.137/libdwfl/ChangeLog
-@@ -1,3 +1,12 @@
+@@ -1,3 +1,17 @@
++2008-09-29  Roland McGrath  <roland@redhat.com>
++
++	* segment.c (insert): Must realloc DWFL->lookup_module here too.
++	(dwfl_report_segment): Clear DWFL->lookup_module before insert calls.
++
 +2008-08-28  Roland McGrath  <roland@redhat.com>
 +
 +	* segment.c (reify_segments): Fix last change.
@@ -27,7 +32,35 @@
    return nread;
 --- elfutils-0.137/libdwfl/segment.c
 +++ elfutils-0.137/libdwfl/segment.c
-@@ -175,9 +175,17 @@ reify_segments (Dwfl *dwfl)
+@@ -83,12 +83,26 @@ insert (Dwfl *dwfl, size_t i, GElf_Addr 
+       int *nsegndx = realloc (dwfl->lookup_segndx, sizeof nsegndx[0] * n);
+       if (unlikely (nsegndx == NULL))
+ 	{
+-	  free (naddr);
++	  if (naddr != dwfl->lookup_addr)
++	    free (naddr);
+ 	  return true;
+ 	}
+       dwfl->lookup_alloc = n;
+       dwfl->lookup_addr = naddr;
+       dwfl->lookup_segndx = nsegndx;
++
++      if (dwfl->lookup_module != NULL)
++	{
++	  /* Make sure this array is big enough too.  */
++	  Dwfl_Module **old = dwfl->lookup_module;
++	  dwfl->lookup_module = realloc (dwfl->lookup_module,
++					 sizeof dwfl->lookup_module[0] * n);
++	  if (unlikely (dwfl->lookup_module == NULL))
++	    {
++	      free (old);
++	      return true;
++	    }
++	}
+     }
+ 
+   if (unlikely (i < dwfl->lookup_elts))
+@@ -175,9 +189,17 @@ reify_segments (Dwfl *dwfl)
  	      return true;
  	    ++idx;
  	  }
@@ -47,6 +80,32 @@
  	    /* The module ends in the middle of this segment.  Split it.  */
  	    && unlikely (insert (dwfl, idx + 1,
  				 end, dwfl->lookup_addr[idx + 1], -1)))
+@@ -261,6 +283,12 @@ dwfl_report_segment (Dwfl *dwfl, int ndx
+ 			    phdr->p_align < dwfl->segment_align))
+     dwfl->segment_align = phdr->p_align;
+ 
++  if (unlikely (dwfl->lookup_module != NULL))
++    {
++      free (dwfl->lookup_module);
++      dwfl->lookup_module = NULL;
++    }
++
+   GElf_Addr start = segment_start (dwfl, bias + phdr->p_vaddr);
+   GElf_Addr end = segment_end (dwfl, bias + phdr->p_vaddr + phdr->p_memsz);
+ 
+@@ -289,12 +317,6 @@ dwfl_report_segment (Dwfl *dwfl, int ndx
+   dwfl->lookup_tail_offset = end - bias - phdr->p_vaddr + phdr->p_offset;
+   dwfl->lookup_tail_ndx = ndx + 1;
+ 
+-  if (unlikely (dwfl->lookup_module != NULL))
+-    {
+-      free (dwfl->lookup_module);
+-      dwfl->lookup_module = NULL;
+-    }
+-
+   return ndx;
+ }
+ INTDEF (dwfl_report_segment)
 --- elfutils-0.137/libelf/ChangeLog
 +++ elfutils-0.137/libelf/ChangeLog
 @@ -1,3 +1,9 @@
@@ -61,12 +120,9 @@
  	* Makefile.am (libelf_so_LDLIBS): New variable.
 --- elfutils-0.137/libelf/elf_begin.c
 +++ elfutils-0.137/libelf/elf_begin.c
-@@ -110,8 +110,14 @@ get_shnum (void *map_address, unsigned c
-   } ehdr_mem;
+@@ -111,7 +111,11 @@ get_shnum (void *map_address, unsigned c
    bool is32 = e_ident[EI_CLASS] == ELFCLASS32;
  
-+  // e_shnum shoff
-+
    /* Make the ELF header available.  */
 -  if (e_ident[EI_DATA] == MY_ELFDATA)
 +  if (e_ident[EI_DATA] == MY_ELFDATA
@@ -77,7 +133,7 @@
      ehdr.p = e_ident;
    else
      {
-@@ -130,8 +136,11 @@ get_shnum (void *map_address, unsigned c
+@@ -130,8 +134,11 @@ get_shnum (void *map_address, unsigned c
  	  else
  	    memcpy (&ehdr_mem, e_ident, sizeof (Elf32_Ehdr));
  
@@ -91,7 +147,7 @@
  	}
        else
  	{
-@@ -143,8 +152,11 @@ get_shnum (void *map_address, unsigned c
+@@ -143,8 +150,11 @@ get_shnum (void *map_address, unsigned c
  	  else
  	    memcpy (&ehdr_mem, e_ident, sizeof (Elf64_Ehdr));
  
