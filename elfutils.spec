@@ -1,5 +1,5 @@
 %define eu_version 0.137
-%define eu_release 2
+%define eu_release 3
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -265,6 +265,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Wed Oct  1 2008 Roland McGrath <roland@redhat.com> - 0.137-3
+- fix libdwfl regression (#462689)
+
 * Thu Aug 28 2008 Roland McGrath <roland@redhat.com> - 0.137-2
 - Update to 0.137
   - libdwfl: bug fixes; new segment interfaces;
