@@ -4,7 +4,7 @@ NAME := elfutils
 SPECFILE = elfutils.spec
 
 UPSTREAM_CHECKS := sig
-UPSTREAM_FILES = $(NAME)-$(VERSION).tar.gz
+UPSTREAM_FILES = $(NAME)-$(VERSION).tar.bz2
 upstream:;
 
 define find-makefile-common
@@ -53,7 +53,7 @@ portable-r = 0.$(subst $(DIST),,$(RELEASE))
 portable-vr = $(VERSION)-$(portable-r)
 portable.srpm = elfutils-$(portable-vr).src.rpm
 $(portable.srpm): elfutils-portable.spec elfutils-portability.patch \
-		  elfutils-$(VERSION).tar.gz
+		  elfutils-$(VERSION).tar.bz2
 	$(RPM_WITH_DIRS) --nodeps -bs $<
 
 portable-srpm: $(portable.srpm)
