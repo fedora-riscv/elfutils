@@ -1,5 +1,5 @@
-%define eu_version 0.137
-%define eu_release 3
+%define eu_version 0.138
+%define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -32,10 +32,9 @@ Release: 0.%{eu_release}
 License: GPLv2 with exceptions
 Group: Development/Tools
 URL: https://fedorahosted.org/elfutils/
-Source: http://fedorahosted.org/releases/e/l/elfutils/%{name}-%{version}.tar.gz
+Source: http://fedorahosted.org/releases/e/l/elfutils/%{name}-%{version}.tar.bz2
 Patch1: elfutils-portability.patch
 Patch2: elfutils-robustify.patch
-Patch3: elfutils-0.137-fixes.patch
 Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
 Requires: elfutils-libs-%{_arch} = %{version}-%{release}
 
@@ -157,8 +156,6 @@ find . \( -name configure -o -name config.h.in \) -print | xargs touch
 
 %patch2 -p1 -b .robustify
 
-%patch3 -p1 -b .fixes
-
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
@@ -239,6 +236,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_includedir}/elfutils/libebl.h
 %{_includedir}/elfutils/libdw.h
 %{_includedir}/elfutils/libdwfl.h
+%{_includedir}/elfutils/version.h
 %{_libdir}/libebl.a
 %{_libdir}/libasm.so
 %{_libdir}/libdw.so
@@ -265,6 +263,16 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Wed Dec 31 2008 Roland McGrath <roland@redhat.com> - 0.138-1
+- Update to 0.138
+  - Install <elfutils/version.h> header file for applications to use in
+    source version compatibility checks.
+  - libebl: backend fixes for i386 TLS relocs; backend support for NT_386_IOPERM
+  - libcpu: disassembler fixes (#469739)
+  - libdwfl: bug fixes (#465878)
+  - libelf: bug fixes
+  - eu-nm: bug fixes for handling corrupt input files (#476136)
+
 * Wed Oct  1 2008 Roland McGrath <roland@redhat.com> - 0.137-3
 - fix libdwfl regression (#462689)
 
