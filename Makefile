@@ -4,7 +4,7 @@ NAME := elfutils
 SPECFILE = elfutils.spec
 
 UPSTREAM_CHECKS := sig
-UPSTREAM_FILES = $(NAME)-$(VERSION).tar.gz
+UPSTREAM_FILES = $(NAME)-$(VERSION).tar.bz2
 upstream:;
 
 define find-makefile-common
@@ -28,22 +28,19 @@ ifneq (,$(CURL))
 CURL += -k
 endif
 
-MONOTONE = mtn
-
 branch-portability = portable
 
-elfutils-base = t:elfutils-$(VERSION)
+elfutils-base = elfutils-$(VERSION)
+elfutils-base = master
 
-elfutils-%.patch: elfutils-$(VERSION).tar.gz Makefile
+elfutils-%.patch: elfutils-$(VERSION).tar.bz2 Makefile
 	@rm -rf elfutils-master elfutils-$*
-#	$(MONOTONE) checkout -b com.redhat.elfutils elfutils-master
-	$(MONOTONE) checkout -b com.redhat.elfutils \
-		    	     -r $(elfutils-base) elfutils-master
-	$(MONOTONE) checkout \
-		    -b com.redhat.elfutils.$(firstword $(branch-$*) $*) \
-		    elfutils-$*
-	cd elfutils-master; autoreconf -i; rm -rf autom4te.cache _MTN
-	cd elfutils-$*; autoreconf -i; rm -rf autom4te.cache _MTN
+	git archive --prefix=elfutils-master/ $(elfutils-base) \
+	| tar xf -
+	git archive --prefix=elfutils-$*/ $(firstword $(branch-$*) $*) \
+	| tar xf -
+	cd elfutils-master; autoreconf -i; rm -rf autom4te.cache
+	cd elfutils-$*; autoreconf -i; rm -rf autom4te.cache
 	diff -Nrpu elfutils-master elfutils-$* | \
 	filterdiff --remove-timestamps --strip=1 --addprefix=elfutils/ > $@.new
 	mv $@.new $@
@@ -56,7 +53,7 @@ portable-r = 0.$(subst $(DIST),,$(RELEASE))
 portable-vr = $(VERSION)-$(portable-r)
 portable.srpm = elfutils-$(portable-vr).src.rpm
 $(portable.srpm): elfutils-portable.spec elfutils-portability.patch \
-		  elfutils-$(VERSION).tar.gz
+		  elfutils-$(VERSION).tar.bz2
 	$(RPM_WITH_DIRS) --nodeps -bs $<
 
 portable-srpm: $(portable.srpm)
