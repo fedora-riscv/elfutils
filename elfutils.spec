@@ -1,5 +1,5 @@
 %define eu_version 0.138
-%define eu_release 1
+%define eu_release 2
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -37,6 +37,8 @@ Patch1: elfutils-portability.patch
 Patch2: elfutils-robustify.patch
 Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
 Requires: elfutils-libs-%{_arch} = %{version}-%{release}
+
+Patch3: elfutils-0.138-libelf-padding-fix.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: bison >= 1.875
@@ -156,6 +158,8 @@ find . \( -name configure -o -name config.h.in \) -print | xargs touch
 
 %patch2 -p1 -b .robustify
 
+%patch3 -p1 -b .fixes
+
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
@@ -263,6 +267,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Thu Jan  1 2009 Roland McGrath <roland@redhat.com> - 0.138-2
+- Fix libelf regression.
+
 * Wed Dec 31 2008 Roland McGrath <roland@redhat.com> - 0.138-1
 - Update to 0.138
   - Install <elfutils/version.h> header file for applications to use in
