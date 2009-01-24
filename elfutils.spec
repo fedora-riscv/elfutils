@@ -1,4 +1,4 @@
-%define eu_version 0.138
+%define eu_version 0.139
 %define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -33,8 +33,8 @@ License: GPLv2 with exceptions
 Group: Development/Tools
 URL: https://fedorahosted.org/elfutils/
 Source: http://fedorahosted.org/releases/e/l/elfutils/%{name}-%{version}.tar.bz2
-Patch1: elfutils-portability.patch
-Patch2: elfutils-robustify.patch
+Patch1: elfutils-robustify.patch
+Patch2: elfutils-portability.patch
 Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
 Requires: elfutils-libs-%{_arch} = %{version}-%{release}
 
@@ -48,6 +48,19 @@ BuildRequires: gcc >= 3.4
 BuildRequires: glibc-headers >= 2.3.4-11
 %else
 BuildRequires: gcc >= 3.2
+%endif
+
+%define use_zlib 0
+%if 0%{?fedora} >= 5
+%define use_zlib 1
+%endif
+%if 0%{?rhel} >= 5
+%define use_zlib 1
+%endif
+
+%if %{use_zlib}
+BuildRequires: zlib-devel >= 1.2.2.3
+BuildRequires: bzip2-devel
 %endif
 
 %define _gnu %{nil}
@@ -142,19 +155,19 @@ for libelf.
 %prep
 %setup -q
 
-%if !0%{?scanf_has_m}
-sed -i.scanf-m -e 's/%m/%a/' tests/line2addr.c
-%endif
+%patch1 -p1 -b .robustify
 
 %if %{compat}
-%patch1 -p1 -b .portability
+%patch2 -p1 -b .portability
 sleep 1
 find . \( -name Makefile.in -o -name aclocal.m4 \) -print | xargs touch
 sleep 1
 find . \( -name configure -o -name config.h.in \) -print | xargs touch
+%else
+%if !0%{?scanf_has_m}
+sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
-
-%patch2 -p1 -b .robustify
+%endif
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -263,6 +276,17 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Fri Jan 23 2009 Roland McGrath <roland@redhat.com> - 0.139-1
+- Update to 0.139
+  - libcpu: Add Intel SSE4 disassembler support
+  - readelf: Implement call frame information and exception handling dumping.
+    	     Add -e option.  Enable it implicitly for -a.
+  - elflint: Check PT_GNU_EH_FRAME program header entry.
+  - libdwfl: Support automatic gzip/bzip2 decompression of ELF files. (#472136)
+
+* Thu Jan  1 2009 Roland McGrath <roland@redhat.com> - 0.138-2
+- Fix libelf regression.
+
 * Wed Dec 31 2008 Roland McGrath <roland@redhat.com> - 0.138-1
 - Update to 0.138
   - Install <elfutils/version.h> header file for applications to use in
