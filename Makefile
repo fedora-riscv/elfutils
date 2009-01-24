@@ -3,6 +3,8 @@
 NAME := elfutils
 SPECFILE = elfutils.spec
 
+all:
+
 UPSTREAM_CHECKS := sig
 UPSTREAM_FILES = $(NAME)-$(VERSION).tar.bz2
 upstream:;
@@ -28,20 +30,19 @@ ifneq (,$(CURL))
 CURL += -k
 endif
 
+patches := $(patsubst %,elfutils-%.patch,robustify portability)
+all: $(patches)
+
 branch-portability = portable
+branch-master = elfutils-$(VERSION)
 
-elfutils-base = elfutils-$(VERSION)
-elfutils-base = master
+elfutils-%/configure: .git/refs/heads/* Makefile
+	@rm -rf $(@D)
+	git archive --prefix=$(@D)/ $(firstword $(branch-$*) $*) | tar xf -
+	cd $(@D) && autoreconf -i && rm -rf autom4te.cache
 
-elfutils-%.patch: elfutils-$(VERSION).tar.bz2 Makefile
-	@rm -rf elfutils-master elfutils-$*
-	git archive --prefix=elfutils-master/ $(elfutils-base) \
-	| tar xf -
-	git archive --prefix=elfutils-$*/ $(firstword $(branch-$*) $*) \
-	| tar xf -
-	cd elfutils-master; autoreconf -i; rm -rf autom4te.cache
-	cd elfutils-$*; autoreconf -i; rm -rf autom4te.cache
-	diff -Nrpu elfutils-master elfutils-$* | \
+elfutils-%.patch: elfutils-master/configure elfutils-%/configure
+	diff --exclude='.gitignore' -Nrpu $(^D) | \
 	filterdiff --remove-timestamps --strip=1 --addprefix=elfutils/ > $@.new
 	mv $@.new $@
 
@@ -52,7 +53,7 @@ elfutils-portable.spec: elfutils.spec
 portable-r = 0.$(subst $(DIST),,$(RELEASE))
 portable-vr = $(VERSION)-$(portable-r)
 portable.srpm = elfutils-$(portable-vr).src.rpm
-$(portable.srpm): elfutils-portable.spec elfutils-portability.patch \
+$(portable.srpm): elfutils-portable.spec $(patches) \
 		  elfutils-$(VERSION).tar.bz2
 	$(RPM_WITH_DIRS) --nodeps -bs $<
 
