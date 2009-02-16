@@ -1,4 +1,4 @@
-%define eu_version 0.139
+%define eu_version 0.140
 %define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -194,9 +194,9 @@ chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/lib*.so*
 chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
 
 # XXX Nuke unpackaged files
-{ cd ${RPM_BUILD_ROOT}
-  rm -f .%{_bindir}/eu-ld
-}
+(cd ${RPM_BUILD_ROOT}
+ rm -f .%{_bindir}/eu-ld
+)
 
 %check
 make -s check
@@ -276,6 +276,10 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Sun Feb 15 2009 Roland McGrath <roland@redhat.com> - 0.140-1
+- Update to 0.140
+  - libelf: Fix regression in creation of section header. (#484946)
+
 * Fri Jan 23 2009 Roland McGrath <roland@redhat.com> - 0.139-1
 - Update to 0.139
   - libcpu: Add Intel SSE4 disassembler support
