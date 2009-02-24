@@ -27,7 +27,7 @@ Version: %{eu_version}
 %if !%{compat}
 Release: %{eu_release}%{?dist}
 %else
-Release: 0.%{eu_release}
+Release: 0.%{eu_release}.1
 %endif
 License: GPLv2 with exceptions
 Group: Development/Tools
@@ -276,6 +276,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Tue Feb 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.140-1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
+
 * Sun Feb 15 2009 Roland McGrath <roland@redhat.com> - 0.140-1
 - Update to 0.140
   - libelf: Fix regression in creation of section header. (#484946)
