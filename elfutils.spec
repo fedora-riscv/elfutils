@@ -1,5 +1,5 @@
 %define eu_version 0.140
-%define eu_release 1
+%define eu_release 2
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %define compat 1
@@ -276,7 +276,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
-* Tue Feb 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.140-1
+* Tue Feb 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.140-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
 
 * Sun Feb 15 2009 Roland McGrath <roland@redhat.com> - 0.140-1
