@@ -1,4 +1,4 @@
-%define eu_version 0.140
+%define eu_version 0.141
 %define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -27,7 +27,7 @@ Version: %{eu_version}
 %if !%{compat}
 Release: %{eu_release}%{?dist}
 %else
-Release: 0.%{eu_release}
+Release: 0.%{eu_release}.1
 %endif
 License: GPLv2 with exceptions
 Group: Development/Tools
@@ -276,6 +276,21 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Thu Apr 23 2009 Roland McGrath <roland@redhat.com> - 0.141-1
+- Update to 0.141
+  - libebl: sparc backend fixes (#490585)
+            some more arm backend support
+  - libdwfl: fix dwfl_module_build_id for prelinked DSO case (#489439)
+             fixes in core file support (#494858)
+             dwfl_module_getsym interface improved for non-address symbols
+  - eu-strip: fix infinite loop on strange inputs with -f
+  - eu-addr2line: take -j/--section=NAME option for binutils compatibility
+                  (same effect as '(NAME)0x123' syntax already supported)
+- Resolves: RHBZ #495213, RHBZ #465872, RHBZ #470055, RHBZ #484623
+
+* Tue Feb 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.140-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
+
 * Sun Feb 15 2009 Roland McGrath <roland@redhat.com> - 0.140-1
 - Update to 0.140
   - libelf: Fix regression in creation of section header. (#484946)
@@ -284,7 +299,7 @@ rm -rf ${RPM_BUILD_ROOT}
 - Update to 0.139
   - libcpu: Add Intel SSE4 disassembler support
   - readelf: Implement call frame information and exception handling dumping.
-    	     Add -e option.  Enable it implicitly for -a.
+             Add -e option.  Enable it implicitly for -a.
   - elflint: Check PT_GNU_EH_FRAME program header entry.
   - libdwfl: Support automatic gzip/bzip2 decompression of ELF files. (#472136)
 

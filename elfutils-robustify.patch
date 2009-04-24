@@ -1,6 +1,6 @@
 --- elfutils/libelf/ChangeLog
 +++ elfutils/libelf/ChangeLog
-@@ -521,6 +521,49 @@
+@@ -529,6 +529,49 @@
  	If section content hasn't been read yet, do it before looking for the
  	block size.  If no section data present, infer size of section header.
  
@@ -792,7 +792,7 @@
  #endif  /* libelfP.h */
 --- elfutils/src/ChangeLog
 +++ elfutils/src/ChangeLog
-@@ -1347,6 +1347,16 @@
+@@ -1376,6 +1376,16 @@
  	object symbols or symbols with unknown type.
  	(check_rel): Likewise.
  
@@ -809,7 +809,7 @@
  2005-06-08  Roland McGrath  <roland@redhat.com>
  
  	* readelf.c (print_ops): Add consts.
-@@ -1392,6 +1402,19 @@
+@@ -1421,6 +1431,19 @@
  
  	* readelf.c (dwarf_tag_string): Add new tags.
  
@@ -1298,7 +1298,7 @@
  
    if (extrastr != NULL)
      fputs (extrastr, stdout);
-@@ -4104,6 +4134,16 @@ print_debug_aranges_section (Dwfl_Module
+@@ -4107,6 +4137,16 @@ print_debug_aranges_section (Dwfl_Module
        return;
      }
  
@@ -1451,7 +1451,7 @@
  
  	      /* Mark the section as investigated.  */
  	      shdr_info[cnt].idx = 2;
-@@ -954,7 +978,7 @@ handle_elf (int fd, Elf *elf, const char
+@@ -955,7 +979,7 @@ handle_elf (int fd, Elf *elf, const char
  	  error (EXIT_FAILURE, 0, gettext ("while generating output file: %s"),
  		 elf_errmsg (-1));
  
@@ -1460,7 +1460,7 @@
  
  	/* Add this name to the section header string table.  */
  	shdr_info[cnt].se = ebl_strtabadd (shst, shdr_info[cnt].name, 0);
-@@ -991,7 +1015,7 @@ handle_elf (int fd, Elf *elf, const char
+@@ -992,7 +1016,7 @@ handle_elf (int fd, Elf *elf, const char
  	error (EXIT_FAILURE, 0,
  	       gettext ("while create section header section: %s"),
  	       elf_errmsg (-1));
@@ -1469,7 +1469,7 @@
  
        shdr_info[cnt].data = elf_newdata (shdr_info[cnt].newscn);
        if (shdr_info[cnt].data == NULL)
-@@ -1047,7 +1071,7 @@ handle_elf (int fd, Elf *elf, const char
+@@ -1048,7 +1072,7 @@ handle_elf (int fd, Elf *elf, const char
      error (EXIT_FAILURE, 0,
  	   gettext ("while create section header section: %s"),
  	   elf_errmsg (-1));
@@ -1478,7 +1478,7 @@
  
    /* Finalize the string table and fill in the correct indices in the
       section headers.  */
-@@ -1137,20 +1161,20 @@ handle_elf (int fd, Elf *elf, const char
+@@ -1138,20 +1162,20 @@ handle_elf (int fd, Elf *elf, const char
  		    shndxdata = elf_getdata (shdr_info[shdr_info[cnt].symtab_idx].scn,
  					     NULL);
  
@@ -1502,7 +1502,7 @@
  			    >= shdr_info[cnt].data->d_size / elsize);
  		  }
  
-@@ -1205,7 +1229,7 @@ handle_elf (int fd, Elf *elf, const char
+@@ -1206,7 +1230,7 @@ handle_elf (int fd, Elf *elf, const char
  		      sec = shdr_info[sym->st_shndx].idx;
  		    else
  		      {
@@ -1511,7 +1511,7 @@
  
  			sec = shdr_info[xshndx].idx;
  		      }
-@@ -1226,7 +1250,7 @@ handle_elf (int fd, Elf *elf, const char
+@@ -1227,7 +1251,7 @@ handle_elf (int fd, Elf *elf, const char
  			    nxshndx = sec;
  			  }
  
@@ -1520,7 +1520,7 @@
  
  			if ((inner != destidx || nshndx != sym->st_shndx
  			     || (shndxdata != NULL && nxshndx != xshndx))
-@@ -1250,7 +1274,7 @@ handle_elf (int fd, Elf *elf, const char
+@@ -1251,7 +1275,7 @@ handle_elf (int fd, Elf *elf, const char
  			     || shdr_info[cnt].debug_data == NULL)
  		      /* This is a section symbol for a section which has
  			 been removed.  */
@@ -1529,7 +1529,7 @@
  		  }
  
  		if (destidx != inner)
-@@ -1437,11 +1461,11 @@ handle_elf (int fd, Elf *elf, const char
+@@ -1438,11 +1462,11 @@ handle_elf (int fd, Elf *elf, const char
  		  {
  		    GElf_Sym sym_mem;
  		    GElf_Sym *sym = gelf_getsym (symd, inner, &sym_mem);
@@ -1543,7 +1543,7 @@
  		    size_t hidx = elf_hash (name) % nbucket;
  
  		    if (bucket[hidx] == 0)
-@@ -1460,7 +1484,7 @@ handle_elf (int fd, Elf *elf, const char
+@@ -1461,7 +1485,7 @@ handle_elf (int fd, Elf *elf, const char
  	    else
  	      {
  		/* Alpha and S390 64-bit use 64-bit SHT_HASH entries.  */
@@ -1552,7 +1552,7 @@
  			== sizeof (Elf64_Xword));
  
  		Elf64_Xword *bucket = (Elf64_Xword *) hashd->d_buf;
-@@ -1491,11 +1515,11 @@ handle_elf (int fd, Elf *elf, const char
+@@ -1492,11 +1516,11 @@ handle_elf (int fd, Elf *elf, const char
  		  {
  		    GElf_Sym sym_mem;
  		    GElf_Sym *sym = gelf_getsym (symd, inner, &sym_mem);
