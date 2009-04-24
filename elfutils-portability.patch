@@ -1,6 +1,6 @@
 --- elfutils/backends/ChangeLog
 +++ elfutils/backends/ChangeLog
-@@ -3,6 +3,10 @@
+@@ -33,6 +33,10 @@
  	* ppc_attrs.c (ppc_check_object_attribute): Handle tag
  	GNU_Power_ABI_Struct_Return.
  
@@ -11,7 +11,7 @@
  2008-10-04  Ulrich Drepper  <drepper@redhat.com>
  
  	* i386_reloc.def: Fix entries for TLS_GOTDESC, TLS_DESC_CALL, and
-@@ -330,6 +334,11 @@
+@@ -360,6 +364,11 @@
  	* sparc_init.c: Likewise.
  	* x86_64_init.c: Likewise.
  
@@ -23,7 +23,7 @@
  2005-11-19  Roland McGrath  <roland@redhat.com>
  
  	* ppc64_reloc.def: REL30 -> ADDR30.
-@@ -352,6 +361,9 @@
+@@ -382,6 +391,9 @@
  	* Makefile.am (uninstall): Don't try to remove $(pkgincludedir).
  	(CLEANFILES): Add libebl_$(m).so.
  
@@ -35,14 +35,6 @@
  
 --- elfutils/backends/Makefile.am
 +++ elfutils/backends/Makefile.am
-@@ -1,6 +1,6 @@
- ## Process this file with automake to create Makefile.in
- ##
--## Copyright (C) 2000-2006, 2007, 2008 Red Hat, Inc.
-+## Copyright (C) 2000-2006, 2007, 2008, 2009 Red Hat, Inc.
- ## This file is part of Red Hat elfutils.
- ##
- ## Red Hat elfutils is free software; you can redistribute it and/or modify
 @@ -25,12 +25,14 @@
  ## <http://www.openinventionnetwork.com>.
  ##
@@ -67,7 +59,7 @@
  i386_SRCS = i386_init.c i386_symbol.c i386_corenote.c \
  	    i386_retval.c i386_regs.c i386_auxv.c i386_syscall.c
  cpu_i386 = ../libcpu/libcpu_i386.a
-@@ -114,7 +115,7 @@ libebl_%.so: libebl_%_pic.a libebl_%.map
+@@ -115,7 +116,7 @@ libebl_%.so: libebl_%_pic.a libebl_%.map
  	$(LINK) -shared -o $@ -Wl,--whole-archive,$<\
  		$(cpu_$(@:libebl_%.so=%)) -Wl,--no-whole-archive \
  		-Wl,--version-script,$(word 2,$^) \
@@ -78,7 +70,7 @@
  # XXX Should not be needed...
 --- elfutils/backends/Makefile.in
 +++ elfutils/backends/Makefile.in
-@@ -156,6 +156,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -158,6 +158,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -86,7 +78,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -185,6 +186,7 @@ SHELL = @SHELL@
+@@ -187,6 +188,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
@@ -94,7 +86,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  YACC = @YACC@
-@@ -243,9 +245,9 @@ top_builddir = @top_builddir@
+@@ -245,9 +247,9 @@ top_builddir = @top_builddir@
  top_srcdir = @top_srcdir@
  zip_LIBS = @zip_LIBS@
  @MUDFLAP_FALSE@AM_CFLAGS = -fpic -Wall -Wshadow -Werror -Wunused \
@@ -106,7 +98,7 @@
  INCLUDES = -I$(srcdir) -I$(top_srcdir)/libebl -I$(top_srcdir)/libasm \
  	   -I$(top_srcdir)/libelf -I$(top_srcdir)/libdw \
  	   -I$(top_srcdir)/lib -I..
-@@ -641,7 +643,7 @@ libebl_%.so: libebl_%_pic.a libebl_%.map
+@@ -650,7 +652,7 @@ libebl_%.so: libebl_%_pic.a libebl_%.map
  	$(LINK) -shared -o $@ -Wl,--whole-archive,$<\
  		$(cpu_$(@:libebl_%.so=%)) -Wl,--no-whole-archive \
  		-Wl,--version-script,$(word 2,$^) \
@@ -117,7 +109,8 @@
  # XXX Should not be needed...
 --- elfutils/ChangeLog
 +++ elfutils/ChangeLog
-@@ -1,5 +1,7 @@
+@@ -9,6 +9,8 @@
+ 
  2009-01-23  Roland McGrath  <roland@redhat.com>
  
 +	* configure.ac: Check for __builtin_popcount.
@@ -125,7 +118,7 @@
  	* configure.ac (zlib check): Check for gzdirect, need zlib >= 1.2.2.3.
  
  	* configure.ac (__thread check): Use AC_LINK_IFELSE, in case of
-@@ -80,6 +82,10 @@
+@@ -89,6 +91,10 @@
  	* configure.ac: Add dummy automake conditional to get dependencies
  	for non-generic linker right.  See src/Makefile.am.
  
@@ -136,7 +129,7 @@
  2005-11-18  Roland McGrath  <roland@redhat.com>
  
  	* Makefile.am (DISTCHECK_CONFIGURE_FLAGS): New variable.
-@@ -127,6 +133,17 @@
+@@ -136,6 +142,17 @@
  	* Makefile.am (all_SUBDIRS): Add libdwfl.
  	* configure.ac: Write libdwfl/Makefile.
  
@@ -582,7 +575,8 @@
  	   -I$(top_srcdir)/lib
 --- elfutils/libcpu/ChangeLog
 +++ elfutils/libcpu/ChangeLog
-@@ -1,5 +1,8 @@
+@@ -5,6 +5,9 @@
+ 
  2009-01-23  Roland McGrath  <roland@redhat.com>
  
 +	* i386_disasm.c (i386_disasm): Add abort after assert-constant for old
@@ -591,7 +585,7 @@
  	* Makefile.am (i386_parse_CFLAGS): Use quotes around command
  	substitution that can produce leading whitespace.
  
-@@ -329,6 +332,11 @@
+@@ -334,6 +337,11 @@
  	* defs/i386.doc: New file.
  	* defs/x86_64: New file.
  
@@ -622,9 +616,9 @@
 -AM_CFLAGS += -Wall -Wshadow -Wunused -Wextra -std=gnu99 -fpic \
 +WEXTRA = @WEXTRA@
 +AM_CFLAGS += -Wall -Wshadow -Wunused $(WEXTRA) -std=gnu99 -fpic \
+ 	     -fdollars-in-identifiers \
  	     $($(*F)_CFLAGS) \
  	     $(if $($(*F)_no_Werror),,-Werror)
- INCLUDES = -I$(srcdir) -I$(srcdir)/../lib -I$(srcdir)/../libelf \
 --- elfutils/libcpu/Makefile.in
 +++ elfutils/libcpu/Makefile.in
 @@ -110,6 +110,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -643,23 +637,25 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  YACC = @YACC@
-@@ -196,10 +198,10 @@ top_build_prefix = @top_build_prefix@
+@@ -196,10 +198,11 @@ top_build_prefix = @top_build_prefix@
  top_builddir = @top_builddir@
  top_srcdir = @top_srcdir@
  zip_LIBS = @zip_LIBS@
 -@MUDFLAP_FALSE@AM_CFLAGS = -Wall -Wshadow -Wunused -Wextra -std=gnu99 \
--@MUDFLAP_FALSE@	-fpic $($(*F)_CFLAGS) $(if \
-+@MUDFLAP_FALSE@AM_CFLAGS = -Wall -Wshadow -Wunused $(WEXTRA) \
-+@MUDFLAP_FALSE@	-std=gnu99 -fpic $($(*F)_CFLAGS) $(if \
- @MUDFLAP_FALSE@	$($(*F)_no_Werror),,-Werror)
+-@MUDFLAP_FALSE@	-fpic -fdollars-in-identifiers $($(*F)_CFLAGS) \
+-@MUDFLAP_FALSE@	$(if $($(*F)_no_Werror),,-Werror)
 -@MUDFLAP_TRUE@AM_CFLAGS = -fmudflap -Wall -Wshadow -Wunused -Wextra \
++@MUDFLAP_FALSE@AM_CFLAGS = -Wall -Wshadow -Wunused $(WEXTRA) \
++@MUDFLAP_FALSE@	-std=gnu99 -fpic -fdollars-in-identifiers \
++@MUDFLAP_FALSE@	$($(*F)_CFLAGS) $(if \
++@MUDFLAP_FALSE@	$($(*F)_no_Werror),,-Werror)
 +@MUDFLAP_TRUE@AM_CFLAGS = -fmudflap -Wall -Wshadow -Wunused $(WEXTRA) \
- @MUDFLAP_TRUE@	-std=gnu99 -fpic $($(*F)_CFLAGS) $(if \
+ @MUDFLAP_TRUE@	-std=gnu99 -fpic -fdollars-in-identifiers \
+ @MUDFLAP_TRUE@	$($(*F)_CFLAGS) $(if \
  @MUDFLAP_TRUE@	$($(*F)_no_Werror),,-Werror)
- INCLUDES = -I$(srcdir) -I$(srcdir)/../lib -I$(srcdir)/../libelf \
 --- elfutils/libdw/ChangeLog
 +++ elfutils/libdw/ChangeLog
-@@ -562,6 +562,11 @@
+@@ -571,6 +571,11 @@
  
  2005-05-31  Roland McGrath  <roland@redhat.com>
  
@@ -723,7 +719,7 @@
  						       $(COMPILE)))
 --- elfutils/libdwfl/ChangeLog
 +++ elfutils/libdwfl/ChangeLog
-@@ -1013,6 +1013,11 @@
+@@ -1076,6 +1076,11 @@
  
  2005-07-21  Roland McGrath  <roland@redhat.com>
  
@@ -754,7 +750,7 @@
  VERSION = 1
 --- elfutils/libdwfl/Makefile.in
 +++ elfutils/libdwfl/Makefile.in
-@@ -155,6 +155,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -156,6 +156,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -762,7 +758,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -184,6 +185,7 @@ SHELL = @SHELL@
+@@ -185,6 +186,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = 1
@@ -770,7 +766,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  YACC = @YACC@
-@@ -242,9 +244,9 @@ top_builddir = @top_builddir@
+@@ -243,9 +245,9 @@ top_builddir = @top_builddir@
  top_srcdir = @top_srcdir@
  zip_LIBS = @zip_LIBS@
  @MUDFLAP_FALSE@AM_CFLAGS = -Wall -Werror -Wshadow -Wunused -Wformat=2 \
@@ -784,7 +780,7 @@
  
 --- elfutils/libebl/ChangeLog
 +++ elfutils/libebl/ChangeLog
-@@ -563,6 +563,11 @@
+@@ -569,6 +569,11 @@
  	* Makefile.am (libebl_*_so_SOURCES): Set to $(*_SRCS) so dependency
  	tracking works right.
  
@@ -845,7 +841,7 @@
  
 --- elfutils/libelf/ChangeLog
 +++ elfutils/libelf/ChangeLog
-@@ -529,6 +529,11 @@
+@@ -537,6 +537,11 @@
  
  	* elf.h: Update from glibc.
  
@@ -965,19 +961,14 @@
  YACC = @YACC@
 --- elfutils/src/addr2line.c
 +++ elfutils/src/addr2line.c
-@@ -376,7 +376,7 @@ handle_address (const char *string, Dwfl
+@@ -447,10 +447,10 @@ handle_address (const char *string, Dwfl
        bool parsed = false;
        int n;
        char *name = NULL;
 -      if (sscanf (string, "(%m[^)])%" PRIiMAX "%n", &name, &addr, &n) == 2
 +      if (sscanf (string, "(%a[^)])%" PRIiMAX "%n", &name, &addr, &n) == 2
  	  && string[n] == '\0')
- 	{
- 	  /* It was (section)+offset.  This makes sense if there is
-@@ -417,7 +417,7 @@ handle_address (const char *string, Dwfl
- 		}
- 	    }
- 	}
+ 	parsed = adjust_to_section (name, &addr, dwfl);
 -      else if (sscanf (string, "%m[^-+]%" PRIiMAX "%n", &name, &addr, &n) == 2
 +      else if (sscanf (string, "%a[^-+]%" PRIiMAX "%n", &name, &addr, &n) == 2
  	       && string[n] == '\0')
@@ -985,7 +976,7 @@
  	  /* It was symbol+offset.  */
 --- elfutils/src/ChangeLog
 +++ elfutils/src/ChangeLog
-@@ -62,6 +62,8 @@
+@@ -91,6 +91,8 @@
  	* readelf.c (print_debug_frame_section): Use t instead of j formats
  	for ptrdiff_t OFFSET.
  
@@ -994,7 +985,7 @@
  2009-01-21  Ulrich Drepper  <drepper@redhat.com>
  
  	* elflint.c (check_program_header): Fix typo in .eh_frame_hdr section
-@@ -245,6 +247,11 @@
+@@ -274,6 +276,11 @@
  	that matches its PT_LOAD's p_flags &~ PF_W.  On sparc, PF_X really
  	is valid in RELRO.
  
@@ -1006,7 +997,7 @@
  2008-02-29  Roland McGrath  <roland@redhat.com>
  
  	* readelf.c (print_attributes): Add a cast.
-@@ -496,6 +503,8 @@
+@@ -525,6 +532,8 @@
  
  	* readelf.c (hex_dump): Fix rounding error in whitespace calculation.
  
@@ -1015,7 +1006,7 @@
  2007-10-15  Roland McGrath  <roland@redhat.com>
  
  	* make-debug-archive.in: New file.
-@@ -935,6 +944,10 @@
+@@ -964,6 +973,10 @@
  	* elflint.c (valid_e_machine): Add EM_ALPHA.
  	Reported by Christian Aichinger <Greek0@gmx.net>.
  
@@ -1026,7 +1017,7 @@
  2006-08-08  Ulrich Drepper  <drepper@redhat.com>
  
  	* elflint.c (check_dynamic): Don't require DT_HASH for DT_SYMTAB.
-@@ -1011,6 +1024,10 @@
+@@ -1040,6 +1053,10 @@
  	* Makefile.am: Add hacks to create dependency files for non-generic
  	linker.
  
@@ -1037,7 +1028,7 @@
  2006-06-12  Ulrich Drepper  <drepper@redhat.com>
  
  	* ldgeneric.c (ld_generic_generate_sections): Don't create .interp
-@@ -1359,6 +1376,11 @@
+@@ -1388,6 +1405,11 @@
  	* readelf.c (print_debug_loc_section): Fix indentation for larger
  	address size.
  
@@ -1139,7 +1130,7 @@
  size_LDADD = $(libelf) $(libeu) $(libmudflap)
 --- elfutils/src/readelf.c
 +++ elfutils/src/readelf.c
-@@ -7436,7 +7436,7 @@ dump_archive_index (Elf *elf, const char
+@@ -7443,7 +7443,7 @@ dump_archive_index (Elf *elf, const char
  	  if (unlikely (elf_rand (elf, as_off) == 0)
  	      || unlikely ((subelf = elf_begin (-1, ELF_C_READ_MMAP, elf))
  			   == NULL))
@@ -1209,7 +1200,7 @@
      }
  
    /* Open the file.  */
-@@ -1745,7 +1761,7 @@ handle_elf (int fd, Elf *elf, const char
+@@ -1746,7 +1762,7 @@ handle_elf (int fd, Elf *elf, const char
    /* If requested, preserve the timestamp.  */
    if (tvp != NULL)
      {
@@ -1218,7 +1209,7 @@
  	{
  	  error (0, errno, gettext ("\
  cannot set access and modification date of '%s'"),
-@@ -1802,7 +1818,7 @@ handle_ar (int fd, Elf *elf, const char 
+@@ -1803,7 +1819,7 @@ handle_ar (int fd, Elf *elf, const char 
  
    if (tvp != NULL)
      {
@@ -1229,7 +1220,7 @@
  cannot set access and modification date of '%s'"), fname);
 --- elfutils/tests/ChangeLog
 +++ elfutils/tests/ChangeLog
-@@ -95,6 +95,8 @@
+@@ -106,6 +106,8 @@
  
  2008-01-21  Roland McGrath  <roland@redhat.com>
  
@@ -1238,7 +1229,7 @@
  	* testfile45.S.bz2: Add tests for cltq, cqto.
  	* testfile45.expect.bz2: Adjust.
  
-@@ -803,6 +805,11 @@
+@@ -814,6 +816,11 @@
  	* Makefile.am (TESTS): Add run-elflint-test.sh.
  	(EXTRA_DIST): Add run-elflint-test.sh and testfile18.bz2.
  
@@ -1281,7 +1272,7 @@
  endif
 --- elfutils/tests/Makefile.in
 +++ elfutils/tests/Makefile.in
-@@ -342,6 +342,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -343,6 +343,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -1289,7 +1280,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -371,6 +372,7 @@ SHELL = @SHELL@
+@@ -372,6 +373,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
@@ -1297,7 +1288,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  YACC = @YACC@
-@@ -428,10 +430,10 @@ top_build_prefix = @top_build_prefix@
+@@ -429,10 +431,10 @@ top_build_prefix = @top_build_prefix@
  top_builddir = @top_builddir@
  top_srcdir = @top_srcdir@
  zip_LIBS = @zip_LIBS@
