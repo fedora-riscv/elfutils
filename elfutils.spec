@@ -27,7 +27,7 @@ Version: %{eu_version}
 %if !%{compat}
 Release: %{eu_release}%{?dist}
 %else
-Release: 0.%{eu_release}.1
+Release: 0.%{eu_release}.2
 %endif
 License: GPLv2 with exceptions
 Group: Development/Tools
@@ -276,6 +276,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Fri Jul 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.141-1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
+
 * Thu Apr 23 2009 Roland McGrath <roland@redhat.com> - 0.141-1
 - Update to 0.141
   - libebl: sparc backend fixes (#490585)
