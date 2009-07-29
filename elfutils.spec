@@ -1,4 +1,4 @@
-%define eu_version 0.141
+%define eu_version 0.142
 %define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -27,7 +27,7 @@ Version: %{eu_version}
 %if !%{compat}
 Release: %{eu_release}%{?dist}
 %else
-Release: 0.%{eu_release}.1
+Release: 0.%{eu_release}
 %endif
 License: GPLv2 with exceptions
 Group: Development/Tools
@@ -276,6 +276,18 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Tue Jul 28 2009 Roland McGrath <roland@redhat.com> - 0.142-1
+- Update to 0.142
+  - libelf: Bug fix in filling gaps between sections. (#512840)
+  - libelf: Add elf_getshdrnum alias for elf_getshnum and elf_getshdrstrndx
+    	    alias for elf_getshstrndx and deprecate original names.
+  - libebl, elflint: Add support for STB_GNU_UNIQUE. (#511436)
+  - readelf: Add -N option, speeds up DWARF printing
+    	     without address->name lookups. (#505347)
+  - libdw: Add support for decoding DWARF CFI into location description form.
+    	   Handle some new DWARF 3 expression operations previously omitted.
+           Basic handling of some new encodings slated for DWARF 4.
+
 * Thu Apr 23 2009 Roland McGrath <roland@redhat.com> - 0.141-1
 - Update to 0.141
   - libebl: sparc backend fixes (#490585)
