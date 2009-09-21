@@ -1,6 +1,6 @@
 --- elfutils/backends/ChangeLog
 +++ elfutils/backends/ChangeLog
-@@ -48,6 +48,10 @@
+@@ -57,6 +57,10 @@
  	* ppc_attrs.c (ppc_check_object_attribute): Handle tag
  	GNU_Power_ABI_Struct_Return.
  
@@ -11,7 +11,7 @@
  2008-10-04  Ulrich Drepper  <drepper@redhat.com>
  
  	* i386_reloc.def: Fix entries for TLS_GOTDESC, TLS_DESC_CALL, and
-@@ -375,6 +379,11 @@
+@@ -384,6 +388,11 @@
  	* sparc_init.c: Likewise.
  	* x86_64_init.c: Likewise.
  
@@ -23,7 +23,7 @@
  2005-11-19  Roland McGrath  <roland@redhat.com>
  
  	* ppc64_reloc.def: REL30 -> ADDR30.
-@@ -397,6 +406,9 @@
+@@ -406,6 +415,9 @@
  	* Makefile.am (uninstall): Don't try to remove $(pkgincludedir).
  	(CLEANFILES): Add libebl_$(m).so.
  
@@ -101,7 +101,18 @@
  # XXX Should not be needed...
 --- elfutils/ChangeLog
 +++ elfutils/ChangeLog
-@@ -9,6 +9,8 @@
+@@ -6,6 +6,10 @@
+ 
+ 	* configure.ac (zip_LIBS): Check for liblzma too.
+ 
++2009-08-17  Roland McGrath  <roland@redhat.com>
++
++	* configure.ac: Check for -fgnu89-inline; add it to WEXTRA if it works.
++
+ 2009-04-19  Roland McGrath  <roland@redhat.com>
+ 
+ 	* configure.ac (eu_version): Round down here, not in version.h macros.
+@@ -17,6 +21,8 @@
  
  2009-01-23  Roland McGrath  <roland@redhat.com>
  
@@ -110,7 +121,7 @@
  	* configure.ac (zlib check): Check for gzdirect, need zlib >= 1.2.2.3.
  
  	* configure.ac (__thread check): Use AC_LINK_IFELSE, in case of
-@@ -89,6 +91,10 @@
+@@ -97,6 +103,10 @@
  	* configure.ac: Add dummy automake conditional to get dependencies
  	for non-generic linker right.  See src/Makefile.am.
  
@@ -121,7 +132,7 @@
  2005-11-18  Roland McGrath  <roland@redhat.com>
  
  	* Makefile.am (DISTCHECK_CONFIGURE_FLAGS): New variable.
-@@ -136,6 +142,17 @@
+@@ -144,6 +154,17 @@
  	* Makefile.am (all_SUBDIRS): Add libdwfl.
  	* configure.ac: Write libdwfl/Makefile.
  
@@ -168,7 +179,7 @@
  /* $libdir subdirectory containing libebl modules. */
  #undef LIBEBL_SUBDIR
  
-@@ -52,4 +55,7 @@
+@@ -55,4 +58,7 @@
  /* Define for large files, on AIX-style hosts. */
  #undef _LARGE_FILES
  
@@ -178,7 +189,7 @@
  #include <eu-config.h>
 --- elfutils/configure
 +++ elfutils/configure
-@@ -644,6 +644,8 @@ NATIVE_LD_FALSE
+@@ -646,6 +646,8 @@ NATIVE_LD_FALSE
  NATIVE_LD_TRUE
  DATADIRNAME
  LOCALEDIR
@@ -187,7 +198,7 @@
  LEXLIB
  LEX_OUTPUT_ROOT
  LEX
-@@ -4094,6 +4096,152 @@ $as_echo "$as_me: error: gcc with C99 su
+@@ -4098,6 +4100,205 @@ $as_echo "$as_me: error: gcc with C99 su
  fi
  
  
@@ -237,6 +248,59 @@
 +  WEXTRA=-Wextra
 +else
 +  WEXTRA=-W
++fi
++
++
++{ $as_echo "$as_me:$LINENO: checking for -fgnu89-inline option to $CC" >&5
++$as_echo_n "checking for -fgnu89-inline option to $CC... " >&6; }
++if test "${ac_cv_cc_gnu89_inline+set}" = set; then
++  $as_echo_n "(cached) " >&6
++else
++  old_CFLAGS="$CFLAGS"
++CFLAGS="$CFLAGS -fgnu89-inline -Werror"
++cat >conftest.$ac_ext <<_ACEOF
++
++void foo (void)
++{
++  inline void bar (void) {}
++  bar ();
++}
++extern inline void baz (void) {}
++
++_ACEOF
++rm -f conftest.$ac_objext
++if { (ac_try="$ac_compile"
++case "(($ac_try" in
++  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
++  *) ac_try_echo=$ac_try;;
++esac
++eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
++$as_echo "$ac_try_echo") >&5
++  (eval "$ac_compile") 2>conftest.er1
++  ac_status=$?
++  grep -v '^ *+' conftest.er1 >conftest.err
++  rm -f conftest.er1
++  cat conftest.err >&5
++  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
++  (exit $ac_status); } && {
++	 test -z "$ac_c_werror_flag" ||
++	 test ! -s conftest.err
++       } && test -s conftest.$ac_objext; then
++  ac_cv_cc_gnu89_inline=yes
++else
++  $as_echo "$as_me: failed program was:" >&5
++sed 's/^/| /' conftest.$ac_ext >&5
++
++	ac_cv_cc_gnu89_inline=no
++fi
++
++rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
++CFLAGS="$old_CFLAGS"
++fi
++{ $as_echo "$as_me:$LINENO: result: $ac_cv_cc_gnu89_inline" >&5
++$as_echo "$ac_cv_cc_gnu89_inline" >&6; }
++if test "x$ac_cv_cc_gnu89_inline" = xyes; then
++  WEXTRA="${WEXTRA:+$WEXTRA }-fgnu89-inline"
 +fi
 +
 +
@@ -340,7 +404,7 @@
  { $as_echo "$as_me:$LINENO: checking for __thread support" >&5
  $as_echo_n "checking for __thread support... " >&6; }
  if test "${ac_cv_tls+set}" = set; then
-@@ -4159,9 +4307,18 @@ fi
+@@ -4163,9 +4364,18 @@ fi
  { $as_echo "$as_me:$LINENO: result: $ac_cv_tls" >&5
  $as_echo "$ac_cv_tls" >&6; }
  if test "x$ac_cv_tls" != xyes; then
@@ -363,7 +427,7 @@
  
 --- elfutils/configure.ac
 +++ elfutils/configure.ac
-@@ -74,6 +74,39 @@ CFLAGS="$old_CFLAGS"])
+@@ -73,6 +73,54 @@ CFLAGS="$old_CFLAGS"])
  AS_IF([test "x$ac_cv_c99" != xyes],
        AC_MSG_ERROR([gcc with C99 support required]))
  
@@ -375,6 +439,21 @@
 +CFLAGS="$old_CFLAGS"])
 +AC_SUBST(WEXTRA)
 +AS_IF([test "x$ac_cv_cc_wextra" = xyes], [WEXTRA=-Wextra], [WEXTRA=-W])
++
++AC_CACHE_CHECK([for -fgnu89-inline option to $CC], ac_cv_cc_gnu89_inline, [dnl
++old_CFLAGS="$CFLAGS"
++CFLAGS="$CFLAGS -fgnu89-inline -Werror"
++AC_COMPILE_IFELSE([
++void foo (void)
++{
++  inline void bar (void) {}
++  bar ();
++}
++extern inline void baz (void) {}
++], ac_cv_cc_gnu89_inline=yes, ac_cv_cc_gnu89_inline=no)
++CFLAGS="$old_CFLAGS"])
++AS_IF([test "x$ac_cv_cc_gnu89_inline" = xyes],
++      [WEXTRA="${WEXTRA:+$WEXTRA }-fgnu89-inline"])
 +
 +AC_CACHE_CHECK([for --as-needed linker option],
 +	       ac_cv_as_needed, [dnl
@@ -403,7 +482,7 @@
  AC_CACHE_CHECK([for __thread support], ac_cv_tls, [dnl
  # Use the same flags that we use for our DSOs, so the test is representative.
  # Some old compiler/linker/libc combinations fail some ways and not others.
-@@ -89,7 +122,10 @@ static __thread int a; int foo (int b) {
+@@ -88,7 +136,10 @@ static __thread int a; int foo (int b) {
  CFLAGS="$save_CFLAGS"
  LDFLAGS="$save_LDFLAGS"])
  AS_IF([test "x$ac_cv_tls" != xyes],
@@ -417,7 +496,8 @@
  AC_SUBST(LOCALEDIR)
 --- elfutils/lib/ChangeLog
 +++ elfutils/lib/ChangeLog
-@@ -1,5 +1,8 @@
+@@ -4,6 +4,9 @@
+ 
  2009-01-23  Roland McGrath  <roland@redhat.com>
  
 +	* eu-config.h [! HAVE_BUILTIN_POPCOUNT]
@@ -426,7 +506,7 @@
  	* eu-config.h: Add multiple inclusion protection.
  
  2009-01-17  Ulrich Drepper  <drepper@redhat.com>
-@@ -56,6 +59,11 @@
+@@ -60,6 +63,11 @@
  	* Makefile.am (libeu_a_SOURCES): Add it.
  	* system.h: Declare crc32_file.
  
@@ -440,7 +520,7 @@
  	* Makefile.am: Use -ffunction-sections for xmalloc.c.
 --- elfutils/lib/eu-config.h
 +++ elfutils/lib/eu-config.h
-@@ -182,5 +182,16 @@ asm (".section predict_data, \"aw\"; .pr
+@@ -182,6 +182,17 @@ asm (".section predict_data, \"aw\"; .pr
  /* This macro is used by the tests conditionalize for standalone building.  */
  #define ELFUTILS_HEADER(name) <lib##name.h>
  
@@ -456,7 +536,8 @@
 +#endif	/* HAVE_BUILTIN_POPCOUNT */
 +
  
- #endif	/* eu-config.h */
+ #ifdef SHARED
+ # define OLD_VERSION(name, version) \
 --- elfutils/lib/Makefile.am
 +++ elfutils/lib/Makefile.am
 @@ -25,12 +25,13 @@
@@ -647,7 +728,18 @@
  @MUDFLAP_TRUE@	$($(*F)_no_Werror),,-Werror)
 --- elfutils/libdw/ChangeLog
 +++ elfutils/libdw/ChangeLog
-@@ -738,6 +738,11 @@
+@@ -20,6 +20,10 @@
+ 
+ 	* dwarf_hasattr_integrate.c: Integrate DW_AT_specification too.
+ 
++2009-08-17  Roland McGrath  <roland@redhat.com>
++
++	* libdw.h: Disable extern inlines for GCC 4.2.
++
+ 2009-08-10  Roland McGrath  <roland@redhat.com>
+ 
+ 	* dwarf_getscopevar.c: Use dwarf_diename.
+@@ -788,6 +792,11 @@
  
  2005-05-31  Roland McGrath  <roland@redhat.com>
  
@@ -659,6 +751,17 @@
  	* dwarf_formref_die.c (dwarf_formref_die): Add CU header offset to
  	formref offset.
  
+--- elfutils/libdw/libdw.h
++++ elfutils/libdw/libdw.h
+@@ -809,7 +809,7 @@ extern Dwarf_OOM dwarf_new_oom_handler (
+ 
+ 
+ /* Inline optimizations.  */
+-#ifdef __OPTIMIZE__
++#if defined __OPTIMIZE__ && !(__GNUC__ == 4 && __GNUC_MINOR__ == 2)
+ /* Return attribute code of given attribute.  */
+ __libdw_extern_inline unsigned int
+ dwarf_whatattr (Dwarf_Attribute *attr)
 --- elfutils/libdw/Makefile.am
 +++ elfutils/libdw/Makefile.am
 @@ -25,6 +25,7 @@
@@ -711,7 +814,7 @@
  						       $(COMPILE)))
 --- elfutils/libdwfl/ChangeLog
 +++ elfutils/libdwfl/ChangeLog
-@@ -1098,6 +1098,11 @@
+@@ -1139,6 +1139,11 @@
  
  2005-07-21  Roland McGrath  <roland@redhat.com>
  
@@ -742,7 +845,7 @@
  VERSION = 1
 --- elfutils/libdwfl/Makefile.in
 +++ elfutils/libdwfl/Makefile.in
-@@ -176,6 +176,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -179,6 +179,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -750,7 +853,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -205,6 +206,7 @@ SHELL = @SHELL@
+@@ -208,6 +209,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = 1
@@ -758,7 +861,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  YACC = @YACC@
-@@ -263,9 +265,9 @@ top_builddir = @top_builddir@
+@@ -266,9 +268,9 @@ top_builddir = @top_builddir@
  top_srcdir = @top_srcdir@
  zip_LIBS = @zip_LIBS@
  @MUDFLAP_FALSE@AM_CFLAGS = -Wall -Werror -Wshadow -Wunused -Wformat=2 \
@@ -772,7 +875,7 @@
  
 --- elfutils/libebl/ChangeLog
 +++ elfutils/libebl/ChangeLog
-@@ -593,6 +593,11 @@
+@@ -603,6 +603,11 @@
  	* Makefile.am (libebl_*_so_SOURCES): Set to $(*_SRCS) so dependency
  	tracking works right.
  
@@ -833,7 +936,7 @@
  
 --- elfutils/libelf/ChangeLog
 +++ elfutils/libelf/ChangeLog
-@@ -576,6 +576,11 @@
+@@ -580,6 +580,11 @@
  
  	* elf.h: Update from glibc.
  
@@ -968,7 +1071,24 @@
  	  /* It was symbol+offset.  */
 --- elfutils/src/ChangeLog
 +++ elfutils/src/ChangeLog
-@@ -155,6 +155,8 @@
+@@ -7,8 +7,16 @@
+ 	* readelf.c (attr_callback): Use print_block only when we don't use
+ 	print_ops.
+ 
++2009-08-17  Roland McGrath  <roland@redhat.com>
++
++	* ld.h: Disable extern inlines for GCC 4.2.
++
+ 2009-08-14  Roland McGrath  <roland@redhat.com>
+ 
++	* strings.c (read_block): Conditionalize posix_fadvise use
++	on [POSIX_FADV_SEQUENTIAL].
++	From Petr Salinger <Petr.Salinger@seznam.cz>.
++
+ 	* ar.c (do_oper_extract): Use pathconf instead of statfs.
+ 
+ 2009-08-01  Ulrich Drepper  <drepper@redhat.com>
+@@ -172,6 +180,8 @@
  	* readelf.c (print_debug_frame_section): Use t instead of j formats
  	for ptrdiff_t OFFSET.
  
@@ -977,7 +1097,7 @@
  2009-01-21  Ulrich Drepper  <drepper@redhat.com>
  
  	* elflint.c (check_program_header): Fix typo in .eh_frame_hdr section
-@@ -338,6 +340,11 @@
+@@ -355,6 +365,11 @@
  	that matches its PT_LOAD's p_flags &~ PF_W.  On sparc, PF_X really
  	is valid in RELRO.
  
@@ -989,7 +1109,7 @@
  2008-02-29  Roland McGrath  <roland@redhat.com>
  
  	* readelf.c (print_attributes): Add a cast.
-@@ -589,6 +596,8 @@
+@@ -606,6 +621,8 @@
  
  	* readelf.c (hex_dump): Fix rounding error in whitespace calculation.
  
@@ -998,7 +1118,7 @@
  2007-10-15  Roland McGrath  <roland@redhat.com>
  
  	* make-debug-archive.in: New file.
-@@ -1028,6 +1037,10 @@
+@@ -1045,6 +1062,10 @@
  	* elflint.c (valid_e_machine): Add EM_ALPHA.
  	Reported by Christian Aichinger <Greek0@gmx.net>.
  
@@ -1009,7 +1129,7 @@
  2006-08-08  Ulrich Drepper  <drepper@redhat.com>
  
  	* elflint.c (check_dynamic): Don't require DT_HASH for DT_SYMTAB.
-@@ -1104,6 +1117,10 @@
+@@ -1121,6 +1142,10 @@
  	* Makefile.am: Add hacks to create dependency files for non-generic
  	linker.
  
@@ -1020,7 +1140,7 @@
  2006-06-12  Ulrich Drepper  <drepper@redhat.com>
  
  	* ldgeneric.c (ld_generic_generate_sections): Don't create .interp
-@@ -1452,6 +1469,11 @@
+@@ -1469,6 +1494,11 @@
  	* readelf.c (print_debug_loc_section): Fix indentation for larger
  	address size.
  
@@ -1047,6 +1167,23 @@
  	   GElf_Addr addr, Elf *elf, Elf_Scn *symscn, Dwarf *dw,
  	   const char *fname, bool more_than_one, void **knownsrcs)
  {
+--- elfutils/src/ld.h
++++ elfutils/src/ld.h
+@@ -1122,6 +1122,7 @@ extern bool dynamically_linked_p (void);
+ 
+ /* Checked whether the symbol is undefined and referenced from a DSO.  */
+ extern bool linked_from_dso_p (struct scninfo *scninfo, size_t symidx);
++#if defined __OPTIMIZE__ && !(__GNUC__ == 4 && __GNUC_MINOR__ == 2)
+ #ifdef __GNUC_STDC_INLINE__
+ __attribute__ ((__gnu_inline__))
+ #endif
+@@ -1139,5 +1140,6 @@ linked_from_dso_p (struct scninfo *scnin
+ 
+   return sym->defined && sym->in_dso;
+ }
++#endif	/* Optimizing and not GCC 4.2.  */
+ 
+ #endif	/* ld.h */
 --- elfutils/src/Makefile.am
 +++ elfutils/src/Makefile.am
 @@ -26,6 +26,7 @@
@@ -1122,7 +1259,7 @@
  size_LDADD = $(libelf) $(libeu) $(libmudflap)
 --- elfutils/src/readelf.c
 +++ elfutils/src/readelf.c
-@@ -7591,7 +7591,7 @@ dump_archive_index (Elf *elf, const char
+@@ -7594,7 +7594,7 @@ dump_archive_index (Elf *elf, const char
  	  if (unlikely (elf_rand (elf, as_off) == 0)
  	      || unlikely ((subelf = elf_begin (-1, ELF_C_READ_MMAP, elf))
  			   == NULL))
@@ -1158,6 +1295,18 @@
  	  break;
  	}
        if (errno != EINVAL && errno != ENOMEM)
+@@ -586,9 +595,11 @@ read_block (int fd, const char *fname, o
+       elfmap_off = from & ~(ps - 1);
+       elfmap_base = elfmap = map_file (fd, elfmap_off, fdlen, &elfmap_size);
+ 
++#ifdef POSIX_FADV_SEQUENTIAL
+       if (unlikely (elfmap == MAP_FAILED))
+ 	/* Let the kernel know we are going to read everything in sequence.  */
+ 	(void) posix_fadvise (fd, 0, 0, POSIX_FADV_SEQUENTIAL);
++#endif
+     }
+ 
+   if (unlikely (elfmap == MAP_FAILED))
 --- elfutils/src/strip.c
 +++ elfutils/src/strip.c
 @@ -52,6 +52,12 @@

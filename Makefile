@@ -34,15 +34,18 @@ patches := $(patsubst %,elfutils-%.patch,robustify portability)
 all: $(patches)
 
 branch-portability = portable
-branch-master = elfutils-$(VERSION)
 
-elfutils-%/configure: .git/refs/heads/* Makefile
+git-%/configure: .git/refs/heads/* Makefile
 	@rm -rf $(@D)
 	git archive --prefix=$(@D)/ $(firstword $(branch-$*) $*) | tar xf -
 	cd $(@D) && autoreconf -i && rm -rf autom4te.cache
 
-elfutils-%.patch: elfutils-master/configure elfutils-%/configure
-	diff --exclude='.gitignore' -Nrpu $(^D) | \
+elfutils-%.patch: git-%/configure
+	branch=$(firstword $(branch-$*) $*); \
+	master=`git merge-base origin/master $$branch` && \
+	master=`git describe --tags --always $$master` && \
+	(set -x; $(MAKE) git-$$master/configure) && \
+	(set -x; diff --exclude='.gitignore' -Nrpu git-$$master $(<D)) | \
 	filterdiff --remove-timestamps --strip=1 --addprefix=elfutils/ > $@.new
 	mv $@.new $@
 
