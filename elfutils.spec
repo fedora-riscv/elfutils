@@ -1,4 +1,4 @@
-%define eu_version 0.142
+%define eu_version 0.143
 %define eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -50,17 +50,29 @@ BuildRequires: glibc-headers >= 2.3.4-11
 BuildRequires: gcc >= 3.2
 %endif
 
-%define use_zlib 0
+%define use_zlib        0
 %if 0%{?fedora} >= 5
-%define use_zlib 1
+%define use_zlib        1
 %endif
 %if 0%{?rhel} >= 5
-%define use_zlib 1
+%define use_zlib        1
+%endif
+
+%define use_xz          0
+%if 0%{?fedora} >= 10
+%define use_xz          1
+%endif
+%if 0%{?rhel} >= 6
+%define use_xz          1
 %endif
 
 %if %{use_zlib}
 BuildRequires: zlib-devel >= 1.2.2.3
 BuildRequires: bzip2-devel
+%endif
+
+%if %{use_xz}
+BuildRequires: xz-devel
 %endif
 
 %define _gnu %{nil}
@@ -276,16 +288,25 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Mon Sep 21 2009 Roland McGrath <roland@redhat.com> - 0.143-1
+- Update to 0.143
+  - libdw: Various convenience functions for individual attributes now use
+           dwarf_attr_integrate to look up indirect inherited attributes.
+           Location expression handling now supports DW_OP_implicit_value.
+  - libdwfl: Support automatic decompression of files in XZ format,
+             and of Linux kernel images made with bzip2 or LZMA
+             (as well as gzip).
+
 * Tue Jul 28 2009 Roland McGrath <roland@redhat.com> - 0.142-1
 - Update to 0.142
   - libelf: Bug fix in filling gaps between sections. (#512840)
   - libelf: Add elf_getshdrnum alias for elf_getshnum and elf_getshdrstrndx
-    	    alias for elf_getshstrndx and deprecate original names.
+            alias for elf_getshstrndx and deprecate original names.
   - libebl, elflint: Add support for STB_GNU_UNIQUE. (#511436)
   - readelf: Add -N option, speeds up DWARF printing
-    	     without address->name lookups. (#505347)
+             without address->name lookups. (#505347)
   - libdw: Add support for decoding DWARF CFI into location description form.
-    	   Handle some new DWARF 3 expression operations previously omitted.
+           Handle some new DWARF 3 expression operations previously omitted.
            Basic handling of some new encodings slated for DWARF 4.
 
 * Thu Apr 23 2009 Roland McGrath <roland@redhat.com> - 0.141-1
