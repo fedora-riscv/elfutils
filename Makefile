@@ -1,5 +1,5 @@
 # Makefile for source rpm: elfutils
-# $Id: Makefile,v 1.28 2008/08/27 19:37:47 roland Exp $
+# $Id: Makefile,v 1.25 2008/08/28 07:44:31 roland Exp $
 NAME := elfutils
 SPECFILE = elfutils.spec
 
@@ -8,7 +8,7 @@ UPSTREAM_FILES = $(NAME)-$(VERSION).tar.gz
 upstream:;
 
 define find-makefile-common
-for d in common ../common ../../common ; do if [ -f $$d/Makefile.common ] ; then if [ -f $$d/CVS/Root -a -w $$/Makefile.common ] ; then cd $$d ; cvs -Q update ; fi ; echo "$$d/Makefile.common" ; break ; fi ; done
+for d in common ../common ../../common ; do if [ -f $$d/Makefile.common ] ; then if [ -f $$d/CVS/Root -a -w $$d/Makefile.common ] ; then cd $$d ; cvs -Q update ; fi ; echo "$$d/Makefile.common" ; break ; fi ; done
 endef
 
 MAKEFILE_COMMON := $(shell $(find-makefile-common))
