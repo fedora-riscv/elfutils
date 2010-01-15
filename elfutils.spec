@@ -1,24 +1,24 @@
-%define eu_version 0.143
-%define eu_release 1
+%global eu_version 0.144
+%global eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
-%define compat 1
+%global compat 1
 %else
-%define compat 0
+%global compat 0
 %endif
 
 %if 0%{?fedora} >= 8
-%define scanf_has_m 1
+%global scanf_has_m 1
 %endif
 %if 0%{?rhel} >= 6
-%define scanf_has_m 1
+%global scanf_has_m 1
 %endif
 
 %if 0%{?fedora} >= 7
-%define separate_devel_static 1
+%global separate_devel_static 1
 %endif
 %if 0%{?rhel} >= 6
-%define separate_devel_static 1
+%global separate_devel_static 1
 %endif
 
 Summary: A collection of utilities and DSOs to handle compiled objects
@@ -50,20 +50,20 @@ BuildRequires: glibc-headers >= 2.3.4-11
 BuildRequires: gcc >= 3.2
 %endif
 
-%define use_zlib        0
+%global use_zlib        0
 %if 0%{?fedora} >= 5
-%define use_zlib        1
+%global use_zlib        1
 %endif
 %if 0%{?rhel} >= 5
-%define use_zlib        1
+%global use_zlib        1
 %endif
 
-%define use_xz          0
+%global use_xz          0
 %if 0%{?fedora} >= 10
-%define use_xz          1
+%global use_xz          1
 %endif
 %if 0%{?rhel} >= 6
-%define use_xz          1
+%global use_xz          1
 %endif
 
 %if %{use_zlib}
@@ -75,8 +75,8 @@ BuildRequires: bzip2-devel
 BuildRequires: xz-devel
 %endif
 
-%define _gnu %{nil}
-%define _program_prefix eu-
+%global _gnu %{nil}
+%global _program_prefix eu-
 
 %description
 Elfutils is a collection of utilities, including ld (a linker),
@@ -195,7 +195,10 @@ RPM_OPT_FLAGS=${RPM_OPT_FLAGS/-Wall/}
 RPM_OPT_FLAGS="$RPM_OPT_FLAGS -D__NO_INLINE__"
 %endif
 
-%configure CFLAGS="$RPM_OPT_FLAGS -fexceptions"
+%configure CFLAGS="$RPM_OPT_FLAGS -fexceptions" || {
+  cat config.log
+  exit 2
+}
 make -s %{?_smp_mflags}
 
 %install
@@ -288,6 +291,14 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Thu Jan 14 2010 Roland McGrath <roland@redhat.com> - 0.144-1
+- Update to 0.144
+  - libdw: New function dwarf_aggregate_size for computing (constant) type
+           sizes, including array_type cases with nontrivial calculation.
+  - readelf: Don't give errors for missing info under -a.
+             Handle Linux "VMCOREINFO" notes under -n.
+- Resolves: RHBZ #527004, RHBZ #530704, RHBZ #550858
+
 * Mon Sep 21 2009 Roland McGrath <roland@redhat.com> - 0.143-1
 - Update to 0.143
   - libdw: Various convenience functions for individual attributes now use
