@@ -1,5 +1,5 @@
 %global eu_version 0.144
-%global eu_release 1
+%global eu_release 2
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %global compat 1
@@ -37,6 +37,8 @@ Patch1: elfutils-robustify.patch
 Patch2: elfutils-portability.patch
 Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
 Requires: elfutils-libs-%{_arch} = %{version}-%{release}
+
+Patch10: elfutils-0.144-sloppy-include.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: bison >= 1.875
@@ -181,6 +183,8 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 %endif
 
+%patch10 -p1 -b .sloppy-includes
+
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
@@ -291,6 +295,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Fri Jan 15 2010 Roland McGrath <roland@redhat.com> - 0.144-2
+- Fix sloppy #include's breaking build with F-13 glibc.
+
 * Thu Jan 14 2010 Roland McGrath <roland@redhat.com> - 0.144-1
 - Update to 0.144
   - libdw: New function dwarf_aggregate_size for computing (constant) type
