@@ -1,5 +1,5 @@
-%global eu_version 0.144
-%global eu_release 2
+%global eu_version 0.145
+%global eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %global compat 1
@@ -37,8 +37,6 @@ Patch1: elfutils-robustify.patch
 Patch2: elfutils-portability.patch
 Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
 Requires: elfutils-libs-%{_arch} = %{version}-%{release}
-
-Patch10: elfutils-0.144-sloppy-include.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: bison >= 1.875
@@ -183,8 +181,6 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 %endif
 
-%patch10 -p1 -b .sloppy-includes
-
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
@@ -295,6 +291,15 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Tue Feb 23 2010 Roland McGrath <roland@redhat.com> - 0.145-1
+- Update to 0.145
+  - Fix build with --disable-dependency-tracking. (#564646)
+  - Fix build with most recent glibc headers.
+  - libdw: Fix CFI decoding. (#563528)
+  - libdwfl: Fix address bias returned by CFI accessors. (#563528)
+             Fix core file module layout identification. (#559836)
+  - readelf: Fix CFI decoding.
+
 * Fri Jan 15 2010 Roland McGrath <roland@redhat.com> - 0.144-2
 - Fix sloppy #include's breaking build with F-13 glibc.
 
