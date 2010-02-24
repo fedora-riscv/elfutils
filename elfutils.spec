@@ -1,4 +1,4 @@
-%global eu_version 0.144
+%global eu_version 0.145
 %global eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -291,6 +291,18 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Tue Feb 23 2010 Roland McGrath <roland@redhat.com> - 0.145-1
+- Update to 0.145
+  - Fix build with --disable-dependency-tracking. (#564646)
+  - Fix build with most recent glibc headers.
+  - libdw: Fix CFI decoding. (#563528)
+  - libdwfl: Fix address bias returned by CFI accessors. (#563528)
+             Fix core file module layout identification. (#559836)
+  - readelf: Fix CFI decoding.
+
+* Fri Jan 15 2010 Roland McGrath <roland@redhat.com> - 0.144-2
+- Fix sloppy #include's breaking build with F-13 glibc.
+
 * Thu Jan 14 2010 Roland McGrath <roland@redhat.com> - 0.144-1
 - Update to 0.144
   - libdw: New function dwarf_aggregate_size for computing (constant) type
