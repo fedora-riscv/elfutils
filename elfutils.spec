@@ -1,4 +1,4 @@
-%global eu_version 0.145
+%global eu_version 0.146
 %global eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -38,7 +38,7 @@ Patch2: elfutils-portability.patch
 Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
 Requires: elfutils-libs-%{_arch} = %{version}-%{release}
 
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+BuildRequires: gettext
 BuildRequires: bison >= 1.875
 BuildRequires: flex >= 2.5.4a
 BuildRequires: bzip2
@@ -213,6 +213,8 @@ chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
  rm -f .%{_bindir}/eu-ld
 )
 
+%find_lang %{name}
+
 %check
 make -s check
 
@@ -229,7 +231,7 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files
 %defattr(-,root,root)
-%doc README TODO
+%doc COPYING README TODO
 %{_bindir}/eu-addr2line
 %{_bindir}/eu-ar
 %{_bindir}/eu-elfcmp
@@ -274,7 +276,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libasm.a
 %{_libdir}/libdw.a
 
-%files libelf
+%files -f %{name}.lang libelf
 %defattr(-,root,root)
 %{_libdir}/libelf-%{version}.so
 %{_libdir}/libelf.so.*
@@ -291,6 +293,13 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Wed Apr 21 2010 Roland McGrath <roland@redhat.com> - 0.146-1
+- Update to 0.146
+  - libdwfl: New function dwfl_core_file_report.
+  - libelf: Fix handling of phdrs in truncated file. (#577310)
+  - libdwfl: Fix infinite loop handling clobbered link_map. (#576379)
+- Package translations.
+
 * Tue Feb 23 2010 Roland McGrath <roland@redhat.com> - 0.145-1
 - Update to 0.145
   - Fix build with --disable-dependency-tracking. (#564646)
