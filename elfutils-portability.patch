@@ -1,6 +1,6 @@
 --- elfutils/backends/ChangeLog
 +++ elfutils/backends/ChangeLog
-@@ -88,6 +88,10 @@
+@@ -106,6 +106,10 @@
  	* ppc_attrs.c (ppc_check_object_attribute): Handle tag
  	GNU_Power_ABI_Struct_Return.
  
@@ -11,7 +11,7 @@
  2008-10-04  Ulrich Drepper  <drepper@redhat.com>
  
  	* i386_reloc.def: Fix entries for TLS_GOTDESC, TLS_DESC_CALL, and
-@@ -415,6 +419,11 @@
+@@ -433,6 +437,11 @@
  	* sparc_init.c: Likewise.
  	* x86_64_init.c: Likewise.
  
@@ -23,7 +23,7 @@
  2005-11-19  Roland McGrath  <roland@redhat.com>
  
  	* ppc64_reloc.def: REL30 -> ADDR30.
-@@ -437,6 +446,9 @@
+@@ -455,6 +464,9 @@
  	* Makefile.am (uninstall): Don't try to remove $(pkgincludedir).
  	(CLEANFILES): Add libebl_$(m).so.
  
@@ -46,7 +46,7 @@
  libebl_i386.so: $(cpu_i386)
 --- elfutils/backends/Makefile.in
 +++ elfutils/backends/Makefile.in
-@@ -164,6 +164,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -165,6 +165,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -61,8 +61,8 @@
 +WEXTRA = @WEXTRA@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
- YACC = @YACC@
-@@ -255,7 +257,7 @@ INCLUDES = -I. -I$(srcdir) -I$(top_srcdi
+ XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
+@@ -256,7 +258,7 @@ INCLUDES = -I. -I$(srcdir) -I$(top_srcdi
  	-I$(top_srcdir)/libelf -I$(top_srcdir)/libdw
  AM_CFLAGS = -std=gnu99 -Wall -Wshadow $(if \
  	$($(*F)_no_Werror),,-Werror) $(if \
@@ -71,7 +71,7 @@
  	$($(*F)_no_Wformat),-Wno-format,-Wformat=2) $($(*F)_CFLAGS) \
  	$(am__append_1)
  @MUDFLAP_FALSE@libmudflap = 
-@@ -693,7 +695,7 @@ libebl_%.so libebl_%.map: libebl_%_pic.a
+@@ -697,7 +699,7 @@ libebl_%.so libebl_%.map: libebl_%_pic.a
  	$(LINK) -shared -o $(@:.map=.so) \
  		-Wl,--whole-archive $< $(cpu_$*) -Wl,--no-whole-archive \
  		-Wl,--version-script,$(@:.so=.map) \
@@ -82,7 +82,10 @@
  libebl_i386.so: $(cpu_i386)
 --- elfutils/ChangeLog
 +++ elfutils/ChangeLog
-@@ -1,3 +1,7 @@
+@@ -2,6 +2,10 @@
+ 
+ 	* configure.ac (LOCALEDIR, DATADIRNAME): Removed.
+ 
 +2009-11-22  Roland McGrath  <roland@redhat.com>
 +
 +	* configure.ac: Use sed and expr instead of modern bash extensions.
@@ -90,7 +93,7 @@
  2009-09-21  Ulrich Drepper  <drepper@redhat.com>
  
  	* configure.ac: Update for more modern autoconf.
-@@ -6,6 +10,10 @@
+@@ -10,6 +14,10 @@
  
  	* configure.ac (zip_LIBS): Check for liblzma too.
  
@@ -101,7 +104,7 @@
  2009-04-19  Roland McGrath  <roland@redhat.com>
  
  	* configure.ac (eu_version): Round down here, not in version.h macros.
-@@ -17,6 +25,8 @@
+@@ -21,6 +29,8 @@
  
  2009-01-23  Roland McGrath  <roland@redhat.com>
  
@@ -110,7 +113,7 @@
  	* configure.ac (zlib check): Check for gzdirect, need zlib >= 1.2.2.3.
  
  	* configure.ac (__thread check): Use AC_LINK_IFELSE, in case of
-@@ -97,6 +107,10 @@
+@@ -101,6 +111,10 @@
  	* configure.ac: Add dummy automake conditional to get dependencies
  	for non-generic linker right.  See src/Makefile.am.
  
@@ -121,7 +124,7 @@
  2005-11-18  Roland McGrath  <roland@redhat.com>
  
  	* Makefile.am (DISTCHECK_CONFIGURE_FLAGS): New variable.
-@@ -144,6 +158,17 @@
+@@ -148,6 +162,17 @@
  	* Makefile.am (all_SUBDIRS): Add libdwfl.
  	* configure.ac: Write libdwfl/Makefile.
  
@@ -148,7 +151,7 @@
 +WEXTRA = @WEXTRA@
 +LD_AS_NEEDED = @LD_AS_NEEDED@
 +
- DEFS = -D_GNU_SOURCE -DHAVE_CONFIG_H
+ DEFS = -D_GNU_SOURCE -DHAVE_CONFIG_H -DLOCALEDIR='"${localedir}"'
  INCLUDES = -I. -I$(srcdir) -I$(top_srcdir)/lib -I..
  AM_CFLAGS = -std=gnu99 -Wall -Wshadow \
  	    $(if $($(*F)_no_Werror),,-Werror) \
@@ -167,14 +170,14 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -105,6 +106,7 @@ SHELL = @SHELL@
+@@ -104,6 +105,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
 +WEXTRA = @WEXTRA@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
- YACC = @YACC@
+ XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 --- elfutils/config.h.in
 +++ elfutils/config.h.in
 @@ -1,5 +1,8 @@
@@ -186,7 +189,7 @@
  /* $libdir subdirectory containing libebl modules. */
  #undef LIBEBL_SUBDIR
  
-@@ -55,4 +58,7 @@
+@@ -52,4 +55,7 @@
  /* Define for large files, on AIX-style hosts. */
  #undef _LARGE_FILES
  
@@ -196,10 +199,10 @@
  #include <eu-config.h>
 --- elfutils/configure
 +++ elfutils/configure
-@@ -646,6 +646,8 @@ NATIVE_LD_FALSE
+@@ -646,6 +646,8 @@ NEVER_TRUE
+ base_cpu
+ NATIVE_LD_FALSE
  NATIVE_LD_TRUE
- DATADIRNAME
- LOCALEDIR
 +LD_AS_NEEDED
 +WEXTRA
  LEXLIB
@@ -432,7 +435,7 @@
  fi
  
  
-@@ -5460,7 +5670,7 @@ ac_config_files="$ac_config_files versio
+@@ -5454,7 +5664,7 @@ ac_config_files="$ac_config_files versio
  
  # 1.234<whatever> -> 1234<whatever>
  case "$PACKAGE_VERSION" in
@@ -441,7 +444,7 @@
  *)     	   { { $as_echo "$as_me:$LINENO: error: confused by version number '$PACKAGE_VERSION'" >&5
  $as_echo "$as_me: error: confused by version number '$PACKAGE_VERSION'" >&2;}
     { (exit 1); exit 1; }; } ;;
-@@ -5495,7 +5705,7 @@ $as_echo "$as_me: error: confused by ver
+@@ -5489,7 +5699,7 @@ $as_echo "$as_me: error: confused by ver
  esac
  
  # Round up to the next release API (x.y) version.
@@ -517,9 +520,9 @@
 +	     [AC_DEFINE([__thread], [/* empty: no multi-thread support */],
 +			[Stubbed out if missing compiler support.])])])
  
- LOCALEDIR=$datadir
- AC_SUBST(LOCALEDIR)
-@@ -259,7 +310,7 @@ AC_SUBST([eu_version])
+ dnl This test must come as early as possible after the compiler configuration
+ dnl tests, because the choice of the file model can (in principle) affect
+@@ -251,7 +302,7 @@ AC_SUBST([eu_version])
  
  # 1.234<whatever> -> 1234<whatever>
  case "$PACKAGE_VERSION" in
@@ -528,7 +531,7 @@
  *)     	   AC_MSG_ERROR([confused by version number '$PACKAGE_VERSION']) ;;
  esac
  case "$eu_version" in
-@@ -288,6 +339,6 @@ case "$eu_version" in
+@@ -280,6 +331,6 @@ case "$eu_version" in
  esac
  
  # Round up to the next release API (x.y) version.
@@ -590,14 +593,14 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -128,6 +129,7 @@ SHELL = @SHELL@
+@@ -127,6 +128,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
 +WEXTRA = @WEXTRA@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
- YACC = @YACC@
+ XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 @@ -189,7 +191,7 @@ INCLUDES = -I. -I$(srcdir) -I$(top_srcdi
  	-I$(srcdir)/../libelf
  AM_CFLAGS = -std=gnu99 -Wall -Wshadow $(if \
@@ -631,14 +634,14 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -176,6 +177,7 @@ SHELL = @SHELL@
+@@ -175,6 +176,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = 1
 +WEXTRA = @WEXTRA@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
- YACC = @YACC@
+ XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 @@ -238,7 +240,7 @@ INCLUDES = -I. -I$(srcdir) -I$(top_srcdi
  	-I$(top_srcdir)/libdw
  AM_CFLAGS = -std=gnu99 -Wall -Wshadow $(if \
@@ -692,14 +695,14 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = lex.$(<F:lex.l=)
-@@ -145,6 +146,7 @@ SHELL = @SHELL@
+@@ -144,6 +145,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
 +WEXTRA = @WEXTRA@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
- YACC = @YACC@
+ XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 @@ -207,7 +209,7 @@ INCLUDES = -I. -I$(srcdir) -I$(top_srcdi
  	-I$(srcdir)/../libdw -I$(srcdir)/../libasm
  AM_CFLAGS = -std=gnu99 -Wall -Wshadow $(if \
@@ -711,7 +714,7 @@
  @MUDFLAP_FALSE@libmudflap = 
 --- elfutils/libdw/ChangeLog
 +++ elfutils/libdw/ChangeLog
-@@ -57,6 +57,10 @@
+@@ -61,6 +61,10 @@
  
  	* dwarf_hasattr_integrate.c: Integrate DW_AT_specification too.
  
@@ -722,7 +725,7 @@
  2009-08-10  Roland McGrath  <roland@redhat.com>
  
  	* dwarf_getscopevar.c: Use dwarf_diename.
-@@ -825,6 +829,11 @@
+@@ -829,6 +833,11 @@
  
  2005-05-31  Roland McGrath  <roland@redhat.com>
  
@@ -747,7 +750,7 @@
  dwarf_whatattr (Dwarf_Attribute *attr)
 --- elfutils/libdw/Makefile.in
 +++ elfutils/libdw/Makefile.in
-@@ -188,6 +188,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -189,6 +189,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -762,8 +765,8 @@
 +WEXTRA = @WEXTRA@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
- YACC = @YACC@
-@@ -278,7 +280,7 @@ INCLUDES = -I. -I$(srcdir) -I$(top_srcdi
+ XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
+@@ -279,7 +281,7 @@ INCLUDES = -I. -I$(srcdir) -I$(top_srcdi
  	-I$(srcdir)/../libelf
  AM_CFLAGS = -std=gnu99 -Wall -Wshadow $(if \
  	$($(*F)_no_Werror),,-Werror) $(if \
@@ -774,7 +777,7 @@
  @MUDFLAP_FALSE@libmudflap = 
 --- elfutils/libdwfl/ChangeLog
 +++ elfutils/libdwfl/ChangeLog
-@@ -1184,6 +1184,11 @@
+@@ -1201,6 +1201,11 @@
  
  2005-07-21  Roland McGrath  <roland@redhat.com>
  
@@ -796,14 +799,14 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -210,6 +211,7 @@ SHELL = @SHELL@
+@@ -209,6 +210,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = 1
 +WEXTRA = @WEXTRA@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
- YACC = @YACC@
+ XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 @@ -272,7 +274,7 @@ INCLUDES = -I. -I$(srcdir) -I$(top_srcdi
  	-I$(srcdir)/../libdw
  AM_CFLAGS = -std=gnu99 -Wall -Wshadow $(if \
@@ -837,14 +840,14 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -172,6 +173,7 @@ SHELL = @SHELL@
+@@ -171,6 +172,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = 1
 +WEXTRA = @WEXTRA@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
- YACC = @YACC@
+ XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 @@ -234,7 +236,7 @@ INCLUDES = -I. -I$(srcdir) -I$(top_srcdi
  	-I$(srcdir)/../libasm
  AM_CFLAGS = -std=gnu99 -Wall -Wshadow $(if \
@@ -856,7 +859,7 @@
  @MUDFLAP_FALSE@libmudflap = 
 --- elfutils/libelf/ChangeLog
 +++ elfutils/libelf/ChangeLog
-@@ -624,6 +624,11 @@
+@@ -651,6 +651,11 @@
  
  	* elf.h: Update from glibc.
  
@@ -898,14 +901,14 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -218,6 +219,7 @@ SHELL = @SHELL@
+@@ -217,6 +218,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = 1
 +WEXTRA = @WEXTRA@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
- YACC = @YACC@
+ XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 @@ -278,7 +280,7 @@ zip_LIBS = @zip_LIBS@
  INCLUDES = -I. -I$(srcdir) -I$(top_srcdir)/lib -I..
  AM_CFLAGS = -std=gnu99 -Wall -Wshadow $(if \
@@ -925,14 +928,14 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -104,6 +105,7 @@ SHELL = @SHELL@
+@@ -103,6 +104,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
 +WEXTRA = @WEXTRA@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
- YACC = @YACC@
+ XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 --- elfutils/Makefile.in
 +++ elfutils/Makefile.in
 @@ -155,6 +155,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -943,14 +946,14 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -184,6 +185,7 @@ SHELL = @SHELL@
+@@ -183,6 +184,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
 +WEXTRA = @WEXTRA@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
- YACC = @YACC@
+ XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 --- elfutils/src/addr2line.c
 +++ elfutils/src/addr2line.c
 @@ -447,10 +447,10 @@ handle_address (const char *string, Dwfl
@@ -968,7 +971,7 @@
  	  /* It was symbol+offset.  */
 --- elfutils/src/ChangeLog
 +++ elfutils/src/ChangeLog
-@@ -82,8 +82,16 @@
+@@ -98,8 +98,16 @@
  	* readelf.c (attr_callback): Use print_block only when we don't use
  	print_ops.
  
@@ -985,7 +988,7 @@
  	* ar.c (do_oper_extract): Use pathconf instead of statfs.
  
  2009-08-01  Ulrich Drepper  <drepper@redhat.com>
-@@ -247,6 +255,8 @@
+@@ -263,6 +271,8 @@
  	* readelf.c (print_debug_frame_section): Use t instead of j formats
  	for ptrdiff_t OFFSET.
  
@@ -994,7 +997,7 @@
  2009-01-21  Ulrich Drepper  <drepper@redhat.com>
  
  	* elflint.c (check_program_header): Fix typo in .eh_frame_hdr section
-@@ -430,6 +440,11 @@
+@@ -446,6 +456,11 @@
  	that matches its PT_LOAD's p_flags &~ PF_W.  On sparc, PF_X really
  	is valid in RELRO.
  
@@ -1006,7 +1009,7 @@
  2008-02-29  Roland McGrath  <roland@redhat.com>
  
  	* readelf.c (print_attributes): Add a cast.
-@@ -681,6 +696,8 @@
+@@ -697,6 +712,8 @@
  
  	* readelf.c (hex_dump): Fix rounding error in whitespace calculation.
  
@@ -1015,7 +1018,7 @@
  2007-10-15  Roland McGrath  <roland@redhat.com>
  
  	* make-debug-archive.in: New file.
-@@ -1120,6 +1137,10 @@
+@@ -1136,6 +1153,10 @@
  	* elflint.c (valid_e_machine): Add EM_ALPHA.
  	Reported by Christian Aichinger <Greek0@gmx.net>.
  
@@ -1026,7 +1029,7 @@
  2006-08-08  Ulrich Drepper  <drepper@redhat.com>
  
  	* elflint.c (check_dynamic): Don't require DT_HASH for DT_SYMTAB.
-@@ -1196,6 +1217,10 @@
+@@ -1212,6 +1233,10 @@
  	* Makefile.am: Add hacks to create dependency files for non-generic
  	linker.
  
@@ -1037,7 +1040,7 @@
  2006-06-12  Ulrich Drepper  <drepper@redhat.com>
  
  	* ldgeneric.c (ld_generic_generate_sections): Don't create .interp
-@@ -1544,6 +1569,11 @@
+@@ -1560,6 +1585,11 @@
  	* readelf.c (print_debug_loc_section): Fix indentation for larger
  	address size.
  
@@ -1103,14 +1106,14 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -257,6 +258,7 @@ SHELL = @SHELL@
+@@ -256,6 +257,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
 +WEXTRA = @WEXTRA@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
- YACC = @YACC@ -d
+ XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 @@ -320,7 +322,7 @@ INCLUDES = -I. -I$(srcdir) -I$(top_srcdi
  	-I$(srcdir)/../libasm
  AM_CFLAGS = -std=gnu99 -Wall -Wshadow $(if \
@@ -1132,7 +1135,7 @@
  size_LDADD = $(libelf) $(libeu) $(libmudflap)
 --- elfutils/src/readelf.c
 +++ elfutils/src/readelf.c
-@@ -7644,7 +7644,7 @@ dump_archive_index (Elf *elf, const char
+@@ -7655,7 +7655,7 @@ dump_archive_index (Elf *elf, const char
  	  if (unlikely (elf_rand (elf, as_off) == 0)
  	      || unlikely ((subelf = elf_begin (-1, ELF_C_READ_MMAP, elf))
  			   == NULL))
@@ -1234,7 +1237,7 @@
  cannot set access and modification date of '%s'"), fname);
 --- elfutils/tests/ChangeLog
 +++ elfutils/tests/ChangeLog
-@@ -130,6 +130,8 @@
+@@ -145,6 +145,8 @@
  
  2008-01-21  Roland McGrath  <roland@redhat.com>
  
@@ -1243,7 +1246,7 @@
  	* testfile45.S.bz2: Add tests for cltq, cqto.
  	* testfile45.expect.bz2: Adjust.
  
-@@ -838,6 +840,11 @@
+@@ -853,6 +855,11 @@
  	* Makefile.am (TESTS): Add run-elflint-test.sh.
  	(EXTRA_DIST): Add run-elflint-test.sh and testfile18.bz2.
  
@@ -1268,7 +1271,7 @@
  	case 0:
 --- elfutils/tests/Makefile.in
 +++ elfutils/tests/Makefile.in
-@@ -367,6 +367,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -372,6 +372,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -1276,15 +1279,15 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -396,6 +397,7 @@ SHELL = @SHELL@
+@@ -400,6 +401,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
 +WEXTRA = @WEXTRA@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
- YACC = @YACC@
-@@ -456,7 +458,7 @@ zip_LIBS = @zip_LIBS@
+ XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
+@@ -461,7 +463,7 @@ zip_LIBS = @zip_LIBS@
  INCLUDES = -I. -I$(srcdir) -I$(top_srcdir)/lib -I.. $(am__append_2)
  AM_CFLAGS = -std=gnu99 -Wall -Wshadow $(if \
  	$($(*F)_no_Werror),,-Werror) $(if \
