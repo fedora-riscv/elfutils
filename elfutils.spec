@@ -1,4 +1,4 @@
-%global eu_version 0.146
+%global eu_version 0.147
 %global eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -293,6 +293,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Mon May  3 2010 Roland McGrath <roland@redhat.com> - 0.147-1
+- Update to 0.147
+
 * Wed Apr 21 2010 Roland McGrath <roland@redhat.com> - 0.146-1
 - Update to 0.146
   - libdwfl: New function dwfl_core_file_report.
