@@ -21,6 +21,12 @@
 %global separate_devel_static 1
 %endif
 
+%if %{compat} || %{!?rhel:6}%{?rhel} < 6
+%global nocheck true
+%else
+%global nocheck false
+%endif
+
 Summary: A collection of utilities and DSOs to handle compiled objects
 Name: elfutils
 Version: %{eu_version}
@@ -37,6 +43,10 @@ Patch1: elfutils-robustify.patch
 Patch2: elfutils-portability.patch
 Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
 Requires: elfutils-libs-%{_arch} = %{version}-%{release}
+
+%if %{!?rhel:6}%{?rhel} < 6 || %{!?fedora:9}%{?fedora} < 10
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+%endif
 
 BuildRequires: gettext
 BuildRequires: bison >= 1.875
@@ -216,7 +226,7 @@ chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
 %find_lang %{name}
 
 %check
-make -s check
+make -s check || %{nocheck}
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
