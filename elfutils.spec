@@ -1,4 +1,4 @@
-%global eu_version 0.147
+%global eu_version 0.148
 %global eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -317,6 +317,17 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Mon Jun 28 2010 Roland McGrath <roland@redhat.com> - 0.148-1
+- Update to 0.148
+  - libdw: Accept DWARF 4 format: new functions dwarf_next_unit,
+           dwarf_offdie_types.
+           New functions dwarf_lineisa, dwarf_linediscriminator,
+           dwarf_lineop_index.
+  - libdwfl: Fixes in core-file handling, support cores from PIEs. (#588818)
+             When working from build IDs, don't open a named file
+             that mismatches.
+  - readelf: Handle DWARF 4 formats.
+
 * Mon May  3 2010 Roland McGrath <roland@redhat.com> - 0.147-1
 - Update to 0.147
 
