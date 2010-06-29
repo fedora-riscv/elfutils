@@ -1,4 +1,4 @@
-%global eu_version 0.147
+%global eu_version 0.148
 %global eu_release 1
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -21,6 +21,14 @@
 %global separate_devel_static 1
 %endif
 
+%if %{compat} || %{!?rhel:6}%{?rhel} < 6
+%global nocheck true
+%else
+%global nocheck false
+%endif
+
+%global depsuffix %{?_isa}%{!?_isa:-%{_arch}}
+
 Summary: A collection of utilities and DSOs to handle compiled objects
 Name: elfutils
 Version: %{eu_version}
@@ -35,8 +43,12 @@ URL: https://fedorahosted.org/elfutils/
 Source: http://fedorahosted.org/releases/e/l/elfutils/%{name}-%{version}.tar.bz2
 Patch1: elfutils-robustify.patch
 Patch2: elfutils-portability.patch
-Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
-Requires: elfutils-libs-%{_arch} = %{version}-%{release}
+Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
+Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
+
+%if %{!?rhel:6}%{?rhel} < 6 || %{!?fedora:9}%{?fedora} < 10
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+%endif
 
 BuildRequires: gettext
 BuildRequires: bison >= 1.875
@@ -89,8 +101,10 @@ symbols), readelf (to see the raw ELF file structures), and elflint
 %package libs
 Summary: Libraries to handle compiled objects
 Group: Development/Tools
-Provides: elfutils-libs-%{_arch} = %{version}-%{release}
-Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
+%if 0%{!?_isa}
+Provides: elfutils-libs%{depsuffix} = %{version}-%{release}
+%endif
+Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 
 %description libs
 The elfutils-libs package contains libraries which implement DWARF, ELF,
@@ -101,11 +115,13 @@ other programs using these libraries.
 %package devel
 Summary: Development libraries to handle compiled objects
 Group: Development/Tools
-Provides: elfutils-devel-%{_arch} = %{version}-%{release}
-Requires: elfutils-libs-%{_arch} = %{version}-%{release}
-Requires: elfutils-libelf-devel-%{_arch} = %{version}-%{release}
+%if 0%{!?_isa}
+Provides: elfutils-devel%{depsuffix} = %{version}-%{release}
+%endif
+Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
+Requires: elfutils-libelf-devel%{depsuffix} = %{version}-%{release}
 %if !0%{?separate_devel_static}
-Requires: elfutils-devel-static-%{_arch} = %{version}-%{release}
+Requires: elfutils-devel-static%{depsuffix} = %{version}-%{release}
 %endif
 
 %description devel
@@ -118,9 +134,11 @@ assembler interface.
 %package devel-static
 Summary: Static archives to handle compiled objects
 Group: Development/Tools
-Provides: elfutils-devel-static-%{_arch} = %{version}-%{release}
-Requires: elfutils-devel-%{_arch} = %{version}-%{release}
-Requires: elfutils-libelf-devel-static-%{_arch} = %{version}-%{release}
+%if 0%{!?_isa}
+Provides: elfutils-devel-static%{depsuffix} = %{version}-%{release}
+%endif
+Requires: elfutils-devel%{depsuffix} = %{version}-%{release}
+Requires: elfutils-libelf-devel-static%{depsuffix} = %{version}-%{release}
 
 %description devel-static
 The elfutils-devel-static package contains the static archives
@@ -129,7 +147,9 @@ with the code to handle compiled objects.
 %package libelf
 Summary: Library to read and write ELF files
 Group: Development/Tools
-Provides: elfutils-libelf-%{_arch} = %{version}-%{release}
+%if 0%{!?_isa}
+Provides: elfutils-libelf%{depsuffix} = %{version}-%{release}
+%endif
 Obsoletes: libelf <= 0.8.2-2
 
 %description libelf
@@ -141,10 +161,12 @@ elfutils package use it also to generate new ELF files.
 %package libelf-devel
 Summary: Development support for libelf
 Group: Development/Tools
-Provides: elfutils-libelf-devel-%{_arch} = %{version}-%{release}
-Requires: elfutils-libelf-%{_arch} = %{version}-%{release}
+%if 0%{!?_isa}
+Provides: elfutils-libelf-devel%{depsuffix} = %{version}-%{release}
+%endif
+Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 %if !0%{?separate_devel_static}
-Requires: elfutils-libelf-devel-static-%{_arch} = %{version}-%{release}
+Requires: elfutils-libelf-devel-static%{depsuffix} = %{version}-%{release}
 %endif
 Obsoletes: libelf-devel <= 0.8.2-2
 
@@ -157,8 +179,10 @@ different sections of an ELF file.
 %package libelf-devel-static
 Summary: Static archive of libelf
 Group: Development/Tools
-Provides: elfutils-libelf-devel-static-%{_arch} = %{version}-%{release}
-Requires: elfutils-libelf-devel-%{_arch} = %{version}-%{release}
+%if 0%{!?_isa}
+Provides: elfutils-libelf-devel-static%{depsuffix} = %{version}-%{release}
+%endif
+Requires: elfutils-libelf-devel%{depsuffix} = %{version}-%{release}
 
 %description libelf-devel-static
 The elfutils-libelf-static package contains the static archive
@@ -216,7 +240,7 @@ chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
 %find_lang %{name}
 
 %check
-make -s check
+make -s check || %{nocheck}
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
@@ -293,6 +317,17 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Mon Jun 28 2010 Roland McGrath <roland@redhat.com> - 0.148-1
+- Update to 0.148
+  - libdw: Accept DWARF 4 format: new functions dwarf_next_unit,
+           dwarf_offdie_types.
+           New functions dwarf_lineisa, dwarf_linediscriminator,
+           dwarf_lineop_index.
+  - libdwfl: Fixes in core-file handling, support cores from PIEs. (#588818)
+             When working from build IDs, don't open a named file
+             that mismatches.
+  - readelf: Handle DWARF 4 formats.
+
 * Mon May  3 2010 Roland McGrath <roland@redhat.com> - 0.147-1
 - Update to 0.147
 
