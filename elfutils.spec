@@ -1,5 +1,11 @@
-%global eu_version 0.148
-%global eu_release 1
+Name: elfutils
+Summary: A collection of utilities and DSOs to handle compiled objects
+Version: 0.148
+%global baserelease 1
+URL: https://fedorahosted.org/elfutils/
+%global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
+License: GPLv2 with exceptions
+Group: Development/Tools
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
 %global compat 1
@@ -29,20 +35,16 @@
 
 %global depsuffix %{?_isa}%{!?_isa:-%{_arch}}
 
-Summary: A collection of utilities and DSOs to handle compiled objects
-Name: elfutils
-Version: %{eu_version}
+Source: %{?source_url}%{name}-%{version}.tar.bz2
+Patch1: %{?source_url}elfutils-robustify.patch
+Patch2: %{?source_url}elfutils-portability.patch
+
 %if !%{compat}
-Release: %{eu_release}%{?dist}
+Release: %{baserelease}%{?dist}
 %else
-Release: 0.%{eu_release}
+Release: 0.%{baserelease}
 %endif
-License: GPLv2 with exceptions
-Group: Development/Tools
-URL: https://fedorahosted.org/elfutils/
-Source: http://fedorahosted.org/releases/e/l/elfutils/%{name}-%{version}.tar.bz2
-Patch1: elfutils-robustify.patch
-Patch2: elfutils-portability.patch
+
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
 
@@ -268,7 +270,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_bindir}/eu-size
 %{_bindir}/eu-strings
 %{_bindir}/eu-strip
-#%{_bindir}/eu-ld
+#%%{_bindir}/eu-ld
 %{_bindir}/eu-unstrip
 %{_bindir}/eu-make-debug-archive
 
