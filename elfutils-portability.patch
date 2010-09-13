@@ -82,7 +82,7 @@
  libebl_i386.so: $(cpu_i386)
 --- elfutils/ChangeLog
 +++ elfutils/ChangeLog
-@@ -2,6 +2,10 @@
+@@ -7,6 +7,10 @@
  
  	* configure.ac (LOCALEDIR, DATADIRNAME): Removed.
  
@@ -93,7 +93,7 @@
  2009-09-21  Ulrich Drepper  <drepper@redhat.com>
  
  	* configure.ac: Update for more modern autoconf.
-@@ -10,6 +14,10 @@
+@@ -15,6 +19,10 @@
  
  	* configure.ac (zip_LIBS): Check for liblzma too.
  
@@ -104,7 +104,7 @@
  2009-04-19  Roland McGrath  <roland@redhat.com>
  
  	* configure.ac (eu_version): Round down here, not in version.h macros.
-@@ -21,6 +29,8 @@
+@@ -26,6 +34,8 @@
  
  2009-01-23  Roland McGrath  <roland@redhat.com>
  
@@ -113,7 +113,7 @@
  	* configure.ac (zlib check): Check for gzdirect, need zlib >= 1.2.2.3.
  
  	* configure.ac (__thread check): Use AC_LINK_IFELSE, in case of
-@@ -101,6 +111,10 @@
+@@ -106,6 +116,10 @@
  	* configure.ac: Add dummy automake conditional to get dependencies
  	for non-generic linker right.  See src/Makefile.am.
  
@@ -124,7 +124,7 @@
  2005-11-18  Roland McGrath  <roland@redhat.com>
  
  	* Makefile.am (DISTCHECK_CONFIGURE_FLAGS): New variable.
-@@ -148,6 +162,17 @@
+@@ -153,6 +167,17 @@
  	* Makefile.am (all_SUBDIRS): Add libdwfl.
  	* configure.ac: Write libdwfl/Makefile.
  
@@ -572,7 +572,7 @@
  @MUDFLAP_FALSE@libmudflap = 
 --- elfutils/libcpu/ChangeLog
 +++ elfutils/libcpu/ChangeLog
-@@ -9,6 +9,9 @@
+@@ -15,6 +15,9 @@
  
  2009-01-23  Roland McGrath  <roland@redhat.com>
  
@@ -582,7 +582,7 @@
  	* Makefile.am (i386_parse_CFLAGS): Use quotes around command
  	substitution that can produce leading whitespace.
  
-@@ -338,6 +341,11 @@
+@@ -344,6 +347,11 @@
  	* defs/i386.doc: New file.
  	* defs/x86_64: New file.
  
@@ -633,7 +633,7 @@
  @MUDFLAP_FALSE@libmudflap = 
 --- elfutils/libdw/ChangeLog
 +++ elfutils/libdw/ChangeLog
-@@ -276,6 +276,10 @@
+@@ -299,6 +299,10 @@
  
  	* dwarf_hasattr_integrate.c: Integrate DW_AT_specification too.
  
@@ -644,7 +644,7 @@
  2009-08-10  Roland McGrath  <roland@redhat.com>
  
  	* dwarf_getscopevar.c: Use dwarf_diename.
-@@ -1044,6 +1048,11 @@
+@@ -1067,6 +1071,11 @@
  
  2005-05-31  Roland McGrath  <roland@redhat.com>
  
@@ -658,7 +658,7 @@
  
 --- elfutils/libdw/libdw.h
 +++ elfutils/libdw/libdw.h
-@@ -842,7 +842,7 @@ extern Dwarf_OOM dwarf_new_oom_handler (
+@@ -852,7 +852,7 @@ extern Dwarf_OOM dwarf_new_oom_handler (
  
  
  /* Inline optimizations.  */
@@ -669,7 +669,7 @@
  dwarf_whatattr (Dwarf_Attribute *attr)
 --- elfutils/libdw/Makefile.in
 +++ elfutils/libdw/Makefile.in
-@@ -191,6 +191,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -192,6 +192,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -677,7 +677,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -220,6 +221,7 @@ SHELL = @SHELL@
+@@ -221,6 +222,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = 1
@@ -685,7 +685,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
-@@ -282,7 +284,7 @@ INCLUDES = -I. -I$(srcdir) -I$(top_srcdi
+@@ -283,7 +285,7 @@ INCLUDES = -I. -I$(srcdir) -I$(top_srcdi
  	-I$(srcdir)/../libelf
  AM_CFLAGS = -std=gnu99 -Wall -Wshadow $(if \
  	$($(*F)_no_Werror),,-Werror) $(if \
@@ -696,7 +696,7 @@
  @MUDFLAP_FALSE@libmudflap = 
 --- elfutils/libdwfl/ChangeLog
 +++ elfutils/libdwfl/ChangeLog
-@@ -1265,6 +1265,11 @@
+@@ -1283,6 +1283,11 @@
  
  2005-07-21  Roland McGrath  <roland@redhat.com>
  
@@ -710,7 +710,7 @@
  	* test2.c (main): Check sscanf result to quiet warning.
 --- elfutils/libdwfl/Makefile.in
 +++ elfutils/libdwfl/Makefile.in
-@@ -181,6 +181,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -182,6 +182,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -718,7 +718,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -210,6 +211,7 @@ SHELL = @SHELL@
+@@ -211,6 +212,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = 1
@@ -726,7 +726,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
-@@ -273,7 +275,7 @@ INCLUDES = -I. -I$(srcdir) -I$(top_srcdi
+@@ -274,7 +276,7 @@ INCLUDES = -I. -I$(srcdir) -I$(top_srcdi
  	-I$(srcdir)/../libdw
  AM_CFLAGS = -std=gnu99 -Wall -Wshadow $(if \
  	$($(*F)_no_Werror),,-Werror) $(if \
@@ -737,7 +737,7 @@
  @MUDFLAP_FALSE@libmudflap = 
 --- elfutils/libebl/ChangeLog
 +++ elfutils/libebl/ChangeLog
-@@ -624,6 +624,11 @@
+@@ -628,6 +628,11 @@
  	* Makefile.am (libebl_*_so_SOURCES): Set to $(*_SRCS) so dependency
  	tracking works right.
  
@@ -778,7 +778,7 @@
  @MUDFLAP_FALSE@libmudflap = 
 --- elfutils/libelf/ChangeLog
 +++ elfutils/libelf/ChangeLog
-@@ -657,6 +657,11 @@
+@@ -666,6 +666,11 @@
  
  	* elf.h: Update from glibc.
  
@@ -875,7 +875,7 @@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 --- elfutils/src/addr2line.c
 +++ elfutils/src/addr2line.c
-@@ -447,10 +447,10 @@ handle_address (const char *string, Dwfl
+@@ -455,10 +455,10 @@ handle_address (const char *string, Dwfl
        bool parsed = false;
        int i, j;
        char *name = NULL;
@@ -890,7 +890,7 @@
  	  break;
 --- elfutils/src/ChangeLog
 +++ elfutils/src/ChangeLog
-@@ -165,8 +165,16 @@
+@@ -220,8 +220,16 @@
  	* readelf.c (attr_callback): Use print_block only when we don't use
  	print_ops.
  
@@ -907,7 +907,7 @@
  	* ar.c (do_oper_extract): Use pathconf instead of statfs.
  
  2009-08-01  Ulrich Drepper  <drepper@redhat.com>
-@@ -330,6 +338,8 @@
+@@ -385,6 +393,8 @@
  	* readelf.c (print_debug_frame_section): Use t instead of j formats
  	for ptrdiff_t OFFSET.
  
@@ -916,7 +916,7 @@
  2009-01-21  Ulrich Drepper  <drepper@redhat.com>
  
  	* elflint.c (check_program_header): Fix typo in .eh_frame_hdr section
-@@ -513,6 +523,11 @@
+@@ -568,6 +578,11 @@
  	that matches its PT_LOAD's p_flags &~ PF_W.  On sparc, PF_X really
  	is valid in RELRO.
  
@@ -928,7 +928,7 @@
  2008-02-29  Roland McGrath  <roland@redhat.com>
  
  	* readelf.c (print_attributes): Add a cast.
-@@ -764,6 +779,8 @@
+@@ -819,6 +834,8 @@
  
  	* readelf.c (hex_dump): Fix rounding error in whitespace calculation.
  
@@ -937,7 +937,7 @@
  2007-10-15  Roland McGrath  <roland@redhat.com>
  
  	* make-debug-archive.in: New file.
-@@ -1203,6 +1220,10 @@
+@@ -1258,6 +1275,10 @@
  	* elflint.c (valid_e_machine): Add EM_ALPHA.
  	Reported by Christian Aichinger <Greek0@gmx.net>.
  
@@ -948,7 +948,7 @@
  2006-08-08  Ulrich Drepper  <drepper@redhat.com>
  
  	* elflint.c (check_dynamic): Don't require DT_HASH for DT_SYMTAB.
-@@ -1279,6 +1300,10 @@
+@@ -1334,6 +1355,10 @@
  	* Makefile.am: Add hacks to create dependency files for non-generic
  	linker.
  
@@ -959,7 +959,7 @@
  2006-06-12  Ulrich Drepper  <drepper@redhat.com>
  
  	* ldgeneric.c (ld_generic_generate_sections): Don't create .interp
-@@ -1627,6 +1652,11 @@
+@@ -1682,6 +1707,11 @@
  	* readelf.c (print_debug_loc_section): Fix indentation for larger
  	address size.
  
@@ -1054,7 +1054,35 @@
  size_LDADD = $(libelf) $(libeu) $(libmudflap)
 --- elfutils/src/readelf.c
 +++ elfutils/src/readelf.c
-@@ -7845,7 +7845,7 @@ dump_archive_index (Elf *elf, const char
+@@ -4274,10 +4274,11 @@ struct listptr
+ #define listptr_offset_size(p)	((p)->dwarf64 ? 8 : 4)
+ #define listptr_address_size(p)	((p)->addr64 ? 8 : 4)
+ 
++static const char *listptr_name;
+ static int
+-compare_listptr (const void *a, const void *b, void *arg)
++compare_listptr (const void *a, const void *b)
+ {
+-  const char *name = arg;
++  const char *const name = listptr_name;
+   struct listptr *p1 = (void *) a;
+   struct listptr *p2 = (void *) b;
+ 
+@@ -4357,8 +4358,11 @@ static void
+ sort_listptr (struct listptr_table *table, const char *name)
+ {
+   if (table->n > 0)
+-    qsort_r (table->table, table->n, sizeof table->table[0],
+-	     &compare_listptr, (void *) name);
++    {
++      listptr_name = name;
++      qsort (table->table, table->n, sizeof table->table[0],
++	     &compare_listptr);
++    }
+ }
+ 
+ static bool
+@@ -8098,7 +8102,7 @@ dump_archive_index (Elf *elf, const char
  	  if (unlikely (elf_rand (elf, as_off) == 0)
  	      || unlikely ((subelf = elf_begin (-1, ELF_C_READ_MMAP, elf))
  			   == NULL))
@@ -1090,7 +1118,7 @@
  	  break;
  	}
        if (errno != EINVAL && errno != ENOMEM)
-@@ -586,9 +595,11 @@ read_block (int fd, const char *fname, o
+@@ -584,9 +593,11 @@ read_block (int fd, const char *fname, o
        elfmap_off = from & ~(ps - 1);
        elfmap_base = elfmap = map_file (fd, elfmap_off, fdlen, &elfmap_size);
  

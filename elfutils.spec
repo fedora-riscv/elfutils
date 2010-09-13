@@ -1,6 +1,6 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
-Version: 0.148
+Version: 0.149
 %global baserelease 1
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
@@ -13,18 +13,19 @@ Group: Development/Tools
 %global compat 0
 %endif
 
-%if 0%{?fedora} >= 8
-%global scanf_has_m 1
-%endif
-%if 0%{?rhel} >= 6
-%global scanf_has_m 1
-%endif
+%global portability		%{compat}
+%global scanf_has_m		!%{compat}
+%global separate_devel_static	1
 
-%if 0%{?fedora} >= 7
-%global separate_devel_static 1
+%if 0%{?rhel}
+%global portability		(%rhel < 6)
+%global scanf_has_m		(%rhel >= 6)
+%global separate_devel_static	(%rhel >= 6)
 %endif
-%if 0%{?rhel} >= 6
-%global separate_devel_static 1
+%if 0%{?fedora}
+%global portability		(%fedora < 9)
+%global scanf_has_m		(%fedora >= 8)
+%global separate_devel_static	(%fedora >= 7)
 %endif
 
 %if %{compat} || %{!?rhel:6}%{?rhel} < 6
@@ -122,7 +123,7 @@ Provides: elfutils-devel%{depsuffix} = %{version}-%{release}
 %endif
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libelf-devel%{depsuffix} = %{version}-%{release}
-%if !0%{?separate_devel_static}
+%if !%{separate_devel_static}
 Requires: elfutils-devel-static%{depsuffix} = %{version}-%{release}
 %endif
 
@@ -167,7 +168,7 @@ Group: Development/Tools
 Provides: elfutils-libelf-devel%{depsuffix} = %{version}-%{release}
 %endif
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
-%if !0%{?separate_devel_static}
+%if !%{separate_devel_static}
 Requires: elfutils-libelf-devel-static%{depsuffix} = %{version}-%{release}
 %endif
 Obsoletes: libelf-devel <= 0.8.2-2
@@ -193,16 +194,21 @@ for libelf.
 %prep
 %setup -q
 
+: 'compat=%compat'
+: 'portability=%portability'
+: 'separate_devel_static=%separate_devel_static'
+: 'scanf_has_m=%scanf_has_m'
+
 %patch1 -p1 -b .robustify
 
-%if %{compat}
+%if %{portability}
 %patch2 -p1 -b .portability
 sleep 1
 find . \( -name Makefile.in -o -name aclocal.m4 \) -print | xargs touch
 sleep 1
 find . \( -name configure -o -name config.h.in \) -print | xargs touch
 %else
-%if !0%{?scanf_has_m}
+%if !%{scanf_has_m}
 sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 %endif
@@ -319,6 +325,16 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Mon Sep 13 2010 Roland McGrath <roland@redhat.com> - 0.149-1
+- Update to 0.149
+  - libdw: Decode new DW_OP_GNU_implicit_pointer operation;
+       	   new function dwarf_getlocation_implicit_pointer.
+  - libdwfl: New function dwfl_dwarf_line.
+  - eu-addr2line: New flag -F/--flags to print more DWARF line info details.
+  - eu-readelf: better .debug_loc processing (#627729)
+  - eu-strings: Fix non-mmap file reading. (#609468)
+  - eu-strip: -g recognizes .gdb_index as a debugging section. (#631997)
+
 * Mon Jun 28 2010 Roland McGrath <roland@redhat.com> - 0.148-1
 - Update to 0.148
   - libdw: Accept DWARF 4 format: new functions dwarf_next_unit,
