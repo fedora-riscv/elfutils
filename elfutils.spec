@@ -13,19 +13,19 @@ Group: Development/Tools
 %global compat 0
 %endif
 
-%global portability		%{compat}
-%global scanf_has_m		!%{compat}
-%global separate_devel_static	1
+%global portability             %{compat}
+%global scanf_has_m             !%{compat}
+%global separate_devel_static   1
 
 %if 0%{?rhel}
-%global portability		(%rhel < 6)
-%global scanf_has_m		(%rhel >= 6)
-%global separate_devel_static	(%rhel >= 6)
+%global portability             (%rhel < 6)
+%global scanf_has_m             (%rhel >= 6)
+%global separate_devel_static   (%rhel >= 6)
 %endif
 %if 0%{?fedora}
-%global portability		(%fedora < 9)
-%global scanf_has_m		(%fedora >= 8)
-%global separate_devel_static	(%fedora >= 7)
+%global portability             (%fedora < 9)
+%global scanf_has_m             (%fedora >= 8)
+%global separate_devel_static   (%fedora >= 7)
 %endif
 
 %if %{compat} || %{!?rhel:6}%{?rhel} < 6
@@ -328,7 +328,7 @@ rm -rf ${RPM_BUILD_ROOT}
 * Mon Sep 13 2010 Roland McGrath <roland@redhat.com> - 0.149-1
 - Update to 0.149
   - libdw: Decode new DW_OP_GNU_implicit_pointer operation;
-       	   new function dwarf_getlocation_implicit_pointer.
+           new function dwarf_getlocation_implicit_pointer.
   - libdwfl: New function dwfl_dwarf_line.
   - eu-addr2line: New flag -F/--flags to print more DWARF line info details.
   - eu-readelf: better .debug_loc processing (#627729)
