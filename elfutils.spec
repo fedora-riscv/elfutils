@@ -104,7 +104,7 @@ symbols), readelf (to see the raw ELF file structures), and elflint
 %package libs
 Summary: Libraries to handle compiled objects
 Group: Development/Tools
-%if 0%{!?_isa}
+%if 0%{!?_isa:1}
 Provides: elfutils-libs%{depsuffix} = %{version}-%{release}
 %endif
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
@@ -118,7 +118,7 @@ other programs using these libraries.
 %package devel
 Summary: Development libraries to handle compiled objects
 Group: Development/Tools
-%if 0%{!?_isa}
+%if 0%{!?_isa:1}
 Provides: elfutils-devel%{depsuffix} = %{version}-%{release}
 %endif
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -137,7 +137,7 @@ assembler interface.
 %package devel-static
 Summary: Static archives to handle compiled objects
 Group: Development/Tools
-%if 0%{!?_isa}
+%if 0%{!?_isa:1}
 Provides: elfutils-devel-static%{depsuffix} = %{version}-%{release}
 %endif
 Requires: elfutils-devel%{depsuffix} = %{version}-%{release}
@@ -150,7 +150,7 @@ with the code to handle compiled objects.
 %package libelf
 Summary: Library to read and write ELF files
 Group: Development/Tools
-%if 0%{!?_isa}
+%if 0%{!?_isa:1}
 Provides: elfutils-libelf%{depsuffix} = %{version}-%{release}
 %endif
 Obsoletes: libelf <= 0.8.2-2
@@ -164,7 +164,7 @@ elfutils package use it also to generate new ELF files.
 %package libelf-devel
 Summary: Development support for libelf
 Group: Development/Tools
-%if 0%{!?_isa}
+%if 0%{!?_isa:1}
 Provides: elfutils-libelf-devel%{depsuffix} = %{version}-%{release}
 %endif
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
@@ -182,7 +182,7 @@ different sections of an ELF file.
 %package libelf-devel-static
 Summary: Static archive of libelf
 Group: Development/Tools
-%if 0%{!?_isa}
+%if 0%{!?_isa:1}
 Provides: elfutils-libelf-devel-static%{depsuffix} = %{version}-%{release}
 %endif
 Requires: elfutils-libelf-devel%{depsuffix} = %{version}-%{release}
