@@ -16,16 +16,22 @@ Group: Development/Tools
 %global portability             %{compat}
 %global scanf_has_m             !%{compat}
 %global separate_devel_static   1
+%global use_zlib                0
+%global use_xz                  0
 
 %if 0%{?rhel}
 %global portability             (%rhel < 6)
 %global scanf_has_m             (%rhel >= 6)
 %global separate_devel_static   (%rhel >= 6)
+%global use_zlib                (%rhel >= 5)
+%global use_xz                  (%rhel >= 6)
 %endif
 %if 0%{?fedora}
 %global portability             (%fedora < 9)
 %global scanf_has_m             (%fedora >= 8)
 %global separate_devel_static   (%fedora >= 7)
+%global use_zlib                (%fedora >= 5)
+%global use_xz                  (%fedora >= 10)
 %endif
 
 %if %{compat} || %{!?rhel:6}%{?rhel} < 6
@@ -63,22 +69,6 @@ BuildRequires: gcc >= 3.4
 BuildRequires: glibc-headers >= 2.3.4-11
 %else
 BuildRequires: gcc >= 3.2
-%endif
-
-%global use_zlib        0
-%if 0%{?fedora} >= 5
-%global use_zlib        1
-%endif
-%if 0%{?rhel} >= 5
-%global use_zlib        1
-%endif
-
-%global use_xz          0
-%if 0%{?fedora} >= 10
-%global use_xz          1
-%endif
-%if 0%{?rhel} >= 6
-%global use_xz          1
 %endif
 
 %if %{use_zlib}
