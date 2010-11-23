@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
-Version: 0.149
-%global baserelease 2
+Version: 0.150
+%global baserelease 1
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv2 with exceptions
@@ -315,6 +315,12 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Tue Nov 23 2010 Roland McGrath <roland@redhat.com> - 0.150-1
+- Update to 0.150
+  - libdw: Fix for handling huge .debug_aranges section. (#638432)
+  - libdwfl: Fix for handling prelinked DSO with separate debug file. (#652857)
+  - findtextrel: Fix diagnostics to work with usual section ordering.
+
 * Wed Sep 29 2010 jkeating - 0.149-2
 - Rebuilt for gcc bug 634757
 

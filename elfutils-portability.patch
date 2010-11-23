@@ -1,6 +1,6 @@
 --- elfutils/backends/ChangeLog
 +++ elfutils/backends/ChangeLog
-@@ -106,6 +106,10 @@
+@@ -111,6 +111,10 @@
  	* ppc_attrs.c (ppc_check_object_attribute): Handle tag
  	GNU_Power_ABI_Struct_Return.
  
@@ -11,7 +11,7 @@
  2008-10-04  Ulrich Drepper  <drepper@redhat.com>
  
  	* i386_reloc.def: Fix entries for TLS_GOTDESC, TLS_DESC_CALL, and
-@@ -433,6 +437,11 @@
+@@ -438,6 +442,11 @@
  	* sparc_init.c: Likewise.
  	* x86_64_init.c: Likewise.
  
@@ -23,7 +23,7 @@
  2005-11-19  Roland McGrath  <roland@redhat.com>
  
  	* ppc64_reloc.def: REL30 -> ADDR30.
-@@ -455,6 +464,9 @@
+@@ -460,6 +469,9 @@
  	* Makefile.am (uninstall): Don't try to remove $(pkgincludedir).
  	(CLEANFILES): Add libebl_$(m).so.
  
@@ -633,7 +633,7 @@
  @MUDFLAP_FALSE@libmudflap = 
 --- elfutils/libdw/ChangeLog
 +++ elfutils/libdw/ChangeLog
-@@ -299,6 +299,10 @@
+@@ -308,6 +308,10 @@
  
  	* dwarf_hasattr_integrate.c: Integrate DW_AT_specification too.
  
@@ -644,7 +644,7 @@
  2009-08-10  Roland McGrath  <roland@redhat.com>
  
  	* dwarf_getscopevar.c: Use dwarf_diename.
-@@ -1067,6 +1071,11 @@
+@@ -1076,6 +1080,11 @@
  
  2005-05-31  Roland McGrath  <roland@redhat.com>
  
@@ -696,7 +696,7 @@
  @MUDFLAP_FALSE@libmudflap = 
 --- elfutils/libdwfl/ChangeLog
 +++ elfutils/libdwfl/ChangeLog
-@@ -1283,6 +1283,11 @@
+@@ -1331,6 +1331,11 @@
  
  2005-07-21  Roland McGrath  <roland@redhat.com>
  
@@ -890,7 +890,7 @@
  	  break;
 --- elfutils/src/ChangeLog
 +++ elfutils/src/ChangeLog
-@@ -220,8 +220,16 @@
+@@ -225,8 +225,16 @@
  	* readelf.c (attr_callback): Use print_block only when we don't use
  	print_ops.
  
@@ -907,7 +907,7 @@
  	* ar.c (do_oper_extract): Use pathconf instead of statfs.
  
  2009-08-01  Ulrich Drepper  <drepper@redhat.com>
-@@ -385,6 +393,8 @@
+@@ -390,6 +398,8 @@
  	* readelf.c (print_debug_frame_section): Use t instead of j formats
  	for ptrdiff_t OFFSET.
  
@@ -916,7 +916,7 @@
  2009-01-21  Ulrich Drepper  <drepper@redhat.com>
  
  	* elflint.c (check_program_header): Fix typo in .eh_frame_hdr section
-@@ -568,6 +578,11 @@
+@@ -573,6 +583,11 @@
  	that matches its PT_LOAD's p_flags &~ PF_W.  On sparc, PF_X really
  	is valid in RELRO.
  
@@ -928,7 +928,7 @@
  2008-02-29  Roland McGrath  <roland@redhat.com>
  
  	* readelf.c (print_attributes): Add a cast.
-@@ -819,6 +834,8 @@
+@@ -824,6 +839,8 @@
  
  	* readelf.c (hex_dump): Fix rounding error in whitespace calculation.
  
@@ -937,7 +937,7 @@
  2007-10-15  Roland McGrath  <roland@redhat.com>
  
  	* make-debug-archive.in: New file.
-@@ -1258,6 +1275,10 @@
+@@ -1263,6 +1280,10 @@
  	* elflint.c (valid_e_machine): Add EM_ALPHA.
  	Reported by Christian Aichinger <Greek0@gmx.net>.
  
@@ -948,7 +948,7 @@
  2006-08-08  Ulrich Drepper  <drepper@redhat.com>
  
  	* elflint.c (check_dynamic): Don't require DT_HASH for DT_SYMTAB.
-@@ -1334,6 +1355,10 @@
+@@ -1339,6 +1360,10 @@
  	* Makefile.am: Add hacks to create dependency files for non-generic
  	linker.
  
@@ -959,7 +959,7 @@
  2006-06-12  Ulrich Drepper  <drepper@redhat.com>
  
  	* ldgeneric.c (ld_generic_generate_sections): Don't create .interp
-@@ -1682,6 +1707,11 @@
+@@ -1687,6 +1712,11 @@
  	* readelf.c (print_debug_loc_section): Fix indentation for larger
  	address size.
  
@@ -973,7 +973,7 @@
  	* readelf.c (print_debug_line_section): Print section offset of each
 --- elfutils/src/findtextrel.c
 +++ elfutils/src/findtextrel.c
-@@ -490,7 +490,11 @@ ptrcompare (const void *p1, const void *
+@@ -504,7 +504,11 @@ ptrcompare (const void *p1, const void *
  
  
  static void

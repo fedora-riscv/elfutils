@@ -865,7 +865,7 @@
  #endif  /* libelfP.h */
 --- elfutils/src/ChangeLog
 +++ elfutils/src/ChangeLog
-@@ -1670,6 +1670,16 @@
+@@ -1675,6 +1675,16 @@
  	object symbols or symbols with unknown type.
  	(check_rel): Likewise.
  
@@ -882,7 +882,7 @@
  2005-06-08  Roland McGrath  <roland@redhat.com>
  
  	* readelf.c (print_ops): Add consts.
-@@ -1715,6 +1725,19 @@
+@@ -1720,6 +1730,19 @@
  
  	* readelf.c (dwarf_tag_string): Add new tags.
  
