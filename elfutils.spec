@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
-Version: 0.150
-%global baserelease 2
+Version: 0.151
+%global baserelease 1
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv2 with exceptions
@@ -45,8 +45,6 @@ Group: Development/Tools
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 Patch1: %{?source_url}elfutils-robustify.patch
 Patch2: %{?source_url}elfutils-portability.patch
-
-Patch10: elfutils-0.150-dwfl_module_relocations-Remove-over-eager-assert.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -205,8 +203,6 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 %endif
 
-%patch10 -p1 -b .bad-assert
-
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
@@ -319,6 +315,11 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Wed Jan 12 2011 Roland McGrath <roland@redhat.com> - 0.151-1
+- Update to 0.151
+  - libdwfl: Fix for more prelink cases with separate debug file.
+  - eu-strip: New flag --strip-sections to remove section headers entirely.
+
 * Thu Dec  2 2010 Roland McGrath <roland@redhat.com> - 0.150-2
 - libdwfl: Remove bogus assert. (#658268)
 
