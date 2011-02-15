@@ -865,7 +865,7 @@
  #endif  /* libelfP.h */
 --- elfutils/src/ChangeLog
 +++ elfutils/src/ChangeLog
-@@ -1686,6 +1686,16 @@
+@@ -1710,6 +1710,16 @@
  	object symbols or symbols with unknown type.
  	(check_rel): Likewise.
  
@@ -882,7 +882,7 @@
  2005-06-08  Roland McGrath  <roland@redhat.com>
  
  	* readelf.c (print_ops): Add consts.
-@@ -1731,6 +1741,19 @@
+@@ -1755,6 +1765,19 @@
  
  	* readelf.c (dwarf_tag_string): Add new tags.
  
@@ -977,7 +977,7 @@
  	}
  
        if (sym->st_shndx == SHN_XINDEX)
-@@ -1038,9 +1048,11 @@ is_rel_dyn (Ebl *ebl, const GElf_Ehdr *e
+@@ -1039,9 +1049,11 @@ is_rel_dyn (Ebl *ebl, const GElf_Ehdr *e
      {
        GElf_Shdr rcshdr_mem;
        const GElf_Shdr *rcshdr = gelf_getshdr (scn, &rcshdr_mem);
@@ -991,7 +991,7 @@
  	{
  	  /* Found the dynamic section.  Look through it.  */
  	  Elf_Data *d = elf_getdata (scn, NULL);
-@@ -1050,7 +1062,9 @@ is_rel_dyn (Ebl *ebl, const GElf_Ehdr *e
+@@ -1051,7 +1063,9 @@ is_rel_dyn (Ebl *ebl, const GElf_Ehdr *e
  	    {
  	      GElf_Dyn dyn_mem;
  	      GElf_Dyn *dyn = gelf_getdyn (d, cnt, &dyn_mem);
@@ -1002,7 +1002,7 @@
  
  	      if (dyn->d_tag == DT_RELCOUNT)
  		{
-@@ -1064,7 +1078,9 @@ section [%2d] '%s': DT_RELCOUNT used for
+@@ -1065,7 +1079,9 @@ section [%2d] '%s': DT_RELCOUNT used for
  		      /* Does the number specified number of relative
  			 relocations exceed the total number of
  			 relocations?  */
@@ -1013,7 +1013,7 @@
  			ERROR (gettext ("\
  section [%2d] '%s': DT_RELCOUNT value %d too high for this section\n"),
  			       idx, section_name (ebl, idx),
-@@ -1224,7 +1240,8 @@ section [%2d] '%s': no relocations for m
+@@ -1225,7 +1241,8 @@ section [%2d] '%s': no relocations for m
  	}
      }
  
@@ -1023,7 +1023,7 @@
      ERROR (gettext (reltype == ELF_T_RELA ? "\
  section [%2d] '%s': section entry size does not match ElfXX_Rela\n" : "\
  section [%2d] '%s': section entry size does not match ElfXX_Rel\n"),
-@@ -1447,7 +1464,8 @@ check_rela (Ebl *ebl, GElf_Ehdr *ehdr, G
+@@ -1448,7 +1465,8 @@ check_rela (Ebl *ebl, GElf_Ehdr *ehdr, G
    Elf_Data *symdata = elf_getdata (symscn, NULL);
    enum load_state state = state_undecided;
  
@@ -1033,7 +1033,7 @@
      {
        GElf_Rela rela_mem;
        GElf_Rela *rela = gelf_getrela (data, cnt, &rela_mem);
-@@ -1497,7 +1515,8 @@ check_rel (Ebl *ebl, GElf_Ehdr *ehdr, GE
+@@ -1498,7 +1516,8 @@ check_rel (Ebl *ebl, GElf_Ehdr *ehdr, GE
    Elf_Data *symdata = elf_getdata (symscn, NULL);
    enum load_state state = state_undecided;
  
@@ -1043,7 +1043,7 @@
      {
        GElf_Rel rel_mem;
        GElf_Rel *rel = gelf_getrel (data, cnt, &rel_mem);
-@@ -1600,7 +1619,8 @@ section [%2d] '%s': referenced as string
+@@ -1597,7 +1616,8 @@ section [%2d] '%s': referenced as string
  	   shdr->sh_link, section_name (ebl, shdr->sh_link),
  	   idx, section_name (ebl, idx));
  
@@ -1053,7 +1053,7 @@
      ERROR (gettext ("\
  section [%2d] '%s': section entry size does not match ElfXX_Dyn\n"),
  	   idx, section_name (ebl, idx));
-@@ -1610,7 +1630,7 @@ section [%2d] '%s': section entry size d
+@@ -1607,7 +1627,7 @@ section [%2d] '%s': section entry size d
  	   idx, section_name (ebl, idx));
  
    bool non_null_warned = false;
@@ -1062,7 +1062,7 @@
      {
        GElf_Dyn dyn_mem;
        GElf_Dyn *dyn = gelf_getdyn (data, cnt, &dyn_mem);
-@@ -1891,6 +1911,8 @@ section [%2d] '%s': entry size does not 
+@@ -1879,6 +1899,8 @@ section [%2d] '%s': entry size does not 
  	   idx, section_name (ebl, idx));
  
    if (symshdr != NULL
@@ -1071,7 +1071,7 @@
        && (shdr->sh_size / shdr->sh_entsize
  	  < symshdr->sh_size / symshdr->sh_entsize))
      ERROR (gettext ("\
-@@ -1917,6 +1939,12 @@ section [%2d] '%s': extended section ind
+@@ -1905,6 +1927,12 @@ section [%2d] '%s': extended section ind
      }
  
    Elf_Data *data = elf_getdata (elf_getscn (ebl->elf, idx), NULL);
@@ -1084,7 +1084,7 @@
  
    if (*((Elf32_Word *) data->d_buf) != 0)
      ERROR (gettext ("symbol 0 should have zero extended section index\n"));
-@@ -1959,7 +1987,7 @@ section [%2d] '%s': hash table section i
+@@ -1947,7 +1975,7 @@ section [%2d] '%s': hash table section i
  
    size_t maxidx = nchain;
  
@@ -1093,7 +1093,7 @@
      {
        size_t symsize = symshdr->sh_size / symshdr->sh_entsize;
  
-@@ -1970,18 +1998,28 @@ section [%2d] '%s': hash table section i
+@@ -1958,18 +1986,28 @@ section [%2d] '%s': hash table section i
        maxidx = symsize;
      }
  
@@ -1124,7 +1124,7 @@
  }
  
  
-@@ -2011,18 +2049,28 @@ section [%2d] '%s': hash table section i
+@@ -1999,18 +2037,28 @@ section [%2d] '%s': hash table section i
        maxidx = symsize;
      }
  
@@ -1156,7 +1156,7 @@
  }
  
  
-@@ -2047,7 +2095,7 @@ section [%2d] '%s': bitmask size not pow
+@@ -2035,7 +2083,7 @@ section [%2d] '%s': bitmask size not pow
    if (shdr->sh_size < (4 + bitmask_words + nbuckets) * sizeof (Elf32_Word))
      {
        ERROR (gettext ("\
@@ -1165,7 +1165,7 @@
  	     idx, section_name (ebl, idx), (long int) shdr->sh_size,
  	     (long int) ((4 + bitmask_words + nbuckets) * sizeof (Elf32_Word)));
        return;
-@@ -2719,8 +2767,9 @@ section [%2d] '%s' refers in sh_link to 
+@@ -2707,8 +2755,9 @@ section [%2d] '%s' refers in sh_link to 
  
    /* The number of elements in the version symbol table must be the
       same as the number of symbols.  */

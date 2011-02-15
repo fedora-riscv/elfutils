@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
-Version: 0.151
-%global baserelease 2
+Version: 0.152
+%global baserelease 1
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv2 with exceptions
@@ -315,6 +315,13 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Tue Feb 15 2011 Roland McGrath <roland@redhat.com> - 0.152-1
+- Update to 0.152
+  - Various build and warning nits fixed for newest GCC and Autoconf.
+  - libdwfl: Yet another prelink-related fix for another regression. (#674465)
+  - eu-elfcmp: New flag --ignore-build-id to ignore differing build ID bits.
+  - eu-elfcmp: New flag -l/--verbose to print all differences.
+
 * Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.151-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
