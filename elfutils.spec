@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.152
-%global baserelease 2
+%global baserelease 3
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv2 with exceptions
@@ -45,6 +45,7 @@ Group: Development/Tools
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 Patch1: %{?source_url}elfutils-robustify.patch
 Patch2: %{?source_url}elfutils-portability.patch
+Patch3: gcc-4.7.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -203,6 +204,8 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 %endif
 
+%patch3 -p1
+
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
@@ -315,6 +318,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Fri Jan 20 2012 Mark Wielaard <mjw@redhat.com> - 0.152-3
+- Fixes for gcc-4.7 based on upstream commit 32899a (#783506).
+
 * Fri Jan 13 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.152-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
