@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
-Version: 0.152
-%global baserelease 3
+Version: 0.153
+%global baserelease 1
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv2 with exceptions
@@ -218,9 +218,12 @@ RPM_OPT_FLAGS=${RPM_OPT_FLAGS/-Wall/}
 # Some older glibc headers can run afoul of -Werror all by themselves.
 # Disabling the fancy inlines avoids those problems.
 RPM_OPT_FLAGS="$RPM_OPT_FLAGS -D__NO_INLINE__"
+COMPAT_CONFIG_FLAGS="--disable-werror"
+%else
+COMPAT_CONFIG_FLAGS=""
 %endif
 
-%configure CFLAGS="$RPM_OPT_FLAGS -fexceptions" || {
+%configure $COMPAT_CONFIG_FLAGS CFLAGS="$RPM_OPT_FLAGS -fexceptions" || {
   cat config.log
   exit 2
 }
@@ -318,6 +321,15 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Thu Feb 23 2012 Mark Wielaard <mjw@redhat.com> - 0.153-1
+- Update to 0.153
+  - New --disable-werror for portability.
+  - Support for .zdebug sections (#679777)
+  - type_units and DW_AT_GNU_odr_signature support (#679815)
+  - low level support DW_OP_GNU_entry_value and DW_TAG_GNU_call_site (#688090)
+  - FTBFS on rawhide with gcc 4.7 (#783506)
+    - Remove gcc-4.7 patch
+
 * Fri Jan 20 2012 Mark Wielaard <mjw@redhat.com> - 0.152-3
 - Fixes for gcc-4.7 based on upstream commit 32899a (#783506).
 
