@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.153
-%global baserelease 1
+%global baserelease 2
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv2 with exceptions
@@ -45,6 +45,8 @@ Group: Development/Tools
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 Patch1: %{?source_url}elfutils-robustify.patch
 Patch2: %{?source_url}elfutils-portability.patch
+
+Patch3: elfutils-0.153-dwfl_segment_report_module.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -205,6 +207,8 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
+%patch3 -p1 -b .dwfl_segment_report_module
+
 %build
 # Remove -Wall from default flags.  The makefiles enable enough warnings
 # themselves, and they use -Werror.  Appending -Wall defeats the cases where
@@ -318,6 +322,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Mon Apr 02 2012 Mark Wielaard <mark@klomp.org> - 0.153-2
+- Fix for eu-unstrip emits garbage for librt.so.1 (#805447)
+
 * Thu Feb 23 2012 Mark Wielaard <mjw@redhat.com> - 0.153-1
 - Update to 0.153
   - New --disable-werror for portability.
