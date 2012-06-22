@@ -45,6 +45,7 @@ Group: Development/Tools
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 Patch1: %{?source_url}elfutils-robustify.patch
 Patch2: %{?source_url}elfutils-portability.patch
+Patch3: elfutils-0.154-binutils-pr-ld-13621.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -209,6 +210,8 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 %endif
 
+%patch3 -p1 -b .binutils-pr-ld-13621
+
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
@@ -329,6 +332,7 @@ rm -rf ${RPM_BUILD_ROOT}
   - elflint doesn't recognize SHF_INFO_LINK on relocation sections (#807823)
   - Update license to GPLv3+ and (GPLv2+ or LGPLv3+)
   - Remove elfutils-0.153-dwfl_segment_report_module.patch
+- Add elfutils-0.154-binutils-pr-ld-13621.patch
 
 * Mon Apr 02 2012 Mark Wielaard <mark@klomp.org> - 0.153-2
 - Fix for eu-unstrip emits garbage for librt.so.1 (#805447)
