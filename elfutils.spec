@@ -1,10 +1,10 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
-Version: 0.153
-%global baserelease 2
+Version: 0.154
+%global baserelease 1
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
-License: GPLv2 with exceptions
+License: GPLv3+ and (GPLv2+ or LGPLv3+)
 Group: Development/Tools
 
 %if %{?_with_compat:1}%{!?_with_compat:0}
@@ -45,8 +45,6 @@ Group: Development/Tools
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 Patch1: %{?source_url}elfutils-robustify.patch
 Patch2: %{?source_url}elfutils-portability.patch
-
-Patch3: elfutils-0.153-dwfl_segment_report_module.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -96,6 +94,7 @@ symbols), readelf (to see the raw ELF file structures), and elflint
 %package libs
 Summary: Libraries to handle compiled objects
 Group: Development/Tools
+License: GPLv2+ or LGPLv3+
 %if 0%{!?_isa:1}
 Provides: elfutils-libs%{depsuffix} = %{version}-%{release}
 %endif
@@ -110,6 +109,7 @@ other programs using these libraries.
 %package devel
 Summary: Development libraries to handle compiled objects
 Group: Development/Tools
+License: GPLv2+ or LGPLv3+
 %if 0%{!?_isa:1}
 Provides: elfutils-devel%{depsuffix} = %{version}-%{release}
 %endif
@@ -129,6 +129,7 @@ assembler interface.
 %package devel-static
 Summary: Static archives to handle compiled objects
 Group: Development/Tools
+License: GPLv2+ or LGPLv3+
 %if 0%{!?_isa:1}
 Provides: elfutils-devel-static%{depsuffix} = %{version}-%{release}
 %endif
@@ -142,6 +143,7 @@ with the code to handle compiled objects.
 %package libelf
 Summary: Library to read and write ELF files
 Group: Development/Tools
+License: GPLv2+ or LGPLv3+
 %if 0%{!?_isa:1}
 Provides: elfutils-libelf%{depsuffix} = %{version}-%{release}
 %endif
@@ -156,6 +158,7 @@ elfutils package use it also to generate new ELF files.
 %package libelf-devel
 Summary: Development support for libelf
 Group: Development/Tools
+License: GPLv2+ or LGPLv3+
 %if 0%{!?_isa:1}
 Provides: elfutils-libelf-devel%{depsuffix} = %{version}-%{release}
 %endif
@@ -174,6 +177,7 @@ different sections of an ELF file.
 %package libelf-devel-static
 Summary: Static archive of libelf
 Group: Development/Tools
+License: GPLv2+ or LGPLv3+
 %if 0%{!?_isa:1}
 Provides: elfutils-libelf-devel-static%{depsuffix} = %{version}-%{release}
 %endif
@@ -206,8 +210,6 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
-
-%patch3 -p1 -b .dwfl_segment_report_module
 
 %build
 # Remove -Wall from default flags.  The makefiles enable enough warnings
@@ -260,7 +262,7 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files
 %defattr(-,root,root)
-%doc COPYING README TODO
+%doc COPYING COPYING-GPLV2 COPYING-LGPLV3 README TODO CONTRIBUTING
 %{_bindir}/eu-addr2line
 %{_bindir}/eu-ar
 %{_bindir}/eu-elfcmp
@@ -322,6 +324,12 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Fri Jun 22 2012 Mark Wielaard <mjw@redhat.com> - 0.154-1
+- Update to 0.154
+  - elflint doesn't recognize SHF_INFO_LINK on relocation sections (#807823)
+  - Update license to GPLv3+ and (GPLv2+ or LGPLv3+)
+  - Remove elfutils-0.153-dwfl_segment_report_module.patch
+
 * Mon Apr 02 2012 Mark Wielaard <mark@klomp.org> - 0.153-2
 - Fix for eu-unstrip emits garbage for librt.so.1 (#805447)
 
