@@ -46,9 +46,7 @@ Source: %{?source_url}%{name}-%{version}.tar.bz2
 Patch1: %{?source_url}elfutils-robustify.patch
 Patch2: %{?source_url}elfutils-portability.patch
 Patch3: elfutils-0.154-binutils-pr-ld-13621.patch
-%ifarch ppc %{power64} s390 s390x
 Patch4: elfutils-0.154-nounstripcheck-835877.patch
-%endif
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -214,7 +212,9 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 
 %patch3 -p1 -b .binutils-pr-ld-13621
+%ifarch ppc %{power64} s390 s390x
 %patch4 -p1 -b .nounstripcheck-835877
+%endif
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -332,7 +332,7 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %changelog
 * Mon Jul 02 2012 Karsten Hopp <karsten@redhat.com> 0.154-1.1
-- disable unstrip-n check for now (835877)
+- disable unstrip-n check for now on ppc* (835877)
 
 * Fri Jun 22 2012 Mark Wielaard <mjw@redhat.com> - 0.154-1
 - Update to 0.154
