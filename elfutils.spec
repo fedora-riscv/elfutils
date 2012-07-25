@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.154
-%global baserelease 1.1
+%global baserelease 2
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -46,7 +46,7 @@ Source: %{?source_url}%{name}-%{version}.tar.bz2
 Patch1: %{?source_url}elfutils-robustify.patch
 Patch2: %{?source_url}elfutils-portability.patch
 Patch3: elfutils-0.154-binutils-pr-ld-13621.patch
-Patch4: elfutils-0.154-nounstripcheck-835877.patch
+Patch4: elfutils-0.154-xlatetom-835877.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -212,9 +212,7 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 
 %patch3 -p1 -b .binutils-pr-ld-13621
-%ifarch ppc %{power64} s390 s390x
-%patch4 -p1 -b .nounstripcheck-835877
-%endif
+%patch4 -p1 -b .xlatetom-835877
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -331,6 +329,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Mon Jul 18 2012 Mark Wielaard <mjw@redhat.com> 0.154-2
+- Add upstream xlatetom fix (#835877)
+
 * Mon Jul 02 2012 Karsten Hopp <karsten@redhat.com> 0.154-1.1
 - disable unstrip-n check for now on ppc* (835877)
 
