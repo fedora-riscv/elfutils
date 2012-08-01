@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.154
-%global baserelease 2
+%global baserelease 3
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -47,6 +47,7 @@ Patch1: %{?source_url}elfutils-robustify.patch
 Patch2: %{?source_url}elfutils-portability.patch
 Patch3: elfutils-0.154-binutils-pr-ld-13621.patch
 Patch4: elfutils-0.154-xlatetom-835877.patch
+Patch5: elfutils-0.154-dwz.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -213,6 +214,7 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 
 %patch3 -p1 -b .binutils-pr-ld-13621
 %patch4 -p1 -b .xlatetom-835877
+%patch5 -p1 -b .dwz
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -329,6 +331,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Wed Aug 01 2012 Mark Wielaard <mjw@redhat.com> 0.154-3
+- Add dwz support
+
 * Mon Jul 18 2012 Mark Wielaard <mjw@redhat.com> 0.154-2
 - Add upstream xlatetom fix (#835877)
 
