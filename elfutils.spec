@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.154
-%global baserelease 3
+%global baserelease 4
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -48,6 +48,7 @@ Patch2: %{?source_url}elfutils-portability.patch
 Patch3: elfutils-0.154-binutils-pr-ld-13621.patch
 Patch4: elfutils-0.154-xlatetom-835877.patch
 Patch5: elfutils-0.154-dwz.patch
+Patch6: elfutils-0.154-sym64.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -215,6 +216,7 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %patch3 -p1 -b .binutils-pr-ld-13621
 %patch4 -p1 -b .xlatetom-835877
 %patch5 -p1 -b .dwz
+%patch6 -p1 -b .sym64
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -331,6 +333,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Tue Aug 14 2012 Petr Machata <pmachata@redhat.com> - 0.154-4
+- Add support for archives with 64-bit symbol tables (#843019)
+
 * Wed Aug 01 2012 Mark Wielaard <mjw@redhat.com> 0.154-3
 - Add dwz support
 
