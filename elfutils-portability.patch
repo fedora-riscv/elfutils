@@ -1,6 +1,6 @@
 --- elfutils/backends/ChangeLog
 +++ elfutils/backends/ChangeLog
-@@ -121,6 +121,10 @@
+@@ -135,6 +135,10 @@
  	* ppc_attrs.c (ppc_check_object_attribute): Handle tag
  	GNU_Power_ABI_Struct_Return.
  
@@ -11,7 +11,7 @@
  2008-10-04  Ulrich Drepper  <drepper@redhat.com>
  
  	* i386_reloc.def: Fix entries for TLS_GOTDESC, TLS_DESC_CALL, and
-@@ -448,6 +452,11 @@
+@@ -462,6 +466,11 @@
  	* sparc_init.c: Likewise.
  	* x86_64_init.c: Likewise.
  
@@ -23,7 +23,7 @@
  2005-11-19  Roland McGrath  <roland@redhat.com>
  
  	* ppc64_reloc.def: REL30 -> ADDR30.
-@@ -470,6 +479,9 @@
+@@ -484,6 +493,9 @@
  	* Makefile.am (uninstall): Don't try to remove $(pkgincludedir).
  	(CLEANFILES): Add libebl_$(m).so.
  
@@ -35,7 +35,7 @@
  
 --- elfutils/backends/Makefile.am
 +++ elfutils/backends/Makefile.am
-@@ -105,7 +105,7 @@ libebl_%.so libebl_%.map: libebl_%_pic.a
+@@ -111,7 +111,7 @@ libebl_%.so libebl_%.map: libebl_%_pic.a
  	$(LINK) -shared -o $(@:.map=.so) \
  		-Wl,--whole-archive $< $(cpu_$*) -Wl,--no-whole-archive \
  		-Wl,--version-script,$(@:.so=.map) \
@@ -56,7 +56,7 @@
  subdir = backends
  ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
  am__aclocal_m4_deps = $(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
-@@ -165,6 +166,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -172,6 +173,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -64,7 +64,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -194,6 +196,7 @@ SHELL = @SHELL@
+@@ -201,6 +203,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
@@ -72,7 +72,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
-@@ -256,10 +259,9 @@ INCLUDES = -I. -I$(srcdir) -I$(top_srcdi
+@@ -263,10 +266,9 @@ INCLUDES = -I. -I$(srcdir) -I$(top_srcdi
  	-I$(top_srcdir)/libebl -I$(top_srcdir)/libasm \
  	-I$(top_srcdir)/libelf -I$(top_srcdir)/libdw
  AM_CFLAGS = -std=gnu99 -Wall -Wshadow $(if \
@@ -85,7 +85,7 @@
  @MUDFLAP_FALSE@libmudflap = 
  @MUDFLAP_TRUE@libmudflap = -lmudflap
  COMPILE.os = $(filter-out -fprofile-arcs -ftest-coverage $(no_mudflap.os),\
-@@ -698,7 +700,7 @@ libebl_%.so libebl_%.map: libebl_%_pic.a
+@@ -719,7 +721,7 @@ libebl_%.so libebl_%.map: libebl_%_pic.a
  	$(LINK) -shared -o $(@:.map=.so) \
  		-Wl,--whole-archive $< $(cpu_$*) -Wl,--no-whole-archive \
  		-Wl,--version-script,$(@:.so=.map) \
@@ -96,7 +96,7 @@
  libebl_i386.so: $(cpu_i386)
 --- elfutils/ChangeLog
 +++ elfutils/ChangeLog
-@@ -4,6 +4,8 @@
+@@ -16,6 +16,8 @@
  
  2012-01-24  Mark Wielaard  <mjw@redhat.com>
  
@@ -105,7 +105,7 @@
  	* COPYING: Fix address. Updated version from gnulib.
  
  2012-01-23  Mark Wielaard  <mjw@redhat.com>
-@@ -22,6 +24,9 @@
+@@ -34,6 +36,9 @@
  
  2011-10-08  Mike Frysinger  <vapier@gentoo.org>
  
@@ -115,7 +115,7 @@
  	* configure.ac: Fix use of AC_ARG_ENABLE to handle $enableval correctly.
  
  2011-10-02  Ulrich Drepper  <drepper@gmail.com>
-@@ -43,6 +48,10 @@
+@@ -55,6 +60,10 @@
  
  	* configure.ac (LOCALEDIR, DATADIRNAME): Removed.
  
@@ -126,7 +126,7 @@
  2009-09-21  Ulrich Drepper  <drepper@redhat.com>
  
  	* configure.ac: Update for more modern autoconf.
-@@ -51,6 +60,10 @@
+@@ -63,6 +72,10 @@
  
  	* configure.ac (zip_LIBS): Check for liblzma too.
  
@@ -137,7 +137,7 @@
  2009-04-19  Roland McGrath  <roland@redhat.com>
  
  	* configure.ac (eu_version): Round down here, not in version.h macros.
-@@ -62,6 +75,8 @@
+@@ -74,6 +87,8 @@
  
  2009-01-23  Roland McGrath  <roland@redhat.com>
  
@@ -146,7 +146,7 @@
  	* configure.ac (zlib check): Check for gzdirect, need zlib >= 1.2.2.3.
  
  	* configure.ac (__thread check): Use AC_LINK_IFELSE, in case of
-@@ -142,6 +157,10 @@
+@@ -154,6 +169,10 @@
  	* configure.ac: Add dummy automake conditional to get dependencies
  	for non-generic linker right.  See src/Makefile.am.
  
@@ -157,7 +157,7 @@
  2005-11-18  Roland McGrath  <roland@redhat.com>
  
  	* Makefile.am (DISTCHECK_CONFIGURE_FLAGS): New variable.
-@@ -189,6 +208,17 @@
+@@ -201,6 +220,17 @@
  	* Makefile.am (all_SUBDIRS): Add libdwfl.
  	* configure.ac: Write libdwfl/Makefile.
  
@@ -177,7 +177,7 @@
  	* configure.ac [AH_BOTTOM] (INTDECL, _INTDECL): New macros.
 --- elfutils/config/ChangeLog
 +++ elfutils/config/ChangeLog
-@@ -10,6 +10,10 @@
+@@ -19,6 +19,10 @@
  
  	* known-dwarf.awk: Use gawk.
  
@@ -241,9 +241,9 @@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 --- elfutils/config.h.in
 +++ elfutils/config.h.in
-@@ -3,6 +3,9 @@
- /* Should ar and ranlib use -D behavior by default? */
- #undef DEFAULT_AR_DETERMINISTIC
+@@ -6,6 +6,9 @@
+ /* Defined if libdw should support GNU ref_alt FORM, dwz multi files. */
+ #undef ENABLE_DWZ
  
 +/* Have __builtin_popcount. */
 +#undef HAVE_BUILTIN_POPCOUNT
@@ -251,7 +251,7 @@
  /* $libdir subdirectory containing libebl modules. */
  #undef LIBEBL_SUBDIR
  
-@@ -61,4 +64,7 @@
+@@ -64,4 +67,7 @@
  /* Define for large files, on AIX-style hosts. */
  #undef _LARGE_FILES
  
@@ -279,7 +279,7 @@
  LEXLIB
  LEX_OUTPUT_ROOT
  LEX
-@@ -722,6 +726,7 @@ enable_mudflap
+@@ -725,6 +729,7 @@ enable_mudflap
  enable_debugpred
  enable_gprof
  enable_gcov
@@ -287,7 +287,7 @@
  enable_tests_rpath
  enable_libebl_subdir
  with_zlib
-@@ -1373,6 +1378,7 @@ Optional Features:
+@@ -1378,6 +1383,7 @@ Optional Features:
                            prediction
    --enable-gprof          build binaries with gprof support
    --enable-gcov           build binaries with gcov support
@@ -295,7 +295,7 @@
    --enable-tests-rpath    build $ORIGIN-using rpath into tests
    --enable-libebl-subdir=DIR
                            install libebl_CPU modules in $(libdir)/DIR
-@@ -3890,6 +3896,130 @@ if test "x$ac_cv_c99" != xyes; then :
+@@ -3917,6 +3923,130 @@ if test "x$ac_cv_c99" != xyes; then :
    as_fn_error $? "gcc with C99 support required" "$LINENO" 5
  fi
  
@@ -426,7 +426,7 @@
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __thread support" >&5
  $as_echo_n "checking for __thread support... " >&6; }
  if ${ac_cv_tls+:} false; then :
-@@ -3926,7 +4056,13 @@ fi
+@@ -3953,7 +4083,13 @@ fi
  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_tls" >&5
  $as_echo "$ac_cv_tls" >&6; }
  if test "x$ac_cv_tls" != xyes; then :
@@ -441,7 +441,7 @@
  fi
  
  # Check whether --enable-largefile was given.
-@@ -4275,6 +4411,22 @@ else
+@@ -4302,6 +4438,22 @@ else
  fi
  
  
@@ -464,7 +464,7 @@
  # Check whether --enable-tests-rpath was given.
  if test "${enable_tests_rpath+set}" = set; then :
    enableval=$enable_tests_rpath; tests_use_rpath=$enableval
-@@ -4995,7 +5147,7 @@ case "$eu_version" in
+@@ -5022,7 +5174,7 @@ case "$eu_version" in
  esac
  
  # Round up to the next release API (x.y) version.
@@ -473,7 +473,7 @@
  
  cat >confcache <<\_ACEOF
  # This file is a shell script that caches the results of configure
-@@ -5154,6 +5306,10 @@ if test -z "${BUILD_STATIC_TRUE}" && tes
+@@ -5185,6 +5337,10 @@ if test -z "${BUILD_STATIC_TRUE}" && tes
    as_fn_error $? "conditional \"BUILD_STATIC\" was never defined.
  Usually this means the macro was only invoked conditionally." "$LINENO" 5
  fi
@@ -486,7 +486,7 @@
  Usually this means the macro was only invoked conditionally." "$LINENO" 5
 --- elfutils/configure.ac
 +++ elfutils/configure.ac
-@@ -82,6 +82,54 @@ CFLAGS="$old_CFLAGS"])
+@@ -90,6 +90,54 @@ CFLAGS="$old_CFLAGS"])
  AS_IF([test "x$ac_cv_c99" != xyes],
        AC_MSG_ERROR([gcc with C99 support required]))
  
@@ -541,7 +541,7 @@
  AC_CACHE_CHECK([for __thread support], ac_cv_tls, [dnl
  # Use the same flags that we use for our DSOs, so the test is representative.
  # Some old compiler/linker/libc combinations fail some ways and not others.
-@@ -97,7 +145,10 @@ static __thread int a; int foo (int b) {
+@@ -105,7 +153,10 @@ static __thread int a; int foo (int b) {
  CFLAGS="$save_CFLAGS"
  LDFLAGS="$save_LDFLAGS"])
  AS_IF([test "x$ac_cv_tls" != xyes],
@@ -553,7 +553,7 @@
  
  dnl This test must come as early as possible after the compiler configuration
  dnl tests, because the choice of the file model can (in principle) affect
-@@ -185,6 +236,11 @@ AM_CONDITIONAL(GCOV, test "$use_gcov" =
+@@ -193,6 +244,11 @@ AM_CONDITIONAL(GCOV, test "$use_gcov" =
  AM_CONDITIONAL(BUILD_STATIC, [dnl
  test "$use_mudflap" = yes -o "$use_gprof" = yes -o "$use_gcov" = yes])
  
@@ -565,7 +565,7 @@
  AC_ARG_ENABLE([tests-rpath],
  AS_HELP_STRING([--enable-tests-rpath],[build $ORIGIN-using rpath into tests]),
  	       [tests_use_rpath=$enableval], [tests_use_rpath=no])
-@@ -296,6 +352,6 @@ case "$eu_version" in
+@@ -304,6 +360,6 @@ case "$eu_version" in
  esac
  
  # Round up to the next release API (x.y) version.
@@ -728,7 +728,7 @@
  EXTRA_DIST = libasm.map
 --- elfutils/libcpu/ChangeLog
 +++ elfutils/libcpu/ChangeLog
-@@ -34,6 +34,9 @@
+@@ -38,6 +38,9 @@
  
  2009-01-23  Roland McGrath  <roland@redhat.com>
  
@@ -738,7 +738,7 @@
  	* Makefile.am (i386_parse_CFLAGS): Use quotes around command
  	substitution that can produce leading whitespace.
  
-@@ -363,6 +366,11 @@
+@@ -367,6 +370,11 @@
  	* defs/i386.doc: New file.
  	* defs/x86_64: New file.
  
@@ -803,7 +803,7 @@
  COMPILE.os = $(filter-out -fprofile-arcs -ftest-coverage $(no_mudflap.os),\
 --- elfutils/libdw/ChangeLog
 +++ elfutils/libdw/ChangeLog
-@@ -17,6 +17,10 @@
+@@ -82,6 +82,10 @@
  
  	* Makefile.am (known-dwarf.h): Run gawk on config/known-dwarf.awk.
  
@@ -814,7 +814,7 @@
  2011-07-14  Mark Wielaard  <mjw@redhat.com>
  
  	* libdw.h (dwarf_offdie): Fix documentation to mention .debug_info.
-@@ -376,6 +380,10 @@
+@@ -441,6 +445,10 @@
  
  	* dwarf_hasattr_integrate.c: Integrate DW_AT_specification too.
  
@@ -825,7 +825,7 @@
  2009-08-10  Roland McGrath  <roland@redhat.com>
  
  	* dwarf_getscopevar.c: Use dwarf_diename.
-@@ -1144,6 +1152,11 @@
+@@ -1209,6 +1217,11 @@
  
  2005-05-31  Roland McGrath  <roland@redhat.com>
  
@@ -839,7 +839,7 @@
  
 --- elfutils/libdw/dwarf_begin_elf.c
 +++ elfutils/libdw/dwarf_begin_elf.c
-@@ -43,6 +43,14 @@
+@@ -48,6 +48,14 @@
  #if USE_ZLIB
  # include <endian.h>
  # define crc32		loser_crc32
@@ -910,7 +910,7 @@
  COMPILE.os = $(filter-out -fprofile-arcs -ftest-coverage $(no_mudflap.os),\
 --- elfutils/libdwfl/ChangeLog
 +++ elfutils/libdwfl/ChangeLog
-@@ -1416,6 +1416,11 @@
+@@ -1420,6 +1420,11 @@
  
  2005-07-21  Roland McGrath  <roland@redhat.com>
  
@@ -993,7 +993,7 @@
  @MUDFLAP_FALSE@libdw = ../libdw/libdw.so
 --- elfutils/libebl/ChangeLog
 +++ elfutils/libebl/ChangeLog
-@@ -650,6 +650,11 @@
+@@ -658,6 +658,11 @@
  	* Makefile.am (libebl_*_so_SOURCES): Set to $(*_SRCS) so dependency
  	tracking works right.
  
@@ -1048,7 +1048,7 @@
  COMPILE.os = $(filter-out -fprofile-arcs -ftest-coverage $(no_mudflap.os),\
 --- elfutils/libelf/ChangeLog
 +++ elfutils/libelf/ChangeLog
-@@ -7,6 +7,11 @@
+@@ -34,6 +34,11 @@
  
  	* elf-knowledge.h (SECTION_STRIP_P): Remove < SHT_NUM check.
  
@@ -1060,7 +1060,7 @@
  2011-02-26  Mark Wielaard  <mjw@redhat.com>
  
  	* elf_end.c (elf_end): Call rwlock_unlock before rwlock_fini.
-@@ -684,6 +689,11 @@
+@@ -711,6 +716,11 @@
  
  	* elf.h: Update from glibc.
  
@@ -1221,7 +1221,7 @@
  	  break;
 --- elfutils/src/ChangeLog
 +++ elfutils/src/ChangeLog
-@@ -519,8 +519,16 @@
+@@ -606,8 +606,16 @@
  	* readelf.c (attr_callback): Use print_block only when we don't use
  	print_ops.
  
@@ -1238,7 +1238,7 @@
  	* ar.c (do_oper_extract): Use pathconf instead of statfs.
  
  2009-08-01  Ulrich Drepper  <drepper@redhat.com>
-@@ -684,6 +692,8 @@
+@@ -771,6 +779,8 @@
  	* readelf.c (print_debug_frame_section): Use t instead of j formats
  	for ptrdiff_t OFFSET.
  
@@ -1247,7 +1247,7 @@
  2009-01-21  Ulrich Drepper  <drepper@redhat.com>
  
  	* elflint.c (check_program_header): Fix typo in .eh_frame_hdr section
-@@ -867,6 +877,11 @@
+@@ -954,6 +964,11 @@
  	that matches its PT_LOAD's p_flags &~ PF_W.  On sparc, PF_X really
  	is valid in RELRO.
  
@@ -1259,7 +1259,7 @@
  2008-02-29  Roland McGrath  <roland@redhat.com>
  
  	* readelf.c (print_attributes): Add a cast.
-@@ -1118,6 +1133,8 @@
+@@ -1205,6 +1220,8 @@
  
  	* readelf.c (hex_dump): Fix rounding error in whitespace calculation.
  
@@ -1268,7 +1268,7 @@
  2007-10-15  Roland McGrath  <roland@redhat.com>
  
  	* make-debug-archive.in: New file.
-@@ -1557,6 +1574,10 @@
+@@ -1644,6 +1661,10 @@
  	* elflint.c (valid_e_machine): Add EM_ALPHA.
  	Reported by Christian Aichinger <Greek0@gmx.net>.
  
@@ -1279,7 +1279,7 @@
  2006-08-08  Ulrich Drepper  <drepper@redhat.com>
  
  	* elflint.c (check_dynamic): Don't require DT_HASH for DT_SYMTAB.
-@@ -1633,6 +1654,10 @@
+@@ -1720,6 +1741,10 @@
  	* Makefile.am: Add hacks to create dependency files for non-generic
  	linker.
  
@@ -1290,7 +1290,7 @@
  2006-06-12  Ulrich Drepper  <drepper@redhat.com>
  
  	* ldgeneric.c (ld_generic_generate_sections): Don't create .interp
-@@ -1981,6 +2006,11 @@
+@@ -2068,6 +2093,11 @@
  	* readelf.c (print_debug_loc_section): Fix indentation for larger
  	address size.
  
@@ -1440,7 +1440,7 @@
  findtextrel_LDADD = $(libdw) $(libelf) $(libmudflap)
 --- elfutils/src/readelf.c
 +++ elfutils/src/readelf.c
-@@ -4429,10 +4429,11 @@ struct listptr
+@@ -3949,10 +3949,11 @@ struct listptr
  #define listptr_offset_size(p)	((p)->dwarf64 ? 8 : 4)
  #define listptr_address_size(p)	((p)->addr64 ? 8 : 4)
  
@@ -1454,7 +1454,7 @@
    struct listptr *p1 = (void *) a;
    struct listptr *p2 = (void *) b;
  
-@@ -4513,8 +4514,11 @@ static void
+@@ -4033,8 +4034,11 @@ static void
  sort_listptr (struct listptr_table *table, const char *name)
  {
    if (table->n > 0)
@@ -1468,7 +1468,7 @@
  }
  
  static bool
-@@ -8478,7 +8482,7 @@ dump_archive_index (Elf *elf, const char
+@@ -8442,7 +8446,7 @@ dump_archive_index (Elf *elf, const char
  	  if (unlikely (elf_rand (elf, as_off) == 0)
  	      || unlikely ((subelf = elf_begin (-1, ELF_C_READ_MMAP, elf))
  			   == NULL))
@@ -1570,7 +1570,7 @@
  cannot set access and modification date of '%s'"), fname);
 --- elfutils/tests/ChangeLog
 +++ elfutils/tests/ChangeLog
-@@ -333,6 +333,8 @@
+@@ -439,6 +439,8 @@
  
  2008-01-21  Roland McGrath  <roland@redhat.com>
  
@@ -1579,7 +1579,7 @@
  	* testfile45.S.bz2: Add tests for cltq, cqto.
  	* testfile45.expect.bz2: Adjust.
  
-@@ -1041,6 +1043,11 @@
+@@ -1147,6 +1149,11 @@
  	* Makefile.am (TESTS): Add run-elflint-test.sh.
  	(EXTRA_DIST): Add run-elflint-test.sh and testfile18.bz2.
  
@@ -1604,7 +1604,7 @@
  	case 0:
 --- elfutils/tests/Makefile.in
 +++ elfutils/tests/Makefile.in
-@@ -36,14 +36,15 @@ build_triplet = @build@
+@@ -35,14 +35,15 @@ build_triplet = @build@
  host_triplet = @host@
  DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
  	$(top_srcdir)/config/eu.am ChangeLog
@@ -1621,23 +1621,27 @@
 -@TESTS_RPATH_TRUE@am__append_4 = -Wl,-rpath,$(BUILD_RPATH)
 +@STANDALONE_FALSE@am__append_4 = -Wl,-rpath-link,../libasm:../libdw:../libelf
 +@TESTS_RPATH_TRUE@am__append_5 = -Wl,-rpath,$(BUILD_RPATH)
- noinst_PROGRAMS = arextract$(EXEEXT) arsymtest$(EXEEXT) \
+ check_PROGRAMS = arextract$(EXEEXT) arsymtest$(EXEEXT) \
  	newfile$(EXEEXT) saridx$(EXEEXT) scnnames$(EXEEXT) \
  	sectiondump$(EXEEXT) showptable$(EXEEXT) update1$(EXEEXT) \
-@@ -89,10 +90,10 @@ TESTS = run-arextract.sh run-arsymtest.s
- 	run-rerequest_tag.sh run-typeiter.sh run-readelf-d.sh \
- 	run-unstrip-n.sh run-low_high_pc.sh $(am__EXEEXT_1) \
- 	$(am__EXEEXT_3)
+@@ -92,12 +93,12 @@ TESTS = run-arextract.sh run-arsymtest.s
+ 	run-readelf-gdb_index.sh run-unstrip-n.sh run-low_high_pc.sh \
+ 	run-macro-test.sh run-elf_cntl_gelf_getshdr.sh \
+ 	run-test-archive64.sh $(am__EXEEXT_1) $(am__EXEEXT_3) \
+-	$(am__append_9)
 -@STANDALONE_FALSE@am__append_5 = msg_tst md5-sha1-test
++	$(am__append_10)
  @STANDALONE_FALSE@am__append_6 = msg_tst md5-sha1-test
 -@HAVE_LIBASM_TRUE@am__append_7 = $(asm_TESTS)
 +@STANDALONE_FALSE@am__append_7 = msg_tst md5-sha1-test
  @HAVE_LIBASM_TRUE@am__append_8 = $(asm_TESTS)
+-@ENABLE_DWZ_TRUE@am__append_9 = run-readelf-dwz-multi.sh
 +@HAVE_LIBASM_TRUE@am__append_9 = $(asm_TESTS)
++@ENABLE_DWZ_TRUE@am__append_10 = run-readelf-dwz-multi.sh
  subdir = tests
  ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
  am__aclocal_m4_deps = $(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
-@@ -403,6 +404,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -412,6 +413,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -1645,7 +1649,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -432,6 +434,7 @@ SHELL = @SHELL@
+@@ -441,6 +443,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
@@ -1653,7 +1657,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
-@@ -490,12 +493,11 @@ top_build_prefix = @top_build_prefix@
+@@ -499,12 +502,11 @@ top_build_prefix = @top_build_prefix@
  top_builddir = @top_builddir@
  top_srcdir = @top_srcdir@
  zip_LIBS = @zip_LIBS@
@@ -1669,7 +1673,7 @@
  @MUDFLAP_FALSE@libmudflap = 
  @MUDFLAP_TRUE@libmudflap = -lmudflap
  COMPILE.os = $(filter-out -fprofile-arcs -ftest-coverage $(no_mudflap.os),\
-@@ -505,7 +507,7 @@ CLEANFILES = *.gcno *.gcda
+@@ -514,7 +516,7 @@ CLEANFILES = *.gcno *.gcda
  textrel_check = if readelf -d $@ | fgrep -q TEXTREL; then exit 1; fi
  @MUDFLAP_FALSE@BUILD_RPATH = \$$ORIGIN/../libasm:\$$ORIGIN/../libdw:\$$ORIGIN/../backends:\$$ORIGIN/../libelf
  @MUDFLAP_TRUE@BUILD_RPATH = \$$ORIGIN/../backends

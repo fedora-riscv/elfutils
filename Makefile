@@ -7,12 +7,12 @@ branch-portability = portable
 
 FORCE:;
 
-elfutils.git ?= ${HOME}/redhat/stock-elfutils/.git
+elfutils.git ?= ${HOME}/src/elfutils/.git
 git-heads := $(wildcard $(elfutils.git)/refs/heads/*)
 ifneq (,$(git-heads))
 git-dir = git --git-dir=$(elfutils.git)
 git-archive = $(git-dir) archive
-get-master = master=`$(git-dir) merge-base origin/master $$branch` && \
+get-master = master=`$(git-dir) merge-base master $$branch` && \
 	     master=`$(git-dir) describe --tags --always $$master`
 else
 git-heads = FORCE

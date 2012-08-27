@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
-Version: 0.154
-%global baserelease 4
+Version: 0.155
+%global baserelease 1
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -45,10 +45,7 @@ Group: Development/Tools
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 Patch1: %{?source_url}elfutils-robustify.patch
 Patch2: %{?source_url}elfutils-portability.patch
-Patch3: elfutils-0.154-binutils-pr-ld-13621.patch
-Patch4: elfutils-0.154-xlatetom-835877.patch
-Patch5: elfutils-0.154-dwz.patch
-Patch6: elfutils-0.154-sym64.patch
+Patch3: elfutils-0.155-binutils-pr-ld-13621.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -214,9 +211,6 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 
 %patch3 -p1 -b .binutils-pr-ld-13621
-%patch4 -p1 -b .xlatetom-835877
-%patch5 -p1 -b .dwz
-%patch6 -p1 -b .sym64
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -235,7 +229,7 @@ COMPAT_CONFIG_FLAGS="--disable-werror"
 COMPAT_CONFIG_FLAGS=""
 %endif
 
-%configure $COMPAT_CONFIG_FLAGS CFLAGS="$RPM_OPT_FLAGS -fexceptions" || {
+%configure --enable-dwz $COMPAT_CONFIG_FLAGS CFLAGS="$RPM_OPT_FLAGS -fexceptions" || {
   cat config.log
   exit 2
 }
@@ -333,6 +327,12 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Mon Aug 27 2012 Mark Wielaard <mjw@redhat.com> - 0.155-1
+- Update to 0.155.
+  - #844270 - eu-nm invalid %N$ use detected.
+  - #847454 - Ukrainian translation update.
+  - Removed local ar 64-bit symbol patch, dwz support patch and xlatetom fix.
+
 * Tue Aug 14 2012 Petr Machata <pmachata@redhat.com> - 0.154-4
 - Add support for archives with 64-bit symbol tables (#843019)
 
