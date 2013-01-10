@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.155
-%global baserelease 1
+%global baserelease 2
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -46,6 +46,7 @@ Source: %{?source_url}%{name}-%{version}.tar.bz2
 Patch1: %{?source_url}elfutils-robustify.patch
 Patch2: %{?source_url}elfutils-portability.patch
 Patch3: elfutils-0.155-binutils-pr-ld-13621.patch
+Patch4: elfutils-0.155-mem-align.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -211,6 +212,7 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 
 %patch3 -p1 -b .binutils-pr-ld-13621
+%patch4 -p1 -b .mem-align
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -327,6 +329,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Thu Jan 10 2013 Mark Wielaard <mjw@redhat.com> - 0.155-2
+- #891553 - unaligned memory access issues.
+
 * Mon Aug 27 2012 Mark Wielaard <mjw@redhat.com> - 0.155-1
 - Update to 0.155.
   - #844270 - eu-nm invalid %N$ use detected.
