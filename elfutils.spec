@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.155
-%global baserelease 2
+%global baserelease 3
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -47,6 +47,7 @@ Patch1: %{?source_url}elfutils-robustify.patch
 Patch2: %{?source_url}elfutils-portability.patch
 Patch3: elfutils-0.155-binutils-pr-ld-13621.patch
 Patch4: elfutils-0.155-mem-align.patch
+Patch5: elfutils-0.155-sizeof-pointer-memaccess.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -213,6 +214,7 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 
 %patch3 -p1 -b .binutils-pr-ld-13621
 %patch4 -p1 -b .mem-align
+%patch5 -p1 -b .sizeof-pointer-memaccess
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -329,6 +331,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Thu Jan 24 2013 Mark Wielaard <mjw@redhat.com> - 0.155-3
+- Backport sizeof-pointer-memaccess upstream fixes.
+
 * Thu Jan 10 2013 Mark Wielaard <mjw@redhat.com> - 0.155-2
 - #891553 - unaligned memory access issues.
 
