@@ -24,7 +24,7 @@ Group: Development/Tools
 %global scanf_has_m             (%rhel >= 6)
 %global separate_devel_static   (%rhel >= 6)
 %global use_zlib                (%rhel >= 5)
-%global use_xz                  (%rhel >= 6)
+%global use_xz                  (%rhel >= 5)
 %endif
 %if 0%{?fedora}
 %global portability             (%fedora < 9)
