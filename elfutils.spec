@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.155
-%global baserelease 5
+%global baserelease 6
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -331,6 +331,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Tue Jul 02 2013 Karsten Hopp <karsten@redhat.com> 0.155-6
+- bump release and rebuild to fix dependencies on PPC
+
 * Sun Feb 24 2013 Mark Wielaard <mjw@redhat.com> - 0.155-5
 - Add ARM variant to elfutils-0.155-binutils-pr-ld-13621.patch rhbz#914908.
 - rhel >= 5 has xz-devel
