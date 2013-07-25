@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.156
-%global baserelease 1
+%global baserelease 2
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -226,10 +226,9 @@ COMPAT_CONFIG_FLAGS="--disable-werror"
 COMPAT_CONFIG_FLAGS=""
 %endif
 
-%configure --enable-dwz $COMPAT_CONFIG_FLAGS CFLAGS="$RPM_OPT_FLAGS -fexceptions" || {
-  cat config.log
-  exit 2
-}
+trap 'cat config.log' EXIT
+%configure --enable-dwz $COMPAT_CONFIG_FLAGS CFLAGS="$RPM_OPT_FLAGS -fexceptions"
+trap '' EXIT
 make -s %{?_smp_mflags}
 
 %install
@@ -324,6 +323,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Thu Jul 25 2013 Jan Kratochvil <jan.kratochvil@redhat.com> 0.156-2
+- Update the %%configure command for compatibility with fc20 Koji.
+
 * Thu Jul 25 2013 Jan Kratochvil <jan.kratochvil@redhat.com> 0.156-1
 - Update to 0.156.
   - #890447 - Add __bss_start and __TMC_END__ to elflint.
