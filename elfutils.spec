@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.156
-%global baserelease 2
+%global baserelease 3
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -246,7 +246,7 @@ chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
 %find_lang %{name}
 
 %check
-make -s check || %{nocheck}
+make -s %{?_smp_mflags} check || %{nocheck}
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
@@ -323,6 +323,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Thu Aug  8 2013 Mark Wielaard <mjw@redhat.com> 0.156-3
+- Make check can now also be ran in parallel.
+
 * Thu Jul 25 2013 Jan Kratochvil <jan.kratochvil@redhat.com> 0.156-2
 - Update the %%configure command for compatibility with fc20 Koji.
 
