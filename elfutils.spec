@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.156
-%global baserelease 3
+%global baserelease 4
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -45,6 +45,8 @@ Group: Development/Tools
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 Patch1: %{?source_url}elfutils-robustify.patch
 Patch2: %{?source_url}elfutils-portability.patch
+
+Patch3: elfutils-0.156-et_dyn-kernels.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -209,6 +211,8 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 %endif
 
+%patch3 -p1 -b .et_dyn-kernel
+
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
@@ -323,6 +327,10 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Mon Aug 26 2013 Mark Wielaard <mjw@redhat.com> 0.156-4
+- Add elfutils-0.156-et_dyn-kernels.patch.
+  Fixes an issue on ppc64 with systemtap kernel address placement.
+
 * Thu Aug  8 2013 Mark Wielaard <mjw@redhat.com> 0.156-3
 - Make check can now also be ran in parallel.
 
