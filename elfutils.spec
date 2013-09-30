@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
-Version: 0.156
-%global baserelease 5
+Version: 0.157
+%global baserelease 1
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -45,9 +45,6 @@ Group: Development/Tools
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 Patch1: %{?source_url}elfutils-robustify.patch
 Patch2: %{?source_url}elfutils-portability.patch
-
-Patch3: elfutils-0.156-et_dyn-kernels.patch
-Patch4: elfutils-0.156-abi_cfi-ppc-s390-arm.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -212,9 +209,6 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 %endif
 
-%patch3 -p1 -b .et_dyn-kernel
-%patch4 -p1 -b .abi_cfi
-
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
@@ -329,6 +323,11 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Mon Sep 30 2013 Mark Wielaard <mjw@redhat.com> 0.157-1
+- Update to 0.157.
+- Remove elfutils-0.156-abi_cfi-ppc-s390-arm.patch.
+- Remove elfutils-0.156-et_dyn-kernels.patch.
+
 * Fri Sep 06 2013 Mark Wielaard <mjw@redhat.com> 0.156-5
 - Add elfutils-0.156-abi_cfi-ppc-s390-arm.patch.
   Sets up initial CFI return register, CFA location expression and
