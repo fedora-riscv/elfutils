@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.157
-%global baserelease 1
+%global baserelease 2
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -246,7 +246,7 @@ chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
 %find_lang %{name}
 
 %check
-make -s %{?_smp_mflags} check || %{nocheck}
+make -s %{?_smp_mflags} check || (cat tests/test-suite.log; %{nocheck})
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
@@ -323,6 +323,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Wed Oct  9 2013 Mark Wielaard <mjw@redhat.com> 0.157-2
+- Show tests/test-suite.log in build.log when make check fails.
+
 * Mon Sep 30 2013 Mark Wielaard <mjw@redhat.com> 0.157-1
 - Update to 0.157.
 - Remove elfutils-0.156-abi_cfi-ppc-s390-arm.patch.
