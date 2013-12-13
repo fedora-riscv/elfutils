@@ -1,0 +1,227 @@
+Только в elfutils-0.157: autom4te.cache
+diff -urp elfutils-0.157~/backends/Makefile.in elfutils-0.157/backends/Makefile.in
+--- elfutils-0.157~/backends/Makefile.in	2013-09-30 14:37:52.000000000 +0200
++++ elfutils-0.157/backends/Makefile.in	2013-12-02 23:54:45.094831256 +0100
+@@ -102,72 +102,78 @@ AM_V_AR = $(am__v_AR_@AM_V@)
+ am__v_AR_ = $(am__v_AR_@AM_DEFAULT_V@)
+ am__v_AR_0 = @echo "  AR      " $@;
+ am__v_AR_1 = 
++libebl_aarch64_pic_a_AR = $(AR) $(ARFLAGS)
++libebl_aarch64_pic_a_LIBADD =
++am__objects_1 = aarch64_init.$(OBJEXT) aarch64_regs.$(OBJEXT) \
++	aarch64_symbol.$(OBJEXT) aarch64_corenote.$(OBJEXT) \
++	aarch64_retval.$(OBJEXT)
++libebl_aarch64_pic_a_OBJECTS = $(am_libebl_aarch64_pic_a_OBJECTS)
+ libebl_alpha_pic_a_AR = $(AR) $(ARFLAGS)
+ libebl_alpha_pic_a_LIBADD =
+-am__objects_1 = alpha_init.$(OBJEXT) alpha_symbol.$(OBJEXT) \
++am__objects_2 = alpha_init.$(OBJEXT) alpha_symbol.$(OBJEXT) \
+ 	alpha_retval.$(OBJEXT) alpha_regs.$(OBJEXT) \
+ 	alpha_corenote.$(OBJEXT) alpha_auxv.$(OBJEXT)
+ libebl_alpha_pic_a_OBJECTS = $(am_libebl_alpha_pic_a_OBJECTS)
+ libebl_arm_pic_a_AR = $(AR) $(ARFLAGS)
+ libebl_arm_pic_a_LIBADD =
+-am__objects_2 = arm_init.$(OBJEXT) arm_symbol.$(OBJEXT) \
++am__objects_3 = arm_init.$(OBJEXT) arm_symbol.$(OBJEXT) \
+ 	arm_regs.$(OBJEXT) arm_corenote.$(OBJEXT) arm_auxv.$(OBJEXT) \
+ 	arm_attrs.$(OBJEXT) arm_retval.$(OBJEXT) arm_cfi.$(OBJEXT)
+ libebl_arm_pic_a_OBJECTS = $(am_libebl_arm_pic_a_OBJECTS)
+ libebl_i386_pic_a_AR = $(AR) $(ARFLAGS)
+ libebl_i386_pic_a_LIBADD =
+-am__objects_3 = i386_init.$(OBJEXT) i386_symbol.$(OBJEXT) \
++am__objects_4 = i386_init.$(OBJEXT) i386_symbol.$(OBJEXT) \
+ 	i386_corenote.$(OBJEXT) i386_cfi.$(OBJEXT) \
+ 	i386_retval.$(OBJEXT) i386_regs.$(OBJEXT) i386_auxv.$(OBJEXT) \
+ 	i386_syscall.$(OBJEXT)
+ libebl_i386_pic_a_OBJECTS = $(am_libebl_i386_pic_a_OBJECTS)
+ libebl_ia64_pic_a_AR = $(AR) $(ARFLAGS)
+ libebl_ia64_pic_a_LIBADD =
+-am__objects_4 = ia64_init.$(OBJEXT) ia64_symbol.$(OBJEXT) \
++am__objects_5 = ia64_init.$(OBJEXT) ia64_symbol.$(OBJEXT) \
+ 	ia64_regs.$(OBJEXT) ia64_retval.$(OBJEXT)
+ libebl_ia64_pic_a_OBJECTS = $(am_libebl_ia64_pic_a_OBJECTS)
+ libebl_ppc64_pic_a_AR = $(AR) $(ARFLAGS)
+ libebl_ppc64_pic_a_LIBADD =
+-am__objects_5 = ppc64_init.$(OBJEXT) ppc64_symbol.$(OBJEXT) \
++am__objects_6 = ppc64_init.$(OBJEXT) ppc64_symbol.$(OBJEXT) \
+ 	ppc64_retval.$(OBJEXT) ppc64_corenote.$(OBJEXT) \
+ 	ppc_regs.$(OBJEXT) ppc_auxv.$(OBJEXT) ppc_attrs.$(OBJEXT) \
+ 	ppc_syscall.$(OBJEXT) ppc_cfi.$(OBJEXT)
+ libebl_ppc64_pic_a_OBJECTS = $(am_libebl_ppc64_pic_a_OBJECTS)
+ libebl_ppc_pic_a_AR = $(AR) $(ARFLAGS)
+ libebl_ppc_pic_a_LIBADD =
+-am__objects_6 = ppc_init.$(OBJEXT) ppc_symbol.$(OBJEXT) \
++am__objects_7 = ppc_init.$(OBJEXT) ppc_symbol.$(OBJEXT) \
+ 	ppc_retval.$(OBJEXT) ppc_regs.$(OBJEXT) ppc_corenote.$(OBJEXT) \
+ 	ppc_auxv.$(OBJEXT) ppc_attrs.$(OBJEXT) ppc_syscall.$(OBJEXT) \
+ 	ppc_cfi.$(OBJEXT)
+ libebl_ppc_pic_a_OBJECTS = $(am_libebl_ppc_pic_a_OBJECTS)
+ libebl_s390_pic_a_AR = $(AR) $(ARFLAGS)
+ libebl_s390_pic_a_LIBADD =
+-am__objects_7 = s390_init.$(OBJEXT) s390_symbol.$(OBJEXT) \
++am__objects_8 = s390_init.$(OBJEXT) s390_symbol.$(OBJEXT) \
+ 	s390_regs.$(OBJEXT) s390_retval.$(OBJEXT) \
+ 	s390_corenote.$(OBJEXT) s390x_corenote.$(OBJEXT) \
+ 	s390_cfi.$(OBJEXT)
+ libebl_s390_pic_a_OBJECTS = $(am_libebl_s390_pic_a_OBJECTS)
+ libebl_sh_pic_a_AR = $(AR) $(ARFLAGS)
+ libebl_sh_pic_a_LIBADD =
+-am__objects_8 = sh_init.$(OBJEXT) sh_symbol.$(OBJEXT) \
++am__objects_9 = sh_init.$(OBJEXT) sh_symbol.$(OBJEXT) \
+ 	sh_corenote.$(OBJEXT) sh_regs.$(OBJEXT) sh_retval.$(OBJEXT)
+ libebl_sh_pic_a_OBJECTS = $(am_libebl_sh_pic_a_OBJECTS)
+ libebl_sparc_pic_a_AR = $(AR) $(ARFLAGS)
+ libebl_sparc_pic_a_LIBADD =
+-am__objects_9 = sparc_init.$(OBJEXT) sparc_symbol.$(OBJEXT) \
++am__objects_10 = sparc_init.$(OBJEXT) sparc_symbol.$(OBJEXT) \
+ 	sparc_regs.$(OBJEXT) sparc_retval.$(OBJEXT) \
+ 	sparc_corenote.$(OBJEXT) sparc64_corenote.$(OBJEXT) \
+ 	sparc_auxv.$(OBJEXT)
+ libebl_sparc_pic_a_OBJECTS = $(am_libebl_sparc_pic_a_OBJECTS)
+ libebl_tilegx_pic_a_AR = $(AR) $(ARFLAGS)
+ libebl_tilegx_pic_a_LIBADD =
+-am__objects_10 = tilegx_init.$(OBJEXT) tilegx_symbol.$(OBJEXT) \
++am__objects_11 = tilegx_init.$(OBJEXT) tilegx_symbol.$(OBJEXT) \
+ 	tilegx_regs.$(OBJEXT) tilegx_retval.$(OBJEXT) \
+ 	tilegx_corenote.$(OBJEXT)
+ libebl_tilegx_pic_a_OBJECTS = $(am_libebl_tilegx_pic_a_OBJECTS)
+ libebl_x86_64_pic_a_AR = $(AR) $(ARFLAGS)
+ libebl_x86_64_pic_a_LIBADD =
+-am__objects_11 = x86_64_init.$(OBJEXT) x86_64_symbol.$(OBJEXT) \
++am__objects_12 = x86_64_init.$(OBJEXT) x86_64_symbol.$(OBJEXT) \
+ 	x86_64_corenote.$(OBJEXT) x86_64_cfi.$(OBJEXT) \
+ 	x86_64_retval.$(OBJEXT) x86_64_regs.$(OBJEXT) \
+ 	i386_auxv.$(OBJEXT) x86_64_syscall.$(OBJEXT)
+@@ -200,18 +206,20 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
+ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
+ am__v_CCLD_0 = @echo "  CCLD    " $@;
+ am__v_CCLD_1 = 
+-SOURCES = $(libebl_alpha_pic_a_SOURCES) $(libebl_arm_pic_a_SOURCES) \
++SOURCES = $(libebl_aarch64_pic_a_SOURCES) \
++	$(libebl_alpha_pic_a_SOURCES) $(libebl_arm_pic_a_SOURCES) \
++	$(libebl_i386_pic_a_SOURCES) $(libebl_ia64_pic_a_SOURCES) \
++	$(libebl_ppc64_pic_a_SOURCES) $(libebl_ppc_pic_a_SOURCES) \
++	$(libebl_s390_pic_a_SOURCES) $(libebl_sh_pic_a_SOURCES) \
++	$(libebl_sparc_pic_a_SOURCES) $(libebl_tilegx_pic_a_SOURCES) \
++	$(libebl_x86_64_pic_a_SOURCES)
++DIST_SOURCES = $(libebl_aarch64_pic_a_SOURCES) \
++	$(libebl_alpha_pic_a_SOURCES) $(libebl_arm_pic_a_SOURCES) \
+ 	$(libebl_i386_pic_a_SOURCES) $(libebl_ia64_pic_a_SOURCES) \
+ 	$(libebl_ppc64_pic_a_SOURCES) $(libebl_ppc_pic_a_SOURCES) \
+ 	$(libebl_s390_pic_a_SOURCES) $(libebl_sh_pic_a_SOURCES) \
+ 	$(libebl_sparc_pic_a_SOURCES) $(libebl_tilegx_pic_a_SOURCES) \
+ 	$(libebl_x86_64_pic_a_SOURCES)
+-DIST_SOURCES = $(libebl_alpha_pic_a_SOURCES) \
+-	$(libebl_arm_pic_a_SOURCES) $(libebl_i386_pic_a_SOURCES) \
+-	$(libebl_ia64_pic_a_SOURCES) $(libebl_ppc64_pic_a_SOURCES) \
+-	$(libebl_ppc_pic_a_SOURCES) $(libebl_s390_pic_a_SOURCES) \
+-	$(libebl_sh_pic_a_SOURCES) $(libebl_sparc_pic_a_SOURCES) \
+-	$(libebl_tilegx_pic_a_SOURCES) $(libebl_x86_64_pic_a_SOURCES)
+ am__can_run_installinfo = \
+   case $$AM_UPDATE_INFO_DIR in \
+     n|no|NO) false;; \
+@@ -371,11 +379,13 @@ COMPILE.os = $(filter-out -fprofile-arcs
+ CLEANFILES = *.gcno *.gcda $(foreach m,$(modules), libebl_$(m).map \
+ 	libebl_$(m).so $(am_libebl_$(m)_pic_a_OBJECTS))
+ textrel_check = if readelf -d $@ | fgrep -q TEXTREL; then exit 1; fi
+-modules = i386 sh x86_64 ia64 alpha arm sparc ppc ppc64 s390 tilegx
+-libebl_pic = libebl_i386_pic.a libebl_sh_pic.a libebl_x86_64_pic.a \
+-	     libebl_ia64_pic.a libebl_alpha_pic.a libebl_arm_pic.a \
+-	     libebl_sparc_pic.a libebl_ppc_pic.a libebl_ppc64_pic.a \
+-	     libebl_s390_pic.a libebl_tilegx_pic.a
++modules = i386 sh x86_64 ia64 alpha arm aarch64 sparc ppc ppc64 s390 \
++	  tilegx
++
++libebl_pic = libebl_i386_pic.a libebl_sh_pic.a libebl_x86_64_pic.a    \
++	     libebl_ia64_pic.a libebl_alpha_pic.a libebl_arm_pic.a    \
++	     libebl_aarch64_pic.a libebl_sparc_pic.a libebl_ppc_pic.a \
++	     libebl_ppc64_pic.a libebl_s390_pic.a libebl_tilegx_pic.a
+ 
+ noinst_LIBRARIES = $(libebl_pic)
+ noinst_DATA = $(libebl_pic:_pic.a=.so)
+@@ -411,6 +421,12 @@ arm_SRCS = arm_init.c arm_symbol.c arm_r
+ 
+ libebl_arm_pic_a_SOURCES = $(arm_SRCS)
+ am_libebl_arm_pic_a_OBJECTS = $(arm_SRCS:.c=.os)
++aarch64_SRCS = aarch64_init.c aarch64_regs.c aarch64_symbol.c	\
++	       aarch64_corenote.c aarch64_retval.c
++
++libebl_aarch64_pic_a_SOURCES = $(aarch64_SRCS)
++am_libebl_aarch64_pic_a_OBJECTS = $(aarch64_SRCS:.c=.os)
++aarch64_regs_no_Wformat = yes
+ sparc_SRCS = sparc_init.c sparc_symbol.c sparc_regs.c sparc_retval.c \
+ 	     sparc_corenote.c sparc64_corenote.c sparc_auxv.c
+ 
+@@ -479,6 +495,11 @@ $(am__aclocal_m4_deps):
+ clean-noinstLIBRARIES:
+ 	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
+ 
++libebl_aarch64_pic.a: $(libebl_aarch64_pic_a_OBJECTS) $(libebl_aarch64_pic_a_DEPENDENCIES) $(EXTRA_libebl_aarch64_pic_a_DEPENDENCIES) 
++	$(AM_V_at)-rm -f libebl_aarch64_pic.a
++	$(AM_V_AR)$(libebl_aarch64_pic_a_AR) libebl_aarch64_pic.a $(libebl_aarch64_pic_a_OBJECTS) $(libebl_aarch64_pic_a_LIBADD)
++	$(AM_V_at)$(RANLIB) libebl_aarch64_pic.a
++
+ libebl_alpha_pic.a: $(libebl_alpha_pic_a_OBJECTS) $(libebl_alpha_pic_a_DEPENDENCIES) $(EXTRA_libebl_alpha_pic_a_DEPENDENCIES) 
+ 	$(AM_V_at)-rm -f libebl_alpha_pic.a
+ 	$(AM_V_AR)$(libebl_alpha_pic_a_AR) libebl_alpha_pic.a $(libebl_alpha_pic_a_OBJECTS) $(libebl_alpha_pic_a_LIBADD)
+@@ -540,6 +561,11 @@ mostlyclean-compile:
+ distclean-compile:
+ 	-rm -f *.tab.c
+ 
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/aarch64_corenote.Po@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/aarch64_init.Po@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/aarch64_regs.Po@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/aarch64_retval.Po@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/aarch64_symbol.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alpha_auxv.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alpha_corenote.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alpha_init.Po@am__quote@
+diff -urp elfutils-0.157~/tests/Makefile.in elfutils-0.157/tests/Makefile.in
+--- elfutils-0.157~/tests/Makefile.in	2013-09-30 14:37:52.000000000 +0200
++++ elfutils-0.157/tests/Makefile.in	2013-12-02 23:54:46.286838921 +0100
+@@ -141,8 +141,9 @@ TESTS = run-arextract.sh run-arsymtest.s
+ 	run-test-archive64.sh run-readelf-vmcoreinfo.sh \
+ 	run-readelf-mixed-corenote.sh run-dwfllines.sh \
+ 	run-dwfl-report-elf-align.sh run-addr2line-test.sh \
+-	run-addr2line-i-test.sh run-varlocs.sh $(am__EXEEXT_1) \
+-	$(am__append_7) $(am__EXEEXT_3) $(am__append_10)
++	run-addr2line-i-test.sh run-varlocs.sh run-funcretval.sh \
++	$(am__EXEEXT_1) $(am__append_7) $(am__EXEEXT_3) \
++	$(am__append_10)
+ @STANDALONE_FALSE@am__append_5 = msg_tst md5-sha1-test
+ @STANDALONE_FALSE@am__append_6 = msg_tst md5-sha1-test
+ @LZMA_TRUE@am__append_7 = run-readelf-s.sh run-dwflsyms.sh
+@@ -849,7 +850,7 @@ EXTRA_DIST = run-arextract.sh run-arsymt
+ 	     run-strip-test4.sh run-strip-test5.sh run-strip-test6.sh \
+ 	     run-strip-test7.sh run-strip-test8.sh run-strip-groups.sh \
+ 	     run-strip-reloc.sh hello_i386.ko.bz2 hello_x86_64.ko.bz2 \
+-	     hello_ppc64.ko.bz2 hello_s390.ko.bz2 \
++	     hello_ppc64.ko.bz2 hello_s390.ko.bz2 hello_aarch64.ko.bz2 \
+ 	     run-unstrip-test.sh run-unstrip-test2.sh \
+ 	     run-elflint-self.sh run-ranlib-test.sh run-ranlib-test2.sh \
+ 	     run-ranlib-test3.sh run-ranlib-test4.sh \
+@@ -937,7 +938,9 @@ EXTRA_DIST = run-arextract.sh run-arsymt
+ 	     testfile_implicit_pointer.c testfile_implicit_pointer.bz2 \
+ 	     testfile_parameter_ref.c testfile_parameter_ref.bz2 \
+ 	     testfile_entry_value.c testfile_entry_value.bz2 \
+-	     testfile_implicit_value.c testfile_implicit_value.bz2
++	     testfile_implicit_value.c testfile_implicit_value.bz2 \
++	     testfile_aarch64_core.bz2 \
++	     funcretval_test.c funcretval_test_aarch64.bz2
+ 
+ @USE_VALGRIND_TRUE@valgrind_cmd = 'valgrind -q --trace-children=yes --error-exitcode=1 --run-libc-freeres=no'
+ installed_TESTS_ENVIRONMENT = libdir=$(DESTDIR)$(libdir); \
+@@ -2210,6 +2213,13 @@ run-varlocs.sh.log: run-varlocs.sh
+ 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+ 	--log-file $$b.log --trs-file $$b.trs \
+ 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
++	"$$tst" $(AM_TESTS_FD_REDIRECT)
++run-funcretval.sh.log: run-funcretval.sh
++	@p='run-funcretval.sh'; \
++	b='run-funcretval.sh'; \
++	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
++	--log-file $$b.log --trs-file $$b.trs \
++	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+ 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+ msg_tst.log: msg_tst$(EXEEXT)
+ 	@p='msg_tst$(EXEEXT)'; \
