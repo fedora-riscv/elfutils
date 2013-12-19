@@ -231,7 +231,11 @@ find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 # Remove -Wall from default flags.  The makefiles enable enough warnings
 # themselves, and they use -Werror.  Appending -Wall defeats the cases where
 # the makefiles disable some specific warnings for specific code.
+# Also remove -Werror=format-security which doesn't work without
+# -Wformat (enabled by -Wall). We enable -Wformat explicitly for some
+# files later.
 RPM_OPT_FLAGS=${RPM_OPT_FLAGS/-Wall/}
+RPM_OPT_FLAGS=${RPM_OPT_FLAGS/-Werror=format-security/}
 
 %if %{compat}
 # Some older glibc headers can run afoul of -Werror all by themselves.
@@ -341,6 +345,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %changelog
 * Thu Dec 19 2013 Mark Wielaard <mjw@redhat.com> - 0.157-4
 - Add elfutils-0.157-aarch64-got-special-symbol.patch.
+- Remove -Werror=format-security from RPM_OPT_FLAGS.
 
 * Fri Dec 13 2013 Petr Machata <pmachata@redhat.com> - 0.157-3
 - Add upstream support for aarch64
