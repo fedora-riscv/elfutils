@@ -1,0 +1,70 @@
+commit 96d3b0aeddbb8c5557fdc5769e4d73eac81d74fd
+Author: Mark Wielaard <mjw@redhat.com>
+Date:   Thu Dec 19 16:11:19 2013 +0100
+
+    backends: aarch64 always has _GLOBAL_OFFSET_TABLE_ point to .got[0].
+    
+    Like some other architectures aarch64 has a special rule for the
+    _GLOBAL_OFFSET_TABLE_ symbol. Even if there is a .plt.got section the symbol
+    value still points to the start of the .got section. This is also what the
+    dynamic linker expects.
+    
+    See https://sourceware.org/ml/libc-ports/2013-06/msg00057.html
+    
+    Signed-off-by: Mark Wielaard <mjw@redhat.com>
+
+diff --git a/backends/aarch64_init.c b/backends/aarch64_init.c
+index 749af2a..d663d40 100644
+--- a/backends/aarch64_init.c
++++ b/backends/aarch64_init.c
+@@ -56,6 +56,7 @@ aarch64_init (elf, machine, eh, ehlen)
+   HOOK (eh, core_note);
+   HOOK (eh, reloc_simple_type);
+   HOOK (eh, return_value_location);
++  HOOK (eh, check_special_symbol);
+ 
+   return MODVERSION;
+ }
+diff --git a/backends/aarch64_symbol.c b/backends/aarch64_symbol.c
+index b0f3377..4e1dbd8 100644
+--- a/backends/aarch64_symbol.c
++++ b/backends/aarch64_symbol.c
+@@ -32,6 +32,7 @@
+ 
+ #include <elf.h>
+ #include <stddef.h>
++#include <string.h>
+ 
+ #define BACKEND		aarch64_
+ #include "libebl_CPU.h"
+@@ -54,3 +55,30 @@ aarch64_reloc_simple_type (Ebl *ebl __attribute__ ((unused)), int type)
+       return ELF_T_NUM;
+     }
+ }
++
++/* If this is the _GLOBAL_OFFSET_TABLE_ symbol, then it should point to
++   .got[0] even if there is a .got.plt section.  */
++bool
++aarch64_check_special_symbol (Elf *elf, GElf_Ehdr *ehdr, const GElf_Sym *sym,
++                              const char *name, const GElf_Shdr *destshdr)
++{
++  if (name != NULL
++      && strcmp (name, "_GLOBAL_OFFSET_TABLE_") == 0)
++    {
++      const char *sname = elf_strptr (elf, ehdr->e_shstrndx, destshdr->sh_name);
++      if (sname != NULL && strcmp (sname, ".got.plt") == 0)
++	{
++	  Elf_Scn *scn = NULL;
++	  while ((scn = elf_nextscn (elf, scn)) != NULL)
++	    {
++	      GElf_Shdr shdr_mem;
++	      GElf_Shdr *shdr = gelf_getshdr (scn, &shdr_mem);
++	      sname = elf_strptr (elf, ehdr->e_shstrndx, shdr->sh_name);
++	      if (name != NULL && strcmp (sname, ".got") == 0)
++		return sym->st_value == shdr->sh_addr;
++	    }
++	}
++    }
++
++  return false;
++}

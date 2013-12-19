@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.157
-%global baserelease 3
+%global baserelease 4
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -53,6 +53,7 @@ Patch3: elfutils-0.157-aarch64-elf.h.patch
 Patch4: elfutils-0.157-aarch64-hidden_format.patch
 Patch5: elfutils-0.157-aarch64-meat.patch
 Patch6: elfutils-0.157-aarch64-configury.patch
+Patch7: elfutils-0.157-aarch64-got-special-symbol.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -221,6 +222,7 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %patch4 -p1
 %patch5 -p1
 %patch6 -p1
+%patch7 -p1
 cp %{SOURCE2} %{SOURCE3} %{SOURCE4} tests/
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
@@ -337,6 +339,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Thu Dec 19 2013 Mark Wielaard <mjw@redhat.com> - 0.157-4
+- Add elfutils-0.157-aarch64-got-special-symbol.patch.
+
 * Fri Dec 13 2013 Petr Machata <pmachata@redhat.com> - 0.157-3
 - Add upstream support for aarch64
 
