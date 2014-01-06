@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
-Version: 0.157
-%global baserelease 4
+Version: 0.158
+%global baserelease 1
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -43,17 +43,9 @@ Group: Development/Tools
 %global depsuffix %{?_isa}%{!?_isa:-%{_arch}}
 
 Source: %{?source_url}%{name}-%{version}.tar.bz2
-Source2: funcretval_test_aarch64.bz2
-Source3: hello_aarch64.ko.bz2
-Source4: testfile_aarch64_core.bz2
 
 Patch1: %{?source_url}elfutils-robustify.patch
 Patch2: %{?source_url}elfutils-portability.patch
-Patch3: elfutils-0.157-aarch64-elf.h.patch
-Patch4: elfutils-0.157-aarch64-hidden_format.patch
-Patch5: elfutils-0.157-aarch64-meat.patch
-Patch6: elfutils-0.157-aarch64-configury.patch
-Patch7: elfutils-0.157-aarch64-got-special-symbol.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -218,13 +210,6 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 %endif
 
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-cp %{SOURCE2} %{SOURCE3} %{SOURCE4} tests/
-
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
@@ -292,6 +277,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_bindir}/eu-ranlib
 %{_bindir}/eu-readelf
 %{_bindir}/eu-size
+%{_bindir}/eu-stack
 %{_bindir}/eu-strings
 %{_bindir}/eu-strip
 #%%{_bindir}/eu-ld
@@ -343,6 +329,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Mon Jan  6 2014 Mark Wielaard <mjw@redhat.com> - 0.158-1
+- Update to 0.158. Remove all patches now upstream. Add eu-stack.
+
 * Thu Dec 19 2013 Mark Wielaard <mjw@redhat.com> - 0.157-4
 - Add elfutils-0.157-aarch64-got-special-symbol.patch.
 - Remove -Werror=format-security from RPM_OPT_FLAGS.
