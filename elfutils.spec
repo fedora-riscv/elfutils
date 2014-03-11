@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.158
-%global baserelease 1
+%global baserelease 2
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -46,6 +46,8 @@ Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 Patch1: %{?source_url}elfutils-robustify.patch
 Patch2: %{?source_url}elfutils-portability.patch
+
+Patch3: elfutils-0.158-mod-e_type.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -210,6 +212,8 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 %endif
 
+%patch3 -p1 -b .e_type
+
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
@@ -329,6 +333,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Tue Mar 11 2014 Mark Wielaard <mjw@redhat.com> - 0.158-2
+- Add elfutils-0.158-mod-e_type.patch.
+
 * Mon Jan  6 2014 Mark Wielaard <mjw@redhat.com> - 0.158-1
 - Update to 0.158. Remove all patches now upstream. Add eu-stack.
 
