@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.158
-%global baserelease 2
+%global baserelease 3
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -48,6 +48,7 @@ Patch1: %{?source_url}elfutils-robustify.patch
 Patch2: %{?source_url}elfutils-portability.patch
 
 Patch3: elfutils-0.158-mod-e_type.patch
+Patch4: elfutils-0.158-CVE-2014-0172.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -213,6 +214,7 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 
 %patch3 -p1 -b .e_type
+%patch4 -p1 -b .CVE-2014-0172
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -333,6 +335,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Tue Apr 10 2014 Mark Wielaard <mjw@redhat.com> - 0.158-3
+- Add elfutils-0.158-CVE-2014-0172.patch (#1085729)
+
 * Tue Mar 11 2014 Mark Wielaard <mjw@redhat.com> - 0.158-2
 - Add elfutils-0.158-mod-e_type.patch.
 
