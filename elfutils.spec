@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
-Version: 0.158
-%global baserelease 3
+Version: 0.159
+%global baserelease 1
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -44,11 +44,7 @@ Group: Development/Tools
 
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 
-Patch1: %{?source_url}elfutils-robustify.patch
-Patch2: %{?source_url}elfutils-portability.patch
-
-Patch3: elfutils-0.158-mod-e_type.patch
-Patch4: elfutils-0.158-CVE-2014-0172.patch
+Patch1: %{?source_url}elfutils-portability.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -88,11 +84,11 @@ BuildRequires: xz-devel
 %global _program_prefix eu-
 
 %description
-Elfutils is a collection of utilities, including ld (a linker),
-nm (for listing symbols from object files), size (for listing the
-section sizes of an object or archive file), strip (for discarding
-symbols), readelf (to see the raw ELF file structures), and elflint
-(to check for well-formed ELF files).
+Elfutils is a collection of utilities, including stack (to show
+backtraces), nm (for listing symbols from object files), size
+(for listing the section sizes of an object or archive file),
+strip (for discarding symbols), readelf (to see the raw ELF file
+structures), and elflint (to check for well-formed ELF files).
 
 
 %package libs
@@ -199,10 +195,8 @@ for libelf.
 : 'separate_devel_static=%separate_devel_static'
 : 'scanf_has_m=%scanf_has_m'
 
-%patch1 -p1 -b .robustify
-
 %if %{portability}
-%patch2 -p1 -b .portability
+%patch1 -p1 -b .portability
 sleep 1
 find . \( -name Makefile.in -o -name aclocal.m4 \) -print | xargs touch
 sleep 1
@@ -213,20 +207,18 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 %endif
 
-%patch3 -p1 -b .e_type
-%patch4 -p1 -b .CVE-2014-0172
-
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
 # Remove -Wall from default flags.  The makefiles enable enough warnings
 # themselves, and they use -Werror.  Appending -Wall defeats the cases where
 # the makefiles disable some specific warnings for specific code.
-# Also remove -Werror=format-security which doesn't work without
-# -Wformat (enabled by -Wall). We enable -Wformat explicitly for some
-# files later.
-RPM_OPT_FLAGS=${RPM_OPT_FLAGS/-Wall/}
-RPM_OPT_FLAGS=${RPM_OPT_FLAGS/-Werror=format-security/}
+# But add -Wformat explicitly for use with -Werror=format-security which
+# doesn't work without -Wformat (enabled by -Wall).
+RPM_OPT_FLAGS="${RPM_OPT_FLAGS/-Wall/}"
+%if !%{compat}
+RPM_OPT_FLAGS="${RPM_OPT_FLAGS} -Wformat"
+%endif
 
 %if %{compat}
 # Some older glibc headers can run afoul of -Werror all by themselves.
@@ -238,7 +230,7 @@ COMPAT_CONFIG_FLAGS=""
 %endif
 
 trap 'cat config.log' EXIT
-%configure --enable-dwz $COMPAT_CONFIG_FLAGS CFLAGS="$RPM_OPT_FLAGS -fexceptions"
+%configure $COMPAT_CONFIG_FLAGS CFLAGS="$RPM_OPT_FLAGS -fexceptions"
 trap '' EXIT
 make -s %{?_smp_mflags}
 
@@ -308,6 +300,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_includedir}/elfutils/libebl.h
 %{_includedir}/elfutils/libdw.h
 %{_includedir}/elfutils/libdwfl.h
+%{_includedir}/elfutils/libdwelf.h
 %{_includedir}/elfutils/version.h
 %{_libdir}/libebl.a
 %{_libdir}/libasm.so
@@ -335,7 +328,14 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
-* Tue Apr 10 2014 Mark Wielaard <mjw@redhat.com> - 0.158-3
+* Mon May 19 2014 Mark Wielaard <mjw@redhat.com> - 0.159-1
+- Update to 0.159.
+  - Remove integrated upstream patches:
+    robustify.patch, mod-e_type.patch and CVE-2014-0172.patch.
+  - Remove special handling of now default compile and configure flags:
+    Don't remove -Werror=format-security, don't configure --enable-dwz.
+
+* Thu Apr 10 2014 Mark Wielaard <mjw@redhat.com> - 0.158-3
 - Add elfutils-0.158-CVE-2014-0172.patch (#1085729)
 
 * Tue Mar 11 2014 Mark Wielaard <mjw@redhat.com> - 0.158-2
