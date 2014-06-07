@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.159
-%global baserelease 1
+%global baserelease 2
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -47,9 +47,9 @@ Source: %{?source_url}%{name}-%{version}.tar.bz2
 Patch1: %{?source_url}elfutils-portability.patch
 
 %if !%{compat}
-Release: %{baserelease}%{?dist}
+Release: %{baserelease}%{?dist}.1
 %else
-Release: 0.%{baserelease}
+Release: 0.%{baserelease}.1
 %endif
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
@@ -328,6 +328,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.159-2.1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
 * Mon May 19 2014 Mark Wielaard <mjw@redhat.com> - 0.159-1
 - Update to 0.159.
   - Remove integrated upstream patches:
