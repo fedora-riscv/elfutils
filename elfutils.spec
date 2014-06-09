@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.159
-%global baserelease 2
+%global baserelease 3
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -45,11 +45,12 @@ Group: Development/Tools
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 Patch1: %{?source_url}elfutils-portability.patch
+Patch2: elfutils-aarch64-user_regs_struct.patch
 
 %if !%{compat}
-Release: %{baserelease}%{?dist}.1
+Release: %{baserelease}%{?dist}
 %else
-Release: 0.%{baserelease}.1
+Release: 0.%{baserelease}
 %endif
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
@@ -207,6 +208,8 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 %endif
 
+%patch2 -p1 -b .aa64~1
+
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
@@ -328,6 +331,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Mon Jun 09 2014 Kyle McMartin <kyle@fedoraproject.org> - 0.159-3
+- AArch64: handle new glibc-headers which provides proper GETREGSET structs.
+
 * Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.159-2.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
 
