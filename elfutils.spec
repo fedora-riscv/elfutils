@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.159
-%global baserelease 3
+%global baserelease 4
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -46,6 +46,7 @@ Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 Patch1: %{?source_url}elfutils-portability.patch
 Patch2: elfutils-aarch64-user_regs_struct.patch
+Patch3: elfutils-0.159-argp-attach.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -209,6 +210,7 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 
 %patch2 -p1 -b .aa64~1
+%patch3 -p1 -b .argp-attach
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -331,6 +333,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Tue Jun 10 2014 Mark Wielaard <mjw@redhat.com> - 0.159-4
+- Add elfutils-0.159-argp-attach.patch (#1107654)
+
 * Mon Jun 09 2014 Kyle McMartin <kyle@fedoraproject.org> - 0.159-3
 - AArch64: handle new glibc-headers which provides proper GETREGSET structs.
 
