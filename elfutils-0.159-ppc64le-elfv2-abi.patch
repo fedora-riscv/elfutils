@@ -1,0 +1,99 @@
+commit a95c4ad24cf83b2b0273fee73162bf476cebec8f
+Author: Mark Wielaard <mjw@redhat.com>
+Date:   Fri Jul 4 14:30:48 2014 +0200
+
+    Add ppc64le ELFv2 abi support to backends and elflint.
+    
+    The big endian vs little endian changes are already handled by detecting
+    the EI_DATA data encoding. And the function descriptors are already not
+    used when we see there is no .opd section. This change adds new checks
+    for st_other bits, new relocations and recognizes DT_PPC64_OPT.
+    
+    Signed-off-by: Menanteau Guy <menantea@linux.vnet.ibm.com>
+    Signed-off-by: Mark Wielaard <mjw@redhat.com>
+
+diff --git a/backends/ppc64_init.c b/backends/ppc64_init.c
+index e52231c..7ea2b23 100644
+--- a/backends/ppc64_init.c
++++ b/backends/ppc64_init.c
+@@ -61,6 +61,7 @@ ppc64_init (elf, machine, eh, ehlen)
+   HOOK (eh, machine_flag_check);
+   HOOK (eh, copy_reloc_p);
+   HOOK (eh, check_special_symbol);
++  HOOK (eh, check_st_other_bits);
+   HOOK (eh, bss_plt_p);
+   HOOK (eh, return_value_location);
+   HOOK (eh, register_info);
+diff --git a/backends/ppc64_reloc.def b/backends/ppc64_reloc.def
+index 6366f46..3a693cf 100644
+--- a/backends/ppc64_reloc.def
++++ b/backends/ppc64_reloc.def
+@@ -132,6 +132,21 @@ RELOC_TYPE (DTPREL16_HIGHER,	REL)
+ RELOC_TYPE (DTPREL16_HIGHERA,	REL)
+ RELOC_TYPE (DTPREL16_HIGHEST,	REL)
+ RELOC_TYPE (DTPREL16_HIGHESTA,	REL)
++RELOC_TYPE (TLSGD,		REL)
++RELOC_TYPE (TLSLD,		REL)
++RELOC_TYPE (TOCSAVE,		REL)
++RELOC_TYPE (ADDR16_HIGH,	REL)
++RELOC_TYPE (ADDR16_HIGHA,	REL)
++RELOC_TYPE (TPREL16_HIGH,	REL)
++RELOC_TYPE (TPREL16_HIGHA,	REL)
++RELOC_TYPE (DTPREL16_HIGH,	REL)
++RELOC_TYPE (DTPREL16_HIGHA,	REL)
++RELOC_TYPE (JMP_IREL,		REL)
++RELOC_TYPE (IRELATIVE,		REL)
++RELOC_TYPE (REL16,		REL)
++RELOC_TYPE (REL16_LO,		REL)
++RELOC_TYPE (REL16_HI,		REL)
++RELOC_TYPE (REL16_HA,		REL)
+ 
+ /* Notes from Alan Modra:
+ 
+diff --git a/backends/ppc64_symbol.c b/backends/ppc64_symbol.c
+index 212d414..5a020d8 100644
+--- a/backends/ppc64_symbol.c
++++ b/backends/ppc64_symbol.c
+@@ -72,6 +72,8 @@ ppc64_dynamic_tag_name (int64_t tag, char *buf __attribute__ ((unused)),
+       return "PPC64_OPD";
+     case DT_PPC64_OPDSZ:
+       return "PPC64_OPDSZ";
++    case DT_PPC64_OPT:
++      return "PPC64_OPT";
+     default:
+       break;
+     }
+@@ -84,7 +86,8 @@ ppc64_dynamic_tag_check (int64_t tag)
+ {
+   return (tag == DT_PPC64_GLINK
+ 	  || tag == DT_PPC64_OPD
+-	  || tag == DT_PPC64_OPDSZ);
++	  || tag == DT_PPC64_OPDSZ
++	  || tag == DT_PPC64_OPT);
+ }
+ 
+ 
+@@ -120,3 +123,9 @@ ppc64_machine_flag_check (GElf_Word flags)
+ {
+   return flags == 0 || flags == 1 || flags == 2;
+ }
++
++bool
++ppc64_check_st_other_bits (unsigned char st_other)
++{
++  return (PPC64_LOCAL_ENTRY_OFFSET (st_other) != 0);
++}
+diff --git a/src/elflint.c b/src/elflint.c
+index 5568c65..d6a4774 100644
+--- a/src/elflint.c
++++ b/src/elflint.c
+@@ -799,7 +799,8 @@ section [%2d] '%s': symbol %zu: function in COMMON section is nonsense\n"),
+ 				  && strcmp (name, "__fini_array_end") != 0
+ 				  && strcmp (name, "__bss_start") != 0
+ 				  && strcmp (name, "__bss_start__") != 0
+-				  && strcmp (name, "__TMC_END__") != 0))
++				  && strcmp (name, "__TMC_END__") != 0
++				  && strcmp (name, ".TOC.") != 0))
+ 			    ERROR (gettext ("\
+ section [%2d] '%s': symbol %zu: st_value out of bounds\n"),
+ 				   idx, section_name (ebl, idx), cnt);
