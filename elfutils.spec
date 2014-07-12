@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.159
-%global baserelease 5
+%global baserelease 6
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -275,7 +275,9 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files
 %defattr(-,root,root)
-%doc COPYING COPYING-GPLV2 COPYING-LGPLV3 README TODO CONTRIBUTING
+%{!?_licensedir:%global license %%doc}
+%license COPYING COPYING-GPLV2 COPYING-LGPLV3
+%doc README TODO CONTRIBUTING
 %{_bindir}/eu-addr2line
 %{_bindir}/eu-ar
 %{_bindir}/eu-elfcmp
@@ -295,6 +297,8 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files libs
 %defattr(-,root,root)
+%{!?_licensedir:%global license %%doc}
+%license COPYING-GPLV2 COPYING-LGPLV3
 %{_libdir}/libasm-%{version}.so
 %{_libdir}/libasm.so.*
 %{_libdir}/libdw-%{version}.so
@@ -324,6 +328,8 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files -f %{name}.lang libelf
 %defattr(-,root,root)
+%{!?_licensedir:%global license %%doc}
+%license COPYING-GPLV2 COPYING-LGPLV3
 %{_libdir}/libelf-%{version}.so
 %{_libdir}/libelf.so.*
 
@@ -339,6 +345,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Sat Jul 12 2014 Tom Callaway <spot@fedoraproject.org> - 0.159-6
+- fix license handling
+
 * Fri Jul  4 2014 Mark Wielaard <mjw@redhat.com> - 0.159-5
 - Add elfutils-0.159-aarch64-bool-ret.patch
 - Add elfutils-0.159-elf-h.patch
