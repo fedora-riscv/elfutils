@@ -1,8 +1,42 @@
+commit 5df2dc63e96808afb1602d4338e30dbca560a656
+Author: Kyle McMartin <kyle@redhat.com>
+Date:   Mon Jun 9 21:06:26 2014 +0200
+
+    aarch64: use <sys/user.h> defined register structures
+    
+    glibc now supplies these (compatible) structs instead of including the
+    kernel's <asm/ptrace.h> header, so let's use them. Annoyingly this will
+    cause new elfutils to FTBFS on old glibc, and vice versa. So include a
+    new configure check for the new struct names and use the old ones if
+    they are not avilable.
+    
+    Signed-off-by: Kyle McMartin <kyle@redhat.com>
+    Signed-off-by: Mark Wielaard <mjw@redhat.com>
+
 diff --git a/backends/aarch64_initreg.c b/backends/aarch64_initreg.c
-index 2492d56..8d68a6e 100644
+index 2492d56..9706205 100644
 --- a/backends/aarch64_initreg.c
 +++ b/backends/aarch64_initreg.c
-@@ -51,7 +51,7 @@ aarch64_set_initial_registers_tid (pid_t tid __attribute__ ((unused)),
+@@ -1,5 +1,5 @@
+ /* Fetch live process registers from TID.
+-   Copyright (C) 2013 Red Hat, Inc.
++   Copyright (C) 2013, 2014 Red Hat, Inc.
+    This file is part of elfutils.
+ 
+    This file is free software; you can redistribute it and/or modify
+@@ -36,6 +36,11 @@
+ # include <linux/uio.h>
+ # include <sys/user.h>
+ # include <sys/ptrace.h>
++/* Deal with old glibc defining user_pt_regs instead of user_regs_struct.  */
++# ifndef HAVE_SYS_USER_REGS
++#  define user_regs_struct user_pt_regs
++#  define user_fpsimd_struct user_fpsimd_state
++# endif
+ #endif
+ 
+ #define BACKEND aarch64_
+@@ -51,7 +56,7 @@ aarch64_set_initial_registers_tid (pid_t tid __attribute__ ((unused)),
  #else /* __aarch64__ */
  
    /* General registers.  */
@@ -11,7 +45,7 @@ index 2492d56..8d68a6e 100644
    struct iovec iovec;
    iovec.iov_base = &gregs;
    iovec.iov_len = sizeof (gregs);
-@@ -69,7 +69,7 @@ aarch64_set_initial_registers_tid (pid_t tid __attribute__ ((unused)),
+@@ -69,7 +74,7 @@ aarch64_set_initial_registers_tid (pid_t tid __attribute__ ((unused)),
    /* ELR cannot be found.  */
  
    /* FP registers (only 64bits are used).  */
@@ -21,10 +55,21 @@ index 2492d56..8d68a6e 100644
    iovec.iov_len = sizeof (fregs);
    if (ptrace (PTRACE_GETREGSET, tid, NT_FPREGSET, &iovec) != 0)
 diff --git a/backends/arm_initreg.c b/backends/arm_initreg.c
-index 5837383..1edf62b 100644
+index 5837383..a0a9be9 100644
 --- a/backends/arm_initreg.c
 +++ b/backends/arm_initreg.c
-@@ -67,7 +67,7 @@ arm_set_initial_registers_tid (pid_t tid __attribute__ ((unused)),
+@@ -40,6 +40,10 @@
+ # include <linux/uio.h>
+ # include <sys/user.h>
+ # include <sys/ptrace.h>
++/* Deal with old glibc defining user_pt_regs instead of user_regs_struct.  */
++# ifndef HAVE_SYS_USER_REGS
++#  define user_regs_struct user_pt_regs
++# endif
+ #endif
+ 
+ #define BACKEND arm_
+@@ -67,7 +71,7 @@ arm_set_initial_registers_tid (pid_t tid __attribute__ ((unused)),
  #elif defined __aarch64__
    /* Compat mode: arm compatible code running on aarch64 */
    int i;
@@ -33,3 +78,129 @@ index 5837383..1edf62b 100644
    struct iovec iovec;
    iovec.iov_base = &gregs;
    iovec.iov_len = sizeof (gregs);
+diff --git a/configure.ac b/configure.ac
+index 1d79597..f9c3c30 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -301,6 +301,19 @@ eu_version=$(( (eu_version + 999) / 1000 ))
+ 
+ AC_CHECK_SIZEOF(long)
+ 
++# On aarch64 before glibc 2.20 we would get the kernel user_pt_regs instead
++# of the user_regs_struct from sys/user.h. They are structurally the same
++# but we get either one or the other.
++AC_CHECK_TYPE([struct user_regs_struct],
++              [sys_user_has_user_regs=yes], [sys_user_has_user_regs=no],
++              [[#include <sys/ptrace.h>]
++               [#include <sys/time.h>]
++               [#include <sys/user.h>]])
++if test "$sys_user_has_user_regs" = "yes"; then
++  AC_DEFINE(HAVE_SYS_USER_REGS, 1,
++            [Define to 1 if <sys/user.h> defines struct user_regs_struct])
++fi
++
+ # On a 64-bit host where can can use $CC -m32, we'll run two sets of tests.
+ # Likewise in a 32-bit build on a host where $CC -m64 works.
+ utrace_BIARCH
+diff -ur elfutils-0.159.orig/configure elfutils-0.159/configure
+--- elfutils-0.159.orig/configure	2014-07-18 14:30:42.842641862 +0200
++++ elfutils-0.159/configure	2014-07-18 14:31:24.142166792 +0200
+@@ -1939,6 +1939,60 @@
+   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+ 
+ } # ac_fn_c_check_header_compile
++
++# ac_fn_c_check_type LINENO TYPE VAR INCLUDES
++# -------------------------------------------
++# Tests whether TYPE exists after having included INCLUDES, setting cache
++# variable VAR accordingly.
++ac_fn_c_check_type ()
++{
++  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
++  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
++$as_echo_n "checking for $2... " >&6; }
++if eval \${$3+:} false; then :
++  $as_echo_n "(cached) " >&6
++else
++  eval "$3=no"
++  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
++/* end confdefs.h.  */
++$4
++int
++main ()
++{
++if (sizeof ($2))
++	 return 0;
++  ;
++  return 0;
++}
++_ACEOF
++if ac_fn_c_try_compile "$LINENO"; then :
++  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
++/* end confdefs.h.  */
++$4
++int
++main ()
++{
++if (sizeof (($2)))
++	    return 0;
++  ;
++  return 0;
++}
++_ACEOF
++if ac_fn_c_try_compile "$LINENO"; then :
++
++else
++  eval "$3=yes"
++fi
++rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
++fi
++rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
++fi
++eval ac_res=\$$3
++	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
++$as_echo "$ac_res" >&6; }
++  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
++
++} # ac_fn_c_check_type
+ cat >config.log <<_ACEOF
+ This file contains any messages produced by compilers while
+ running configure, to aid debugging if configure makes a mistake.
+@@ -6233,6 +6287,25 @@
+ 
+ 
+ 
++# On aarch64 before glibc 2.20 we would get the kernel user_pt_regs instead
++# of the user_regs_struct from sys/user.h. They are structurally the same
++# but we get either one or the other.
++ac_fn_c_check_type "$LINENO" "struct user_regs_struct" "ac_cv_type_struct_user_regs_struct" "#include <sys/ptrace.h>
++               #include <sys/time.h>
++               #include <sys/user.h>
++"
++if test "x$ac_cv_type_struct_user_regs_struct" = xyes; then :
++  sys_user_has_user_regs=yes
++else
++  sys_user_has_user_regs=no
++fi
++
++if test "$sys_user_has_user_regs" = "yes"; then
++
++$as_echo "#define HAVE_SYS_USER_REGS 1" >>confdefs.h
++
++fi
++
+ # On a 64-bit host where can can use $CC -m32, we'll run two sets of tests.
+ # Likewise in a 32-bit build on a host where $CC -m64 works.
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking $CC option for 32-bit word size" >&5
+--- elfutils-0.159.orig/config.h.in	2014-07-18 14:30:42.813641492 +0200
++++ elfutils-0.159/config.h.in	2014-07-18 15:19:18.000000000 +0200
+@@ -27,6 +27,9 @@
+ /* Define to 1 if you have the <sys/types.h> header file. */
+ #undef HAVE_SYS_TYPES_H
+ 
++/* Define to 1 if <sys/user.h> defines struct user_regs_struct */
++#undef HAVE_SYS_USER_REGS
++
+ /* Define to 1 if you have the <unistd.h> header file. */
+ #undef HAVE_UNISTD_H
+ 

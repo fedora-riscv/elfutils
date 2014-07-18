@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.159
-%global baserelease 6
+%global baserelease 7
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -345,6 +345,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Fri Jul 18 2014 Mark Wielaard <mjw@redhat.com> - 0.159-7
+- Add configure check to elfutils-aarch64-user_regs_struct.patch.
+
 * Sat Jul 12 2014 Tom Callaway <spot@fedoraproject.org> - 0.159-6
 - fix license handling
 
