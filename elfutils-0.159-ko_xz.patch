@@ -1,0 +1,24 @@
+Subject: [PATCH] libdwfl: Handle LZMA .ko.xz compressed kernel modules.
+
+Linux kernel modules can not just be compressed with gz and bz2, but also
+with xz.
+
+Signed-off-by: Mark Wielaard <mjw@redhat.com>
+
+diff --git a/libdwfl/linux-kernel-modules.c b/libdwfl/linux-kernel-modules.c
+index 1ad7d2f..e4065d8 100644
+--- a/libdwfl/linux-kernel-modules.c
++++ b/libdwfl/linux-kernel-modules.c
+@@ -302,6 +302,9 @@ check_suffix (const FTSENT *f, size_t namelen)
+ #if USE_BZLIB
+   TRY (".ko.bz2");
+ #endif
++#if USE_LZMA
++  TRY (".ko.xz");
++#endif
+ 
+   return 0;
+ 
+-- 
+1.8.3.1
+
