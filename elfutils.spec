@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.159
-%global baserelease 7
+%global baserelease 10
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -50,6 +50,8 @@ Patch3: elfutils-0.159-argp-attach.patch
 Patch4: elfutils-0.159-aarch64-bool-ret.patch
 Patch5: elfutils-0.159-elf-h.patch
 Patch6: elfutils-0.159-ppc64le-elfv2-abi.patch
+Patch7: elfutils-0.159-report_r_debug.patch
+Patch8: elfutils-0.159-ko_xz.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -217,6 +219,8 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %patch4 -p1 -b .aarch64-ret-bool
 %patch5 -p1 -b .elf-h
 %patch6 -p1 -b .ppc64le-elfv2-abi
+%patch7 -p1 -b .report_r_debug
+%patch8 -p1 -b .ko_xz
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -345,8 +349,17 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
-* Sat Aug 16 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.159-7
+* Sat Aug 16 2014 Mark Wielaard <mjw@redhat.com> - 0.159-10
+- Add elfutils-0.159-ko_xz.patch
+
+* Sat Aug 16 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.159-9
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
+* Mon Jul 28 2014 Mark Wielaard <mjw@redhat.com> - 0.159-8
+- Add elfutils-0.159-report_r_debug.patch (#1112610)
+
+* Fri Jul 18 2014 Mark Wielaard <mjw@redhat.com> - 0.159-7
+- Add configure check to elfutils-aarch64-user_regs_struct.patch.
 
 * Sat Jul 12 2014 Tom Callaway <spot@fedoraproject.org> - 0.159-6
 - fix license handling
