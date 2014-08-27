@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
-Version: 0.159
-%global baserelease 10
+Version: 0.160
+%global baserelease 1
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -45,13 +45,6 @@ Group: Development/Tools
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 Patch1: %{?source_url}elfutils-portability.patch
-Patch2: elfutils-aarch64-user_regs_struct.patch
-Patch3: elfutils-0.159-argp-attach.patch
-Patch4: elfutils-0.159-aarch64-bool-ret.patch
-Patch5: elfutils-0.159-elf-h.patch
-Patch6: elfutils-0.159-ppc64le-elfv2-abi.patch
-Patch7: elfutils-0.159-report_r_debug.patch
-Patch8: elfutils-0.159-ko_xz.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -214,14 +207,6 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 %endif
 
-%patch2 -p1 -b .aa64~1
-%patch3 -p1 -b .argp-attach
-%patch4 -p1 -b .aarch64-ret-bool
-%patch5 -p1 -b .elf-h
-%patch6 -p1 -b .ppc64le-elfv2-abi
-%patch7 -p1 -b .report_r_debug
-%patch8 -p1 -b .ko_xz
-
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
@@ -349,6 +334,17 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Wed Aug 27 2014 Mark Wielaard <mjw@redhat.com> - 0.160-1
+- Update to 0.160.
+  - Remove integrated upstream patches:
+    elfutils-aarch64-user_regs_struct.patch
+    elfutils-0.159-argp-attach.patch
+    elfutils-0.159-aarch64-bool-ret.patch
+    elfutils-0.159-elf-h.patch
+    elfutils-0.159-ppc64le-elfv2-abi.patch
+    elfutils-0.159-report_r_debug.patch
+    elfutils-0.159-ko_xz.patch
+
 * Sat Aug 16 2014 Mark Wielaard <mjw@redhat.com> - 0.159-10
 - Add elfutils-0.159-ko_xz.patch
 
