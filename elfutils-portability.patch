@@ -1,6 +1,6 @@
 --- elfutils/backends/ChangeLog
 +++ elfutils/backends/ChangeLog
-@@ -364,6 +364,10 @@
+@@ -413,6 +413,10 @@
  	* ppc_attrs.c (ppc_check_object_attribute): Handle tag
  	GNU_Power_ABI_Struct_Return.
  
@@ -11,7 +11,7 @@
  2008-10-04  Ulrich Drepper  <drepper@redhat.com>
  
  	* i386_reloc.def: Fix entries for TLS_GOTDESC, TLS_DESC_CALL, and
-@@ -691,6 +695,11 @@
+@@ -740,6 +744,11 @@
  	* sparc_init.c: Likewise.
  	* x86_64_init.c: Likewise.
  
@@ -23,7 +23,7 @@
  2005-11-19  Roland McGrath  <roland@redhat.com>
  
  	* ppc64_reloc.def: REL30 -> ADDR30.
-@@ -713,6 +722,9 @@
+@@ -762,6 +771,9 @@
  	* Makefile.am (uninstall): Don't try to remove $(pkgincludedir).
  	(CLEANFILES): Add libebl_$(m).so.
  
@@ -98,7 +98,7 @@
  libebl_i386.so: $(cpu_i386)
 --- elfutils/ChangeLog
 +++ elfutils/ChangeLog
-@@ -148,6 +148,8 @@
+@@ -170,6 +170,8 @@
  
  2012-01-24  Mark Wielaard  <mjw@redhat.com>
  
@@ -107,7 +107,7 @@
  	* COPYING: Fix address. Updated version from gnulib.
  
  2012-01-23  Mark Wielaard  <mjw@redhat.com>
-@@ -166,6 +168,9 @@
+@@ -188,6 +190,9 @@
  
  2011-10-08  Mike Frysinger  <vapier@gentoo.org>
  
@@ -117,7 +117,7 @@
  	* configure.ac: Fix use of AC_ARG_ENABLE to handle $enableval correctly.
  
  2011-10-02  Ulrich Drepper  <drepper@gmail.com>
-@@ -187,6 +192,10 @@
+@@ -209,6 +214,10 @@
  
  	* configure.ac (LOCALEDIR, DATADIRNAME): Removed.
  
@@ -128,7 +128,7 @@
  2009-09-21  Ulrich Drepper  <drepper@redhat.com>
  
  	* configure.ac: Update for more modern autoconf.
-@@ -195,6 +204,10 @@
+@@ -217,6 +226,10 @@
  
  	* configure.ac (zip_LIBS): Check for liblzma too.
  
@@ -139,7 +139,7 @@
  2009-04-19  Roland McGrath  <roland@redhat.com>
  
  	* configure.ac (eu_version): Round down here, not in version.h macros.
-@@ -206,6 +219,8 @@
+@@ -228,6 +241,8 @@
  
  2009-01-23  Roland McGrath  <roland@redhat.com>
  
@@ -148,7 +148,7 @@
  	* configure.ac (zlib check): Check for gzdirect, need zlib >= 1.2.2.3.
  
  	* configure.ac (__thread check): Use AC_LINK_IFELSE, in case of
-@@ -286,6 +301,10 @@
+@@ -308,6 +323,10 @@
  	* configure.ac: Add dummy automake conditional to get dependencies
  	for non-generic linker right.  See src/Makefile.am.
  
@@ -159,7 +159,7 @@
  2005-11-18  Roland McGrath  <roland@redhat.com>
  
  	* Makefile.am (DISTCHECK_CONFIGURE_FLAGS): New variable.
-@@ -333,6 +352,17 @@
+@@ -355,6 +374,17 @@
  	* Makefile.am (all_SUBDIRS): Add libdwfl.
  	* configure.ac: Write libdwfl/Makefile.
  
@@ -179,7 +179,7 @@
  	* configure.ac [AH_BOTTOM] (INTDECL, _INTDECL): New macros.
 --- elfutils/config/ChangeLog
 +++ elfutils/config/ChangeLog
-@@ -58,6 +58,10 @@
+@@ -62,6 +62,10 @@
  
  	* known-dwarf.awk: Use gawk.
  
@@ -254,7 +254,7 @@
  /* Define to 1 if you have the <inttypes.h> header file. */
  #undef HAVE_INTTYPES_H
  
-@@ -99,4 +102,7 @@
+@@ -102,4 +105,7 @@
  /* Define for large files, on AIX-style hosts. */
  #undef _LARGE_FILES
  
@@ -298,7 +298,7 @@
    --enable-tests-rpath    build $ORIGIN-using rpath into tests
    --enable-libebl-subdir=DIR
                            install libebl_CPU modules in $(libdir)/DIR
-@@ -4674,6 +4680,130 @@ if test "x$ac_cv_c99" != xyes; then :
+@@ -4728,6 +4734,130 @@ if test "x$ac_cv_c99" != xyes; then :
    as_fn_error $? "gcc with C99 support required" "$LINENO" 5
  fi
  
@@ -429,7 +429,7 @@
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __thread support" >&5
  $as_echo_n "checking for __thread support... " >&6; }
  if ${ac_cv_tls+:} false; then :
-@@ -4710,7 +4840,13 @@ fi
+@@ -4764,7 +4894,13 @@ fi
  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_tls" >&5
  $as_echo "$ac_cv_tls" >&6; }
  if test "x$ac_cv_tls" != xyes; then :
@@ -444,7 +444,7 @@
  fi
  
  # Check whether --enable-largefile was given.
-@@ -5077,6 +5213,22 @@ else
+@@ -5131,6 +5267,22 @@ else
  fi
  
  
@@ -467,7 +467,7 @@
  # Check whether --enable-tests-rpath was given.
  if test "${enable_tests_rpath+set}" = set; then :
    enableval=$enable_tests_rpath; tests_use_rpath=$enableval
-@@ -5800,7 +5952,7 @@ case "$eu_version" in
+@@ -5854,7 +6006,7 @@ case "$eu_version" in
  esac
  
  # Round up to the next release API (x.y) version.
@@ -476,7 +476,7 @@
  
  ac_ext=c
  ac_cpp='$CPP $CPPFLAGS'
-@@ -6530,6 +6682,10 @@ if test -z "${BUILD_STATIC_TRUE}" && tes
+@@ -6600,6 +6752,10 @@ if test -z "${BUILD_STATIC_TRUE}" && tes
    as_fn_error $? "conditional \"BUILD_STATIC\" was never defined.
  Usually this means the macro was only invoked conditionally." "$LINENO" 5
  fi
@@ -807,7 +807,7 @@
  	$P.mnemonics)
 --- elfutils/libdw/ChangeLog
 +++ elfutils/libdw/ChangeLog
-@@ -420,6 +420,10 @@
+@@ -439,6 +439,10 @@
  
  	* Makefile.am (known-dwarf.h): Run gawk on config/known-dwarf.awk.
  
@@ -818,7 +818,7 @@
  2011-07-14  Mark Wielaard  <mjw@redhat.com>
  
  	* libdw.h (dwarf_offdie): Fix documentation to mention .debug_info.
-@@ -779,6 +783,10 @@
+@@ -798,6 +802,10 @@
  
  	* dwarf_hasattr_integrate.c: Integrate DW_AT_specification too.
  
@@ -829,7 +829,7 @@
  2009-08-10  Roland McGrath  <roland@redhat.com>
  
  	* dwarf_getscopevar.c: Use dwarf_diename.
-@@ -1547,6 +1555,11 @@
+@@ -1566,6 +1574,11 @@
  
  2005-05-31  Roland McGrath  <roland@redhat.com>
  
@@ -860,7 +860,7 @@
  #endif
 --- elfutils/libdw/libdw.h
 +++ elfutils/libdw/libdw.h
-@@ -891,7 +891,7 @@ extern Dwarf_OOM dwarf_new_oom_handler (
+@@ -915,7 +915,7 @@ extern Dwarf_OOM dwarf_new_oom_handler (
  
  
  /* Inline optimizations.  */
@@ -881,7 +881,7 @@
  noinst_PROGRAMS = $(am__EXEEXT_1)
  subdir = libdw
  ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-@@ -295,6 +296,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -296,6 +297,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -889,7 +889,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -326,6 +328,7 @@ SHELL = @SHELL@
+@@ -327,6 +329,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = 1
@@ -897,7 +897,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
-@@ -387,10 +390,11 @@ top_srcdir = @top_srcdir@
+@@ -388,10 +391,11 @@ top_srcdir = @top_srcdir@
  zip_LIBS = @zip_LIBS@
  AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_srcdir)/lib -I.. \
  	-I$(srcdir)/../libelf
@@ -957,7 +957,7 @@
  textrel_check = if $(READELF) -d $@ | fgrep -q TEXTREL; then exit 1; fi
 --- elfutils/libdwfl/ChangeLog
 +++ elfutils/libdwfl/ChangeLog
-@@ -421,6 +421,21 @@
+@@ -467,6 +467,21 @@
  	(dwfl_module_addrsym) (i_to_symfile): New function.
  	(dwfl_module_addrsym) (search_table): Use it.
  
@@ -979,7 +979,7 @@
  2013-11-07  Jan Kratochvil  <jan.kratochvil@redhat.com>
  	    Mark Wielaard  <mjw@redhat.com>
  
-@@ -2186,6 +2201,11 @@
+@@ -2232,6 +2247,11 @@
  
  2005-07-21  Roland McGrath  <roland@redhat.com>
  
@@ -1027,8 +1027,8 @@
 +# endif
 +#endif
  
- #ifndef MIN
- # define MIN(a, b) ((a) < (b) ? (a) : (b))
+ #include "../libdw/memory-access.h"
+ 
 --- elfutils/libdwfl/linux-pid-attach.c
 +++ elfutils/libdwfl/linux-pid-attach.c
 @@ -255,6 +255,11 @@ void
@@ -1121,7 +1121,7 @@
  libelf = ../libelf/libelf.so
 --- elfutils/libebl/ChangeLog
 +++ elfutils/libebl/ChangeLog
-@@ -748,6 +748,11 @@
+@@ -754,6 +754,11 @@
  	* Makefile.am (libebl_*_so_SOURCES): Set to $(*_SRCS) so dependency
  	tracking works right.
  
@@ -1175,7 +1175,7 @@
  textrel_check = if $(READELF) -d $@ | fgrep -q TEXTREL; then exit 1; fi
 --- elfutils/libelf/ChangeLog
 +++ elfutils/libelf/ChangeLog
-@@ -135,6 +135,11 @@
+@@ -139,6 +139,11 @@
  
  	* elf-knowledge.h (SECTION_STRIP_P): Remove < SHT_NUM check.
  
@@ -1187,7 +1187,7 @@
  2011-02-26  Mark Wielaard  <mjw@redhat.com>
  
  	* elf_end.c (elf_end): Call rwlock_unlock before rwlock_fini.
-@@ -812,6 +817,11 @@
+@@ -816,6 +821,11 @@
  
  	* elf.h: Update from glibc.
  
@@ -1347,7 +1347,7 @@
  	  break;
 --- elfutils/src/ChangeLog
 +++ elfutils/src/ChangeLog
-@@ -1112,8 +1112,16 @@
+@@ -1155,8 +1155,16 @@
  	* readelf.c (attr_callback): Use print_block only when we don't use
  	print_ops.
  
@@ -1364,7 +1364,7 @@
  	* ar.c (do_oper_extract): Use pathconf instead of statfs.
  
  2009-08-01  Ulrich Drepper  <drepper@redhat.com>
-@@ -1277,6 +1285,8 @@
+@@ -1320,6 +1328,8 @@
  	* readelf.c (print_debug_frame_section): Use t instead of j formats
  	for ptrdiff_t OFFSET.
  
@@ -1373,7 +1373,7 @@
  2009-01-21  Ulrich Drepper  <drepper@redhat.com>
  
  	* elflint.c (check_program_header): Fix typo in .eh_frame_hdr section
-@@ -1460,6 +1470,11 @@
+@@ -1503,6 +1513,11 @@
  	that matches its PT_LOAD's p_flags &~ PF_W.  On sparc, PF_X really
  	is valid in RELRO.
  
@@ -1385,7 +1385,7 @@
  2008-02-29  Roland McGrath  <roland@redhat.com>
  
  	* readelf.c (print_attributes): Add a cast.
-@@ -1711,6 +1726,8 @@
+@@ -1754,6 +1769,8 @@
  
  	* readelf.c (hex_dump): Fix rounding error in whitespace calculation.
  
@@ -1394,7 +1394,7 @@
  2007-10-15  Roland McGrath  <roland@redhat.com>
  
  	* make-debug-archive.in: New file.
-@@ -2150,6 +2167,10 @@
+@@ -2193,6 +2210,10 @@
  	* elflint.c (valid_e_machine): Add EM_ALPHA.
  	Reported by Christian Aichinger <Greek0@gmx.net>.
  
@@ -1405,7 +1405,7 @@
  2006-08-08  Ulrich Drepper  <drepper@redhat.com>
  
  	* elflint.c (check_dynamic): Don't require DT_HASH for DT_SYMTAB.
-@@ -2226,6 +2247,10 @@
+@@ -2269,6 +2290,10 @@
  	* Makefile.am: Add hacks to create dependency files for non-generic
  	linker.
  
@@ -1416,7 +1416,7 @@
  2006-06-12  Ulrich Drepper  <drepper@redhat.com>
  
  	* ldgeneric.c (ld_generic_generate_sections): Don't create .interp
-@@ -2574,6 +2599,11 @@
+@@ -2617,6 +2642,11 @@
  	* readelf.c (print_debug_loc_section): Fix indentation for larger
  	address size.
  
@@ -1571,7 +1571,7 @@
  findtextrel_LDADD = $(libdw) $(libelf)
 --- elfutils/src/readelf.c
 +++ elfutils/src/readelf.c
-@@ -4239,10 +4239,12 @@ listptr_base (struct listptr *p)
+@@ -4253,10 +4253,12 @@ listptr_base (struct listptr *p)
    return base;
  }
  
@@ -1586,7 +1586,7 @@
    struct listptr *p1 = (void *) a;
    struct listptr *p2 = (void *) b;
  
-@@ -4331,8 +4333,11 @@ static void
+@@ -4345,8 +4347,11 @@ static void
  sort_listptr (struct listptr_table *table, const char *name)
  {
    if (table->n > 0)
@@ -1600,7 +1600,7 @@
  }
  
  static bool
-@@ -9252,7 +9257,7 @@ dump_archive_index (Elf *elf, const char
+@@ -9268,7 +9273,7 @@ dump_archive_index (Elf *elf, const char
  	  if (unlikely (elf_rand (elf, as_off) == 0)
  	      || unlikely ((subelf = elf_begin (-1, ELF_C_READ_MMAP, elf))
  			   == NULL))
@@ -1712,7 +1712,7 @@
  #ifndef __linux__
 --- elfutils/tests/ChangeLog
 +++ elfutils/tests/ChangeLog
-@@ -283,6 +283,13 @@
+@@ -304,6 +304,13 @@
  
  2013-12-02  Jan Kratochvil  <jan.kratochvil@redhat.com>
  
@@ -1726,7 +1726,7 @@
  	* Makefile.am (check_PROGRAMS): Add backtrace, backtrace-child,
  	backtrace-data and backtrace-dwarf.
  	(BUILT_SOURCES, clean-local, backtrace-child-biarch): New.
-@@ -1147,6 +1154,8 @@
+@@ -1168,6 +1175,8 @@
  
  2008-01-21  Roland McGrath  <roland@redhat.com>
  
@@ -1735,7 +1735,7 @@
  	* testfile45.S.bz2: Add tests for cltq, cqto.
  	* testfile45.expect.bz2: Adjust.
  
-@@ -1855,6 +1864,11 @@
+@@ -1876,6 +1885,11 @@
  	* Makefile.am (TESTS): Add run-elflint-test.sh.
  	(EXTRA_DIST): Add run-elflint-test.sh and testfile18.bz2.
  
