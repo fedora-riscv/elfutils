@@ -1,4 +1,4 @@
-patches := $(patsubst %,elfutils-%.patch,robustify portability)
+patches := $(patsubst %,elfutils-%.patch,portability)
 
 .PHONY: patches
 patches: $(patches)

@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
-Version: 0.158
-%global baserelease 4
+Version: 0.160
+%global baserelease 1
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -44,12 +44,7 @@ Group: Development/Tools
 
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 
-Patch1: %{?source_url}elfutils-robustify.patch
-Patch2: %{?source_url}elfutils-portability.patch
-
-Patch3: elfutils-0.158-mod-e_type.patch
-Patch4: elfutils-0.158-CVE-2014-0172.patch
-Patch5: elfutils-0.158-argp-attach.patch
+Patch1: %{?source_url}elfutils-portability.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -89,11 +84,11 @@ BuildRequires: xz-devel
 %global _program_prefix eu-
 
 %description
-Elfutils is a collection of utilities, including ld (a linker),
-nm (for listing symbols from object files), size (for listing the
-section sizes of an object or archive file), strip (for discarding
-symbols), readelf (to see the raw ELF file structures), and elflint
-(to check for well-formed ELF files).
+Elfutils is a collection of utilities, including stack (to show
+backtraces), nm (for listing symbols from object files), size
+(for listing the section sizes of an object or archive file),
+strip (for discarding symbols), readelf (to see the raw ELF file
+structures), and elflint (to check for well-formed ELF files).
 
 
 %package libs
@@ -200,10 +195,8 @@ for libelf.
 : 'separate_devel_static=%separate_devel_static'
 : 'scanf_has_m=%scanf_has_m'
 
-%patch1 -p1 -b .robustify
-
 %if %{portability}
-%patch2 -p1 -b .portability
+%patch1 -p1 -b .portability
 sleep 1
 find . \( -name Makefile.in -o -name aclocal.m4 \) -print | xargs touch
 sleep 1
@@ -214,21 +207,18 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 %endif
 
-%patch3 -p1 -b .e_type
-%patch4 -p1 -b .CVE-2014-0172
-%patch5 -p1 -b .argp-attach
-
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
 # Remove -Wall from default flags.  The makefiles enable enough warnings
 # themselves, and they use -Werror.  Appending -Wall defeats the cases where
 # the makefiles disable some specific warnings for specific code.
-# Also remove -Werror=format-security which doesn't work without
-# -Wformat (enabled by -Wall). We enable -Wformat explicitly for some
-# files later.
-RPM_OPT_FLAGS=${RPM_OPT_FLAGS/-Wall/}
-RPM_OPT_FLAGS=${RPM_OPT_FLAGS/-Werror=format-security/}
+# But add -Wformat explicitly for use with -Werror=format-security which
+# doesn't work without -Wformat (enabled by -Wall).
+RPM_OPT_FLAGS="${RPM_OPT_FLAGS/-Wall/}"
+%if !%{compat}
+RPM_OPT_FLAGS="${RPM_OPT_FLAGS} -Wformat"
+%endif
 
 %if %{compat}
 # Some older glibc headers can run afoul of -Werror all by themselves.
@@ -240,7 +230,7 @@ COMPAT_CONFIG_FLAGS=""
 %endif
 
 trap 'cat config.log' EXIT
-%configure --enable-dwz $COMPAT_CONFIG_FLAGS CFLAGS="$RPM_OPT_FLAGS -fexceptions"
+%configure $COMPAT_CONFIG_FLAGS CFLAGS="$RPM_OPT_FLAGS -fexceptions"
 trap '' EXIT
 make -s %{?_smp_mflags}
 
@@ -274,7 +264,9 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files
 %defattr(-,root,root)
-%doc COPYING COPYING-GPLV2 COPYING-LGPLV3 README TODO CONTRIBUTING
+%{!?_licensedir:%global license %%doc}
+%license COPYING COPYING-GPLV2 COPYING-LGPLV3
+%doc README TODO CONTRIBUTING
 %{_bindir}/eu-addr2line
 %{_bindir}/eu-ar
 %{_bindir}/eu-elfcmp
@@ -294,6 +286,8 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files libs
 %defattr(-,root,root)
+%{!?_licensedir:%global license %%doc}
+%license COPYING-GPLV2 COPYING-LGPLV3
 %{_libdir}/libasm-%{version}.so
 %{_libdir}/libasm.so.*
 %{_libdir}/libdw-%{version}.so
@@ -310,6 +304,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_includedir}/elfutils/libebl.h
 %{_includedir}/elfutils/libdw.h
 %{_includedir}/elfutils/libdwfl.h
+%{_includedir}/elfutils/libdwelf.h
 %{_includedir}/elfutils/version.h
 %{_libdir}/libebl.a
 %{_libdir}/libasm.so
@@ -322,6 +317,8 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files -f %{name}.lang libelf
 %defattr(-,root,root)
+%{!?_licensedir:%global license %%doc}
+%license COPYING-GPLV2 COPYING-LGPLV3
 %{_libdir}/libelf-%{version}.so
 %{_libdir}/libelf.so.*
 
@@ -337,10 +334,54 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
-* Tue Jun 10 2014 Mark Wielaard <mjw@redhat.com> - 0.158-4
-- Add elfutils-0.158-argp-attach.patch (#1107654)
+* Wed Aug 27 2014 Mark Wielaard <mjw@redhat.com> - 0.160-1
+- Update to 0.160.
+  - Remove integrated upstream patches:
+    elfutils-aarch64-user_regs_struct.patch
+    elfutils-0.159-argp-attach.patch
+    elfutils-0.159-aarch64-bool-ret.patch
+    elfutils-0.159-elf-h.patch
+    elfutils-0.159-ppc64le-elfv2-abi.patch
+    elfutils-0.159-report_r_debug.patch
+    elfutils-0.159-ko_xz.patch
 
-* Tue Apr 10 2014 Mark Wielaard <mjw@redhat.com> - 0.158-3
+* Sat Aug 16 2014 Mark Wielaard <mjw@redhat.com> - 0.159-10
+- Add elfutils-0.159-ko_xz.patch
+
+* Sat Aug 16 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.159-9
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
+* Mon Jul 28 2014 Mark Wielaard <mjw@redhat.com> - 0.159-8
+- Add elfutils-0.159-report_r_debug.patch (#1112610)
+
+* Fri Jul 18 2014 Mark Wielaard <mjw@redhat.com> - 0.159-7
+- Add configure check to elfutils-aarch64-user_regs_struct.patch.
+
+* Sat Jul 12 2014 Tom Callaway <spot@fedoraproject.org> - 0.159-6
+- fix license handling
+
+* Fri Jul  4 2014 Mark Wielaard <mjw@redhat.com> - 0.159-5
+- Add elfutils-0.159-aarch64-bool-ret.patch
+- Add elfutils-0.159-elf-h.patch
+- Add elfutils-0.159-ppc64le-elfv2-abi.patch (#1110249)
+
+* Tue Jun 10 2014 Mark Wielaard <mjw@redhat.com> - 0.159-4
+- Add elfutils-0.159-argp-attach.patch (#1107654)
+
+* Mon Jun 09 2014 Kyle McMartin <kyle@fedoraproject.org> - 0.159-3
+- AArch64: handle new glibc-headers which provides proper GETREGSET structs.
+
+* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.159-2.1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
+* Mon May 19 2014 Mark Wielaard <mjw@redhat.com> - 0.159-1
+- Update to 0.159.
+  - Remove integrated upstream patches:
+    robustify.patch, mod-e_type.patch and CVE-2014-0172.patch.
+  - Remove special handling of now default compile and configure flags:
+    Don't remove -Werror=format-security, don't configure --enable-dwz.
+
+* Thu Apr 10 2014 Mark Wielaard <mjw@redhat.com> - 0.158-3
 - Add elfutils-0.158-CVE-2014-0172.patch (#1085729)
 
 * Tue Mar 11 2014 Mark Wielaard <mjw@redhat.com> - 0.158-2
