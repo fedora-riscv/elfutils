@@ -1,6 +1,6 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
-Version: 0.160
+Version: 0.161
 %global baserelease 1
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
@@ -44,7 +44,7 @@ Group: Development/Tools
 
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 
-Patch1: %{?source_url}elfutils-portability.patch
+Patch1: %{?source_url}elfutils-portability-%{version}.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -334,6 +334,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Fri Dec 19 2014 Mark Wielaard <mjw@redhat.com> - 0.161-1
+- Update to 0.161.
+
 * Wed Aug 27 2014 Mark Wielaard <mjw@redhat.com> - 0.160-1
 - Update to 0.160.
   - Remove integrated upstream patches:
