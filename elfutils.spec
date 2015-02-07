@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.161
-%global baserelease 3
+%global baserelease 4
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -49,6 +49,8 @@ Patch1: %{?source_url}elfutils-portability-%{version}.patch
 Patch2: elfutils-0.161-ar-long-name.patch
 # libdw: fix offset for sig8 lookup in dwarf_formref_die
 Patch3: elfutils-0.161-formref-type.patch
+# rhbz#1189928 - Consider sh_addralign 0 as 1
+Patch4: elfutils-0.161-addralign.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -213,6 +215,7 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 
 %patch2 -p1 -b .ar_long_name
 %patch3 -p1 -b .formref_type
+%patch4 -p1 -b .addralign
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -341,6 +344,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Sat Feb 07 2015 Mark Wielaard <mjw@redhat.com> - 0.161-4
+- Add elfutils-0.161-addralign.patch (#1189928)
+
 * Thu Feb 05 2015 Mark Wielaard <mjw@redhat.com> - 0.161-3
 - Add elfutils-0.161-formref-type.patch
 
