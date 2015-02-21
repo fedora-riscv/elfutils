@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.161
-%global baserelease 4
+%global baserelease 5
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -344,6 +344,10 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Sat Feb 21 2015 Till Maas <opensource@till.name> - 0.161-5
+- Rebuilt for Fedora 23 Change
+  https://fedoraproject.org/wiki/Changes/Harden_all_packages_with_position-independent_code
+
 * Sat Feb 07 2015 Mark Wielaard <mjw@redhat.com> - 0.161-4
 - Add elfutils-0.161-addralign.patch (#1189928)
 
