@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.161
-%global baserelease 5
+%global baserelease 6
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -51,6 +51,7 @@ Patch2: elfutils-0.161-ar-long-name.patch
 Patch3: elfutils-0.161-formref-type.patch
 # rhbz#1189928 - Consider sh_addralign 0 as 1
 Patch4: elfutils-0.161-addralign.patch
+Patch5: elfutils-0.161-copyreloc.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -216,6 +217,7 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %patch2 -p1 -b .ar_long_name
 %patch3 -p1 -b .formref_type
 %patch4 -p1 -b .addralign
+%patch5 -p1 -b .copyreloc
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -344,6 +346,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Mon Mar 09 2015 Mark Wielaard <mjw@redhat.com> - 0.161-6
+- Add elfutils-0.161-copyreloc.patch.
+
 * Sat Feb 21 2015 Till Maas <opensource@till.name> - 0.161-5
 - Rebuilt for Fedora 23 Change
   https://fedoraproject.org/wiki/Changes/Harden_all_packages_with_position-independent_code
