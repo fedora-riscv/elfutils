@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.161
-%global baserelease 6
+%global baserelease 7
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -52,6 +52,7 @@ Patch3: elfutils-0.161-formref-type.patch
 # rhbz#1189928 - Consider sh_addralign 0 as 1
 Patch4: elfutils-0.161-addralign.patch
 Patch5: elfutils-0.161-copyreloc.patch
+Patch6: elfutils-0.161-aarch64relro.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -218,6 +219,7 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %patch3 -p1 -b .formref_type
 %patch4 -p1 -b .addralign
 %patch5 -p1 -b .copyreloc
+%patch6 -p1 -b .aarch64relro
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -346,6 +348,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Mon Mar 23 2015 Mark Wielaard <mjw@redhat.com> - 0.161-7
+- Add elfutils-0.161-aarch64relro.patch (#1201778)
+
 * Mon Mar 09 2015 Mark Wielaard <mjw@redhat.com> - 0.161-6
 - Add elfutils-0.161-copyreloc.patch.
 
