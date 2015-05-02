@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.161
-%global baserelease 7
+%global baserelease 8
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -348,6 +348,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Sat May 02 2015 Kalev Lember <kalevlember@gmail.com> - 0.161-8
+- Rebuilt for GCC 5 C++11 ABI change
+
 * Mon Mar 23 2015 Mark Wielaard <mjw@redhat.com> - 0.161-7
 - Add elfutils-0.161-aarch64relro.patch (#1201778)
 
