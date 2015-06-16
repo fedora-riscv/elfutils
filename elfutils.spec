@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.162
-%global baserelease 1
+%global baserelease 2
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -45,6 +45,9 @@ Group: Development/Tools
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 Patch1: %{?source_url}elfutils-portability-%{version}.patch
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1232206
+Patch2: elfutils-0.162-ftruncate-allocate.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -205,6 +208,8 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 %endif
 
+%patch2 -p1 -b .ftruncate
+
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
@@ -333,6 +338,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Tue Jun 16 2015 Mark Wielaard <mjw@redhat.com> - 0.162-2
+- Add elfutils-0.162-ftruncate-allocate.patch (#1232206)
+
 * Thu Jun 11 2015 Mark Wielaard <mjw@redhat.com> - 0.162-1
 - Update to 0.162 (#1170810, #1139815, #1129756, #1020842)
 - Include elfutils/known-dwarf.h
