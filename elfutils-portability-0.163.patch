@@ -1,3 +1,4 @@
+diffelfutils/backends/ChangeLog git-portable/backends/ChangeLog
 --- elfutils/backends/ChangeLog
 +++ elfutils/backends/ChangeLog
 @@ -498,6 +498,10 @@
@@ -33,6 +34,7 @@
  	* ppc_reloc.def: Update bits per Alan Modra <amodra@bigpond.net.au>.
  	* ppc64_reloc.def: Likewise.
  
+diffelfutils/backends/Makefile.am git-portable/backends/Makefile.am
 --- elfutils/backends/Makefile.am
 +++ elfutils/backends/Makefile.am
 @@ -119,7 +119,7 @@ libebl_%.so libebl_%.map: libebl_%_pic.a
@@ -44,19 +46,20 @@
  	@$(textrel_check)
  
  libebl_i386.so: $(cpu_i386)
+diffelfutils/backends/Makefile.in git-portable/backends/Makefile.in
 --- elfutils/backends/Makefile.in
 +++ elfutils/backends/Makefile.in
-@@ -83,7 +83,8 @@ host_triplet = @host@
- DIST_COMMON = $(top_srcdir)/config/eu.am $(srcdir)/Makefile.in \
- 	$(srcdir)/Makefile.am $(top_srcdir)/config/depcomp \
- 	$(noinst_HEADERS) ChangeLog
+@@ -90,7 +90,8 @@ PRE_UNINSTALL = :
+ POST_UNINSTALL = :
+ build_triplet = @build@
+ host_triplet = @host@
 -@SYMBOL_VERSIONING_TRUE@am__append_1 = -DSYMBOL_VERSIONING
 +@BUILD_WERROR_TRUE@am__append_1 = $(if $($(*F)_no_Werror),,-Werror)
 +@SYMBOL_VERSIONING_TRUE@am__append_2 = -DSYMBOL_VERSIONING
  subdir = backends
  ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
  am__aclocal_m4_deps = $(top_srcdir)/m4/biarch.m4 \
-@@ -289,6 +290,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -300,6 +301,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -64,7 +67,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -320,6 +322,7 @@ SHELL = @SHELL@
+@@ -331,6 +333,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
@@ -72,7 +75,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
-@@ -387,14 +390,14 @@ AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_sr
+@@ -398,14 +401,14 @@ AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_sr
  
  # Warn about stack usage of more than 256K = 262144 bytes.
  @ADD_STACK_USAGE_WARNING_TRUE@STACK_USAGE_WARNING = -Wstack-usage=262144
@@ -94,7 +97,7 @@
  CLEANFILES = *.gcno *.gcda $(foreach m,$(modules), libebl_$(m).map \
  	libebl_$(m).so $(am_libebl_$(m)_pic_a_OBJECTS))
  textrel_msg = echo "WARNING: TEXTREL found in '$@'"
-@@ -900,7 +903,7 @@ libebl_%.so libebl_%.map: libebl_%_pic.a
+@@ -912,7 +915,7 @@ libebl_%.so libebl_%.map: libebl_%_pic.a
  	$(LINK) -shared -o $(@:.map=.so) \
  		-Wl,--whole-archive $< $(cpu_$*) -Wl,--no-whole-archive \
  		-Wl,--version-script,$(@:.so=.map) \
@@ -103,9 +106,10 @@
  	@$(textrel_check)
  
  libebl_i386.so: $(cpu_i386)
+diffelfutils/ChangeLog git-portable/ChangeLog
 --- elfutils/ChangeLog
 +++ elfutils/ChangeLog
-@@ -253,6 +253,8 @@
+@@ -258,6 +258,8 @@
  
  2012-01-24  Mark Wielaard  <mjw@redhat.com>
  
@@ -114,7 +118,7 @@
  	* COPYING: Fix address. Updated version from gnulib.
  
  2012-01-23  Mark Wielaard  <mjw@redhat.com>
-@@ -271,6 +273,9 @@
+@@ -276,6 +278,9 @@
  
  2011-10-08  Mike Frysinger  <vapier@gentoo.org>
  
@@ -124,7 +128,7 @@
  	* configure.ac: Fix use of AC_ARG_ENABLE to handle $enableval correctly.
  
  2011-10-02  Ulrich Drepper  <drepper@gmail.com>
-@@ -292,6 +297,10 @@
+@@ -297,6 +302,10 @@
  
  	* configure.ac (LOCALEDIR, DATADIRNAME): Removed.
  
@@ -135,7 +139,7 @@
  2009-09-21  Ulrich Drepper  <drepper@redhat.com>
  
  	* configure.ac: Update for more modern autoconf.
-@@ -300,6 +309,10 @@
+@@ -305,6 +314,10 @@
  
  	* configure.ac (zip_LIBS): Check for liblzma too.
  
@@ -146,7 +150,7 @@
  2009-04-19  Roland McGrath  <roland@redhat.com>
  
  	* configure.ac (eu_version): Round down here, not in version.h macros.
-@@ -311,6 +324,8 @@
+@@ -316,6 +329,8 @@
  
  2009-01-23  Roland McGrath  <roland@redhat.com>
  
@@ -155,7 +159,7 @@
  	* configure.ac (zlib check): Check for gzdirect, need zlib >= 1.2.2.3.
  
  	* configure.ac (__thread check): Use AC_LINK_IFELSE, in case of
-@@ -391,6 +406,10 @@
+@@ -396,6 +411,10 @@
  	* configure.ac: Add dummy automake conditional to get dependencies
  	for non-generic linker right.  See src/Makefile.am.
  
@@ -166,7 +170,7 @@
  2005-11-18  Roland McGrath  <roland@redhat.com>
  
  	* Makefile.am (DISTCHECK_CONFIGURE_FLAGS): New variable.
-@@ -438,6 +457,17 @@
+@@ -443,6 +462,17 @@
  	* Makefile.am (all_SUBDIRS): Add libdwfl.
  	* configure.ac: Write libdwfl/Makefile.
  
@@ -184,9 +188,10 @@
  2005-05-19  Roland McGrath  <roland@redhat.com>
  
  	* configure.ac [AH_BOTTOM] (INTDECL, _INTDECL): New macros.
+diffelfutils/config/ChangeLog git-portable/config/ChangeLog
 --- elfutils/config/ChangeLog
 +++ elfutils/config/ChangeLog
-@@ -106,6 +106,10 @@
+@@ -110,6 +110,10 @@
  
  	* known-dwarf.awk: Use gawk.
  
@@ -197,6 +202,7 @@
  2010-07-02  Ulrich Drepper  <drepper@redhat.com>
  
  	* elfutils.spec.in: Add more BuildRequires.
+diffelfutils/config/eu.am git-portable/config/eu.am
 --- elfutils/config/eu.am
 +++ elfutils/config/eu.am
 @@ -1,6 +1,6 @@
@@ -237,9 +243,10 @@
  COMPILE.os = $(filter-out -fprofile-arcs -ftest-coverage, $(COMPILE))
  
  DEFS.os = -DPIC -DSHARED
+diffelfutils/config/Makefile.in git-portable/config/Makefile.in
 --- elfutils/config/Makefile.in
 +++ elfutils/config/Makefile.in
-@@ -150,6 +150,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -160,6 +160,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -247,7 +254,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -181,6 +182,7 @@ SHELL = @SHELL@
+@@ -191,6 +192,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
@@ -255,6 +262,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
+diffelfutils/config.h.in git-portable/config.h.in
 --- elfutils/config.h.in
 +++ elfutils/config.h.in
 @@ -6,6 +6,12 @@
@@ -278,6 +286,7 @@
 +#undef __thread
 +
  #include <eu-config.h>
+diffelfutils/configure git-portable/configure
 --- elfutils/configure
 +++ elfutils/configure
 @@ -672,6 +672,8 @@ ZLIB_TRUE
@@ -388,7 +397,7 @@
  # ac_fn_c_try_run LINENO
  # ----------------------
  # Try to link conftest.$ac_ext, and return whether this succeeded. Assumes
-@@ -4824,6 +4897,18 @@ else
+@@ -4825,6 +4898,18 @@ else
  fi
  
  
@@ -407,7 +416,7 @@
  # We use -std=gnu99 but have explicit checks for some language constructs
  # and GNU extensions since some compilers claim GNU99 support, but don't
  # really support all language extensions. In particular we need
-@@ -4872,6 +4957,130 @@ if test "x$ac_cv_c99" != xyes; then :
+@@ -4873,6 +4958,130 @@ if test "x$ac_cv_c99" != xyes; then :
    as_fn_error $? "gcc with GNU99 support required" "$LINENO" 5
  fi
  
@@ -538,7 +547,7 @@
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __thread support" >&5
  $as_echo_n "checking for __thread support... " >&6; }
  if ${ac_cv_tls+:} false; then :
-@@ -4909,7 +5118,13 @@ fi
+@@ -4910,7 +5119,13 @@ fi
  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_tls" >&5
  $as_echo "$ac_cv_tls" >&6; }
  if test "x$ac_cv_tls" != xyes; then :
@@ -553,7 +562,7 @@
  fi
  
  # Check whether --enable-largefile was given.
-@@ -5317,6 +5532,22 @@ else
+@@ -5318,6 +5533,22 @@ else
  fi
  
  
@@ -576,7 +585,7 @@
  # Check whether --enable-tests-rpath was given.
  if test "${enable_tests_rpath+set}" = set; then :
    enableval=$enable_tests_rpath; tests_use_rpath=$enableval
-@@ -6198,7 +6429,7 @@ case "$eu_version" in
+@@ -6199,7 +6430,7 @@ case "$eu_version" in
  esac
  
  # Round up to the next release API (x.y) version.
@@ -585,7 +594,7 @@
  
  MODVERSION="Build for ${LIBEBL_SUBDIR} ${eu_version} ${ac_cv_build}"
  
-@@ -7087,6 +7318,10 @@ if test -z "${BUILD_STATIC_TRUE}" && tes
+@@ -7088,6 +7319,10 @@ if test -z "${BUILD_STATIC_TRUE}" && tes
    as_fn_error $? "conditional \"BUILD_STATIC\" was never defined.
  Usually this means the macro was only invoked conditionally." "$LINENO" 5
  fi
@@ -596,6 +605,7 @@
  if test -z "${TESTS_RPATH_TRUE}" && test -z "${TESTS_RPATH_FALSE}"; then
    as_fn_error $? "conditional \"TESTS_RPATH\" was never defined.
  Usually this means the macro was only invoked conditionally." "$LINENO" 5
+diffelfutils/configure.ac git-portable/configure.ac
 --- elfutils/configure.ac
 +++ elfutils/configure.ac
 @@ -73,6 +73,8 @@ m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
@@ -695,6 +705,7 @@
  
  dnl Unique ID for this build.
  MODVERSION="Build for ${LIBEBL_SUBDIR} ${eu_version} ${ac_cv_build}"
+diffelfutils/lib/ChangeLog git-portable/lib/ChangeLog
 --- elfutils/lib/ChangeLog
 +++ elfutils/lib/ChangeLog
 @@ -73,6 +73,9 @@
@@ -719,6 +730,7 @@
  2005-04-30  Ulrich Drepper  <drepper@redhat.com>
  
  	* Makefile.am: Use -ffunction-sections for xmalloc.c.
+diffelfutils/lib/eu-config.h git-portable/lib/eu-config.h
 --- elfutils/lib/eu-config.h
 +++ elfutils/lib/eu-config.h
 @@ -163,6 +163,17 @@ asm (".section predict_data, \"aw\"; .pr
@@ -739,19 +751,20 @@
  
  #ifdef SYMBOL_VERSIONING
  # define OLD_VERSION(name, version) \
+diffelfutils/lib/Makefile.in git-portable/lib/Makefile.in
 --- elfutils/lib/Makefile.in
 +++ elfutils/lib/Makefile.in
-@@ -82,7 +82,8 @@ host_triplet = @host@
- DIST_COMMON = $(top_srcdir)/config/eu.am $(srcdir)/Makefile.in \
- 	$(srcdir)/Makefile.am $(top_srcdir)/config/depcomp \
- 	$(noinst_HEADERS) ChangeLog
+@@ -89,7 +89,8 @@ PRE_UNINSTALL = :
+ POST_UNINSTALL = :
+ build_triplet = @build@
+ host_triplet = @host@
 -@SYMBOL_VERSIONING_TRUE@am__append_1 = -DSYMBOL_VERSIONING
 +@BUILD_WERROR_TRUE@am__append_1 = $(if $($(*F)_no_Werror),,-Werror)
 +@SYMBOL_VERSIONING_TRUE@am__append_2 = -DSYMBOL_VERSIONING
  subdir = lib
  ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
  am__aclocal_m4_deps = $(top_srcdir)/m4/biarch.m4 \
-@@ -201,6 +202,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -212,6 +213,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -759,7 +772,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -232,6 +234,7 @@ SHELL = @SHELL@
+@@ -243,6 +245,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
@@ -767,7 +780,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
-@@ -298,13 +301,14 @@ AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_sr
+@@ -309,13 +312,14 @@ AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_sr
  
  # Warn about stack usage of more than 256K = 262144 bytes.
  @ADD_STACK_USAGE_WARNING_TRUE@STACK_USAGE_WARNING = -Wstack-usage=262144
@@ -786,6 +799,7 @@
  CLEANFILES = *.gcno *.gcda
  textrel_msg = echo "WARNING: TEXTREL found in '$@'"
  @FATAL_TEXTREL_FALSE@textrel_found = $(textrel_msg)
+diffelfutils/libasm/ChangeLog git-portable/libasm/ChangeLog
 --- elfutils/libasm/ChangeLog
 +++ elfutils/libasm/ChangeLog
 @@ -87,6 +87,11 @@
@@ -800,12 +814,13 @@
  2005-02-15  Ulrich Drepper  <drepper@redhat.com>
  
  	* Makefile.am (AM_CFLAGS): Add -Wunused -Wextra -Wformat=2.
+diffelfutils/libasm/Makefile.in git-portable/libasm/Makefile.in
 --- elfutils/libasm/Makefile.in
 +++ elfutils/libasm/Makefile.in
-@@ -83,9 +83,10 @@ host_triplet = @host@
- DIST_COMMON = $(top_srcdir)/config/eu.am $(srcdir)/Makefile.in \
- 	$(srcdir)/Makefile.am $(top_srcdir)/config/depcomp \
- 	$(noinst_HEADERS) $(pkginclude_HEADERS) ChangeLog
+@@ -90,9 +90,10 @@ PRE_UNINSTALL = :
+ POST_UNINSTALL = :
+ build_triplet = @build@
+ host_triplet = @host@
 -@SYMBOL_VERSIONING_TRUE@am__append_1 = -DSYMBOL_VERSIONING
 +@BUILD_WERROR_TRUE@am__append_1 = $(if $($(*F)_no_Werror),,-Werror)
 +@SYMBOL_VERSIONING_TRUE@am__append_2 = -DSYMBOL_VERSIONING
@@ -815,7 +830,7 @@
  subdir = libasm
  ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
  am__aclocal_m4_deps = $(top_srcdir)/m4/biarch.m4 \
-@@ -252,6 +253,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -263,6 +264,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -823,7 +838,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -283,6 +285,7 @@ SHELL = @SHELL@
+@@ -294,6 +296,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = 1
@@ -831,7 +846,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
-@@ -350,14 +353,14 @@ AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_sr
+@@ -361,14 +364,14 @@ AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_sr
  
  # Warn about stack usage of more than 256K = 262144 bytes.
  @ADD_STACK_USAGE_WARNING_TRUE@STACK_USAGE_WARNING = -Wstack-usage=262144
@@ -853,7 +868,7 @@
  CLEANFILES = *.gcno *.gcda $(am_libasm_pic_a_OBJECTS) \
  	libasm.so.$(VERSION)
  textrel_msg = echo "WARNING: TEXTREL found in '$@'"
-@@ -384,7 +387,7 @@ libasm_a_SOURCES = asm_begin.c asm_abort
+@@ -395,7 +398,7 @@ libasm_a_SOURCES = asm_begin.c asm_abort
  
  libasm_pic_a_SOURCES = 
  am_libasm_pic_a_OBJECTS = $(libasm_a_SOURCES:.c=.os)
@@ -862,6 +877,7 @@
  libasm_so_SOURCES = 
  noinst_HEADERS = libasmP.h symbolhash.h
  EXTRA_DIST = libasm.map
+diffelfutils/libcpu/ChangeLog git-portable/libcpu/ChangeLog
 --- elfutils/libcpu/ChangeLog
 +++ elfutils/libcpu/ChangeLog
 @@ -51,6 +51,9 @@
@@ -886,6 +902,7 @@
  2005-02-15  Ulrich Drepper  <drepper@redhat.com>
  
  	* Makefile (AM_CFLAGS): Add -Wunused -Wextra -Wformat=2.
+diffelfutils/libcpu/i386_disasm.c git-portable/libcpu/i386_disasm.c
 --- elfutils/libcpu/i386_disasm.c
 +++ elfutils/libcpu/i386_disasm.c
 @@ -822,6 +822,7 @@ i386_disasm (const uint8_t **startp, con
@@ -896,19 +913,20 @@
  			}
  		    }
  		  else
+diffelfutils/libcpu/Makefile.in git-portable/libcpu/Makefile.in
 --- elfutils/libcpu/Makefile.in
 +++ elfutils/libcpu/Makefile.in
-@@ -84,7 +84,8 @@ DIST_COMMON = $(top_srcdir)/config/eu.am
- 	$(srcdir)/Makefile.am i386_lex.c i386_parse.c \
- 	$(top_srcdir)/config/depcomp $(top_srcdir)/config/ylwrap \
- 	$(am__noinst_HEADERS_DIST) ChangeLog
+@@ -90,7 +90,8 @@ PRE_UNINSTALL = :
+ POST_UNINSTALL = :
+ build_triplet = @build@
+ host_triplet = @host@
 -@SYMBOL_VERSIONING_TRUE@am__append_1 = -DSYMBOL_VERSIONING
 +@BUILD_WERROR_TRUE@am__append_1 = $(if $($(*F)_no_Werror),,-Werror)
 +@SYMBOL_VERSIONING_TRUE@am__append_2 = -DSYMBOL_VERSIONING
  @MAINTAINER_MODE_TRUE@noinst_PROGRAMS = i386_gendis$(EXEEXT)
  subdir = libcpu
  ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-@@ -227,6 +228,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -238,6 +239,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -916,7 +934,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = lex.$(<F:lex.l=)
-@@ -258,6 +260,7 @@ SHELL = @SHELL@
+@@ -269,6 +271,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
@@ -924,7 +942,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
-@@ -325,13 +328,14 @@ AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_sr
+@@ -336,13 +339,14 @@ AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_sr
  
  # Warn about stack usage of more than 256K = 262144 bytes.
  @ADD_STACK_USAGE_WARNING_TRUE@STACK_USAGE_WARNING = -Wstack-usage=262144
@@ -943,9 +961,10 @@
  CLEANFILES = *.gcno *.gcda $(foreach P,i386 x86_64,$P_defs \
  	$P.mnemonics)
  textrel_msg = echo "WARNING: TEXTREL found in '$@'"
+diffelfutils/libdw/ChangeLog git-portable/libdw/ChangeLog
 --- elfutils/libdw/ChangeLog
 +++ elfutils/libdw/ChangeLog
-@@ -889,6 +889,10 @@
+@@ -904,6 +904,10 @@
  
  	* Makefile.am (known-dwarf.h): Run gawk on config/known-dwarf.awk.
  
@@ -956,7 +975,7 @@
  2011-07-14  Mark Wielaard  <mjw@redhat.com>
  
  	* libdw.h (dwarf_offdie): Fix documentation to mention .debug_info.
-@@ -1248,6 +1252,10 @@
+@@ -1263,6 +1267,10 @@
  
  	* dwarf_hasattr_integrate.c: Integrate DW_AT_specification too.
  
@@ -967,7 +986,7 @@
  2009-08-10  Roland McGrath  <roland@redhat.com>
  
  	* dwarf_getscopevar.c: Use dwarf_diename.
-@@ -2016,6 +2024,11 @@
+@@ -2031,6 +2039,11 @@
  
  2005-05-31  Roland McGrath  <roland@redhat.com>
  
@@ -979,6 +998,7 @@
  	* dwarf_formref_die.c (dwarf_formref_die): Add CU header offset to
  	formref offset.
  
+diffelfutils/libdw/dwarf_begin_elf.c git-portable/libdw/dwarf_begin_elf.c
 --- elfutils/libdw/dwarf_begin_elf.c
 +++ elfutils/libdw/dwarf_begin_elf.c
 @@ -47,6 +47,14 @@
@@ -996,6 +1016,7 @@
  # include <zlib.h>
  # undef crc32
  #endif
+diffelfutils/libdw/libdw.h git-portable/libdw/libdw.h
 --- elfutils/libdw/libdw.h
 +++ elfutils/libdw/libdw.h
 @@ -1004,7 +1004,7 @@ extern Dwarf_OOM dwarf_new_oom_handler (
@@ -1007,12 +1028,13 @@
  /* Return attribute code of given attribute.  */
  __libdw_extern_inline unsigned int
  dwarf_whatattr (Dwarf_Attribute *attr)
+diffelfutils/libdw/Makefile.in git-portable/libdw/Makefile.in
 --- elfutils/libdw/Makefile.in
 +++ elfutils/libdw/Makefile.in
-@@ -84,8 +84,9 @@ DIST_COMMON = $(top_srcdir)/config/eu.am
- 	$(srcdir)/Makefile.am $(top_srcdir)/config/depcomp \
- 	$(include_HEADERS) $(noinst_HEADERS) $(pkginclude_HEADERS) \
- 	ChangeLog
+@@ -90,8 +90,9 @@ PRE_UNINSTALL = :
+ POST_UNINSTALL = :
+ build_triplet = @build@
+ host_triplet = @host@
 -@SYMBOL_VERSIONING_TRUE@am__append_1 = -DSYMBOL_VERSIONING
 -@BUILD_STATIC_TRUE@am__append_2 = -fpic
 +@BUILD_WERROR_TRUE@am__append_1 = $(if $($(*F)_no_Werror),,-Werror)
@@ -1021,7 +1043,7 @@
  noinst_PROGRAMS = $(am__EXEEXT_1)
  subdir = libdw
  ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-@@ -302,6 +303,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -312,6 +313,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -1029,7 +1051,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -333,6 +335,7 @@ SHELL = @SHELL@
+@@ -343,6 +345,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = 1
@@ -1037,7 +1059,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
-@@ -399,13 +402,14 @@ AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_sr
+@@ -409,13 +412,14 @@ AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_sr
  
  # Warn about stack usage of more than 256K = 262144 bytes.
  @ADD_STACK_USAGE_WARNING_TRUE@STACK_USAGE_WARNING = -Wstack-usage=262144
@@ -1056,19 +1078,20 @@
  CLEANFILES = *.gcno *.gcda
  textrel_msg = echo "WARNING: TEXTREL found in '$@'"
  @FATAL_TEXTREL_FALSE@textrel_found = $(textrel_msg)
+diffelfutils/libdwelf/Makefile.in git-portable/libdwelf/Makefile.in
 --- elfutils/libdwelf/Makefile.in
 +++ elfutils/libdwelf/Makefile.in
-@@ -82,7 +82,8 @@ host_triplet = @host@
- DIST_COMMON = $(top_srcdir)/config/eu.am $(srcdir)/Makefile.in \
- 	$(srcdir)/Makefile.am $(top_srcdir)/config/depcomp \
- 	$(noinst_HEADERS) $(pkginclude_HEADERS) ChangeLog
+@@ -89,7 +89,8 @@ PRE_UNINSTALL = :
+ POST_UNINSTALL = :
+ build_triplet = @build@
+ host_triplet = @host@
 -@SYMBOL_VERSIONING_TRUE@am__append_1 = -DSYMBOL_VERSIONING
 +@BUILD_WERROR_TRUE@am__append_1 = $(if $($(*F)_no_Werror),,-Werror)
 +@SYMBOL_VERSIONING_TRUE@am__append_2 = -DSYMBOL_VERSIONING
  subdir = libdwelf
  ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
  am__aclocal_m4_deps = $(top_srcdir)/m4/biarch.m4 \
-@@ -231,6 +232,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -242,6 +243,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -1076,7 +1099,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -262,6 +264,7 @@ SHELL = @SHELL@
+@@ -273,6 +275,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = 1
@@ -1084,7 +1107,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
-@@ -329,14 +332,14 @@ AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_sr
+@@ -340,14 +343,14 @@ AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_sr
  
  # Warn about stack usage of more than 256K = 262144 bytes.
  @ADD_STACK_USAGE_WARNING_TRUE@STACK_USAGE_WARNING = -Wstack-usage=262144
@@ -1106,9 +1129,10 @@
  CLEANFILES = *.gcno *.gcda $(am_libdwelf_pic_a_OBJECTS)
  textrel_msg = echo "WARNING: TEXTREL found in '$@'"
  @FATAL_TEXTREL_FALSE@textrel_found = $(textrel_msg)
+diffelfutils/libdwfl/ChangeLog git-portable/libdwfl/ChangeLog
 --- elfutils/libdwfl/ChangeLog
 +++ elfutils/libdwfl/ChangeLog
-@@ -704,6 +704,21 @@
+@@ -713,6 +713,21 @@
  	(dwfl_module_addrsym) (i_to_symfile): New function.
  	(dwfl_module_addrsym) (search_table): Use it.
  
@@ -1130,7 +1154,7 @@
  2013-11-07  Jan Kratochvil  <jan.kratochvil@redhat.com>
  	    Mark Wielaard  <mjw@redhat.com>
  
-@@ -2469,6 +2484,11 @@
+@@ -2478,6 +2493,11 @@
  
  2005-07-21  Roland McGrath  <roland@redhat.com>
  
@@ -1142,6 +1166,7 @@
  	* Makefile.am (noinst_HEADERS): Add loc2c.c.
  
  	* test2.c (main): Check sscanf result to quiet warning.
+diffelfutils/libdwfl/linux-core-attach.c git-portable/libdwfl/linux-core-attach.c
 --- elfutils/libdwfl/linux-core-attach.c
 +++ elfutils/libdwfl/linux-core-attach.c
 @@ -29,6 +29,35 @@
@@ -1180,6 +1205,7 @@
  
  #include "../libdw/memory-access.h"
  
+diffelfutils/libdwfl/linux-pid-attach.c git-portable/libdwfl/linux-pid-attach.c
 --- elfutils/libdwfl/linux-pid-attach.c
 +++ elfutils/libdwfl/linux-pid-attach.c
 @@ -255,6 +255,11 @@ void
@@ -1210,12 +1236,13 @@
  }
  
  static void
+diffelfutils/libdwfl/Makefile.in git-portable/libdwfl/Makefile.in
 --- elfutils/libdwfl/Makefile.in
 +++ elfutils/libdwfl/Makefile.in
-@@ -82,10 +82,11 @@ host_triplet = @host@
- DIST_COMMON = $(top_srcdir)/config/eu.am $(srcdir)/Makefile.in \
- 	$(srcdir)/Makefile.am $(top_srcdir)/config/depcomp \
- 	$(noinst_HEADERS) $(pkginclude_HEADERS) ChangeLog
+@@ -89,10 +89,11 @@ PRE_UNINSTALL = :
+ POST_UNINSTALL = :
+ build_triplet = @build@
+ host_triplet = @host@
 -@SYMBOL_VERSIONING_TRUE@am__append_1 = -DSYMBOL_VERSIONING
 -@ZLIB_TRUE@am__append_2 = gzip.c
 -@BZLIB_TRUE@am__append_3 = bzip2.c
@@ -1228,7 +1255,7 @@
  subdir = libdwfl
  ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
  am__aclocal_m4_deps = $(top_srcdir)/m4/biarch.m4 \
-@@ -290,6 +291,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -301,6 +302,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -1236,7 +1263,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -321,6 +323,7 @@ SHELL = @SHELL@
+@@ -332,6 +334,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = 1
@@ -1244,7 +1271,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
-@@ -388,14 +391,14 @@ AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_sr
+@@ -399,14 +402,14 @@ AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_sr
  
  # Warn about stack usage of more than 256K = 262144 bytes.
  @ADD_STACK_USAGE_WARNING_TRUE@STACK_USAGE_WARNING = -Wstack-usage=262144
@@ -1266,7 +1293,7 @@
  CLEANFILES = *.gcno *.gcda $(am_libdwfl_pic_a_OBJECTS)
  textrel_msg = echo "WARNING: TEXTREL found in '$@'"
  @FATAL_TEXTREL_FALSE@textrel_found = $(textrel_msg)
-@@ -424,8 +427,8 @@ libdwfl_a_SOURCES = dwfl_begin.c dwfl_en
+@@ -435,8 +438,8 @@ libdwfl_a_SOURCES = dwfl_begin.c dwfl_en
  	dwfl_module_register_names.c dwfl_segment_report_module.c \
  	link_map.c core-file.c open.c image-header.c dwfl_frame.c \
  	frame_unwind.c dwfl_frame_pc.c linux-pid-attach.c \
@@ -1277,9 +1304,10 @@
  libdwfl = $(libdw)
  libdw = ../libdw/libdw.so
  libelf = ../libelf/libelf.so
+diffelfutils/libebl/ChangeLog git-portable/libebl/ChangeLog
 --- elfutils/libebl/ChangeLog
 +++ elfutils/libebl/ChangeLog
-@@ -780,6 +780,11 @@
+@@ -785,6 +785,11 @@
  	* Makefile.am (libebl_*_so_SOURCES): Set to $(*_SRCS) so dependency
  	tracking works right.
  
@@ -1291,19 +1319,20 @@
  2005-05-21  Ulrich Drepper  <drepper@redhat.com>
  
  	* libebl_x86_64.map: Add x86_64_core_note.
+diffelfutils/libebl/Makefile.in git-portable/libebl/Makefile.in
 --- elfutils/libebl/Makefile.in
 +++ elfutils/libebl/Makefile.in
-@@ -82,7 +82,8 @@ host_triplet = @host@
- DIST_COMMON = $(top_srcdir)/config/eu.am $(srcdir)/Makefile.in \
- 	$(srcdir)/Makefile.am $(top_srcdir)/config/depcomp \
- 	$(noinst_HEADERS) $(pkginclude_HEADERS) ChangeLog
+@@ -89,7 +89,8 @@ PRE_UNINSTALL = :
+ POST_UNINSTALL = :
+ build_triplet = @build@
+ host_triplet = @host@
 -@SYMBOL_VERSIONING_TRUE@am__append_1 = -DSYMBOL_VERSIONING
 +@BUILD_WERROR_TRUE@am__append_1 = $(if $($(*F)_no_Werror),,-Werror)
 +@SYMBOL_VERSIONING_TRUE@am__append_2 = -DSYMBOL_VERSIONING
  subdir = libebl
  ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
  am__aclocal_m4_deps = $(top_srcdir)/m4/biarch.m4 \
-@@ -253,6 +254,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -264,6 +265,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -1311,7 +1340,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -284,6 +286,7 @@ SHELL = @SHELL@
+@@ -295,6 +297,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = 1
@@ -1319,7 +1348,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
-@@ -351,13 +354,14 @@ AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_sr
+@@ -362,13 +365,14 @@ AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_sr
  
  # Warn about stack usage of more than 256K = 262144 bytes.
  @ADD_STACK_USAGE_WARNING_TRUE@STACK_USAGE_WARNING = -Wstack-usage=262144
@@ -1338,9 +1367,10 @@
  CLEANFILES = *.gcno *.gcda $(am_libebl_pic_a_OBJECTS)
  textrel_msg = echo "WARNING: TEXTREL found in '$@'"
  @FATAL_TEXTREL_FALSE@textrel_found = $(textrel_msg)
+diffelfutils/libelf/ChangeLog git-portable/libelf/ChangeLog
 --- elfutils/libelf/ChangeLog
 +++ elfutils/libelf/ChangeLog
-@@ -398,6 +398,11 @@
+@@ -412,6 +412,11 @@
  
  	* elf-knowledge.h (SECTION_STRIP_P): Remove < SHT_NUM check.
  
@@ -1352,7 +1382,7 @@
  2011-02-26  Mark Wielaard  <mjw@redhat.com>
  
  	* elf_end.c (elf_end): Call rwlock_unlock before rwlock_fini.
-@@ -1075,6 +1080,11 @@
+@@ -1089,6 +1094,11 @@
  
  	* elf.h: Update from glibc.
  
@@ -1364,6 +1394,7 @@
  2005-05-08  Roland McGrath  <roland@redhat.com>
  
  	* elf_begin.c (read_file) [_MUDFLAP]: Don't use mmap for now.
+diffelfutils/libelf/common.h git-portable/libelf/common.h
 --- elfutils/libelf/common.h
 +++ elfutils/libelf/common.h
 @@ -139,7 +139,7 @@ libelf_release_all (Elf *elf)
@@ -1384,6 +1415,7 @@
  	      : (sizeof (Var) == 4					      \
  		 ? bswap_32 (Var)					      \
  		 : bswap_64 (Var))))
+diffelfutils/libelf/gnuhash_xlate.h git-portable/libelf/gnuhash_xlate.h
 --- elfutils/libelf/gnuhash_xlate.h
 +++ elfutils/libelf/gnuhash_xlate.h
 @@ -1,5 +1,5 @@
@@ -1404,12 +1436,13 @@
        len -= 4;
      }
  }
+diffelfutils/libelf/Makefile.in git-portable/libelf/Makefile.in
 --- elfutils/libelf/Makefile.in
 +++ elfutils/libelf/Makefile.in
-@@ -84,10 +84,11 @@ DIST_COMMON = $(top_srcdir)/config/eu.am
- 	$(srcdir)/Makefile.am $(top_srcdir)/config/depcomp \
- 	$(include_HEADERS) $(noinst_HEADERS) $(pkginclude_HEADERS) \
- 	ChangeLog
+@@ -90,10 +90,11 @@ PRE_UNINSTALL = :
+ POST_UNINSTALL = :
+ build_triplet = @build@
+ host_triplet = @host@
 -@SYMBOL_VERSIONING_TRUE@am__append_1 = -DSYMBOL_VERSIONING
 -@BUILD_STATIC_TRUE@am__append_2 = -fpic
 +@BUILD_WERROR_TRUE@am__append_1 = $(if $($(*F)_no_Werror),,-Werror)
@@ -1421,7 +1454,7 @@
  subdir = libelf
  ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
  am__aclocal_m4_deps = $(top_srcdir)/m4/biarch.m4 \
-@@ -295,6 +296,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -305,6 +306,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -1429,7 +1462,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -326,6 +328,7 @@ SHELL = @SHELL@
+@@ -336,6 +338,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = 1
@@ -1437,7 +1470,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
-@@ -391,13 +394,14 @@ AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_sr
+@@ -401,13 +404,14 @@ AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_sr
  
  # Warn about stack usage of more than 256K = 262144 bytes.
  @ADD_STACK_USAGE_WARNING_TRUE@STACK_USAGE_WARNING = -Wstack-usage=262144
@@ -1456,7 +1489,7 @@
  CLEANFILES = *.gcno *.gcda $(am_libelf_pic_a_OBJECTS) \
  	libelf.so.$(VERSION)
  textrel_msg = echo "WARNING: TEXTREL found in '$@'"
-@@ -460,7 +464,7 @@ libelf_a_SOURCES = elf_version.c elf_has
+@@ -470,7 +474,7 @@ libelf_a_SOURCES = elf_version.c elf_has
  
  libelf_pic_a_SOURCES = 
  am_libelf_pic_a_OBJECTS = $(libelf_a_SOURCES:.c=.os)
@@ -1465,9 +1498,10 @@
  libelf_so_SOURCES = 
  noinst_HEADERS = elf.h abstract.h common.h exttypes.h gelf_xlate.h libelfP.h \
  		 version_xlate.h gnuhash_xlate.h note_xlate.h dl-hash.h
+diffelfutils/m4/Makefile.in git-portable/m4/Makefile.in
 --- elfutils/m4/Makefile.in
 +++ elfutils/m4/Makefile.in
-@@ -148,6 +148,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -159,6 +159,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -1475,7 +1509,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -179,6 +180,7 @@ SHELL = @SHELL@
+@@ -190,6 +191,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
@@ -1483,9 +1517,10 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
+diffelfutils/Makefile.in git-portable/Makefile.in
 --- elfutils/Makefile.in
 +++ elfutils/Makefile.in
-@@ -266,6 +266,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -277,6 +277,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -1493,7 +1528,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -297,6 +298,7 @@ SHELL = @SHELL@
+@@ -308,6 +309,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
@@ -1501,6 +1536,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
+diffelfutils/src/addr2line.c git-portable/src/addr2line.c
 --- elfutils/src/addr2line.c
 +++ elfutils/src/addr2line.c
 @@ -622,10 +622,10 @@ handle_address (const char *string, Dwfl
@@ -1516,6 +1552,7 @@
  	{
  	default:
  	  break;
+diffelfutils/src/ar.c git-portable/src/ar.c
 --- elfutils/src/ar.c
 +++ elfutils/src/ar.c
 @@ -685,7 +685,14 @@ do_oper_extract (int oper, const char *a
@@ -1533,9 +1570,10 @@
  		    {
  		      error (0, errno,
  			     gettext ("cannot change modification time of %s"),
+diffelfutils/src/ChangeLog git-portable/src/ChangeLog
 --- elfutils/src/ChangeLog
 +++ elfutils/src/ChangeLog
-@@ -1598,8 +1598,16 @@
+@@ -1626,8 +1626,16 @@
  	* readelf.c (attr_callback): Use print_block only when we don't use
  	print_ops.
  
@@ -1552,7 +1590,7 @@
  	* ar.c (do_oper_extract): Use pathconf instead of statfs.
  
  2009-08-01  Ulrich Drepper  <drepper@redhat.com>
-@@ -1763,6 +1771,8 @@
+@@ -1791,6 +1799,8 @@
  	* readelf.c (print_debug_frame_section): Use t instead of j formats
  	for ptrdiff_t OFFSET.
  
@@ -1561,7 +1599,7 @@
  2009-01-21  Ulrich Drepper  <drepper@redhat.com>
  
  	* elflint.c (check_program_header): Fix typo in .eh_frame_hdr section
-@@ -1946,6 +1956,11 @@
+@@ -1974,6 +1984,11 @@
  	that matches its PT_LOAD's p_flags &~ PF_W.  On sparc, PF_X really
  	is valid in RELRO.
  
@@ -1573,7 +1611,7 @@
  2008-02-29  Roland McGrath  <roland@redhat.com>
  
  	* readelf.c (print_attributes): Add a cast.
-@@ -2197,6 +2212,8 @@
+@@ -2225,6 +2240,8 @@
  
  	* readelf.c (hex_dump): Fix rounding error in whitespace calculation.
  
@@ -1582,7 +1620,7 @@
  2007-10-15  Roland McGrath  <roland@redhat.com>
  
  	* make-debug-archive.in: New file.
-@@ -2636,6 +2653,10 @@
+@@ -2664,6 +2681,10 @@
  	* elflint.c (valid_e_machine): Add EM_ALPHA.
  	Reported by Christian Aichinger <Greek0@gmx.net>.
  
@@ -1593,7 +1631,7 @@
  2006-08-08  Ulrich Drepper  <drepper@redhat.com>
  
  	* elflint.c (check_dynamic): Don't require DT_HASH for DT_SYMTAB.
-@@ -2712,6 +2733,10 @@
+@@ -2740,6 +2761,10 @@
  	* Makefile.am: Add hacks to create dependency files for non-generic
  	linker.
  
@@ -1604,7 +1642,7 @@
  2006-06-12  Ulrich Drepper  <drepper@redhat.com>
  
  	* ldgeneric.c (ld_generic_generate_sections): Don't create .interp
-@@ -3060,6 +3085,11 @@
+@@ -3088,6 +3113,11 @@
  	* readelf.c (print_debug_loc_section): Fix indentation for larger
  	address size.
  
@@ -1616,9 +1654,10 @@
  2005-05-30  Roland McGrath  <roland@redhat.com>
  
  	* readelf.c (print_debug_line_section): Print section offset of each
+diffelfutils/src/findtextrel.c git-portable/src/findtextrel.c
 --- elfutils/src/findtextrel.c
 +++ elfutils/src/findtextrel.c
-@@ -502,7 +502,11 @@ ptrcompare (const void *p1, const void *
+@@ -503,7 +503,11 @@ ptrcompare (const void *p1, const void *
  
  
  static void
@@ -1631,6 +1670,7 @@
  	   GElf_Addr addr, Elf *elf, Elf_Scn *symscn, Dwarf *dw,
  	   const char *fname, bool more_than_one, void **knownsrcs)
  {
+diffelfutils/src/ld.h git-portable/src/ld.h
 --- elfutils/src/ld.h
 +++ elfutils/src/ld.h
 @@ -1114,6 +1114,7 @@ extern bool dynamically_linked_p (void);
@@ -1648,6 +1688,7 @@
 +#endif	/* Optimizing and not GCC 4.2.  */
  
  #endif	/* ld.h */
+diffelfutils/src/Makefile.am git-portable/src/Makefile.am
 --- elfutils/src/Makefile.am
 +++ elfutils/src/Makefile.am
 @@ -90,6 +90,11 @@ endif
@@ -1662,19 +1703,20 @@
  # Bad, bad stack usage...
  readelf_no_Wstack_usage = yes
  nm_no_Wstack_usage = yes
+diffelfutils/src/Makefile.in git-portable/src/Makefile.in
 --- elfutils/src/Makefile.in
 +++ elfutils/src/Makefile.in
-@@ -85,7 +85,8 @@ DIST_COMMON = $(top_srcdir)/config/eu.am
- 	$(srcdir)/Makefile.am ldlex.c ldscript.c \
- 	$(top_srcdir)/config/depcomp $(top_srcdir)/config/ylwrap \
- 	$(noinst_HEADERS) ChangeLog
+@@ -91,7 +91,8 @@ PRE_UNINSTALL = :
+ POST_UNINSTALL = :
+ build_triplet = @build@
+ host_triplet = @host@
 -@SYMBOL_VERSIONING_TRUE@am__append_1 = -DSYMBOL_VERSIONING
 +@BUILD_WERROR_TRUE@am__append_1 = $(if $($(*F)_no_Werror),,-Werror)
 +@SYMBOL_VERSIONING_TRUE@am__append_2 = -DSYMBOL_VERSIONING
  bin_PROGRAMS = readelf$(EXEEXT) nm$(EXEEXT) size$(EXEEXT) \
  	strip$(EXEEXT) ld$(EXEEXT) elflint$(EXEEXT) \
  	findtextrel$(EXEEXT) addr2line$(EXEEXT) elfcmp$(EXEEXT) \
-@@ -94,9 +95,9 @@ bin_PROGRAMS = readelf$(EXEEXT) nm$(EXEE
+@@ -100,9 +101,9 @@ bin_PROGRAMS = readelf$(EXEEXT) nm$(EXEE
  @NATIVE_LD_FALSE@noinst_PROGRAMS = $(am__EXEEXT_1)
  # We never build this library but we need to get the dependency files
  # of all the linker backends that might be used in a non-generic linker.
@@ -1686,7 +1728,7 @@
  @NATIVE_LD_TRUE@am_libld_elf_i386_pic_a_OBJECTS =
  subdir = src
  ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-@@ -164,7 +165,7 @@ am_ld_OBJECTS = ld.$(OBJEXT) ldgeneric.$
+@@ -172,7 +173,7 @@ am_ld_OBJECTS = ld.$(OBJEXT) ldgeneric.$
  	versionhash.$(OBJEXT)
  ld_OBJECTS = $(am_ld_OBJECTS)
  ld_DEPENDENCIES = $(libebl) $(libelf) $(libeu) $(am__DEPENDENCIES_1) \
@@ -1695,7 +1737,7 @@
  ld_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(ld_LDFLAGS) $(LDFLAGS) -o \
  	$@
  am_libld_elf_i386_so_OBJECTS =
-@@ -350,6 +351,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -361,6 +362,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -1703,7 +1745,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -381,6 +383,7 @@ SHELL = @SHELL@
+@@ -392,6 +394,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
@@ -1711,7 +1753,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
-@@ -449,14 +452,14 @@ AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_sr
+@@ -460,14 +463,14 @@ AM_CPPFLAGS = -I. -I$(srcdir) -I$(top_sr
  
  # Warn about stack usage of more than 256K = 262144 bytes.
  @ADD_STACK_USAGE_WARNING_TRUE@STACK_USAGE_WARNING = -Wstack-usage=262144
@@ -1733,7 +1775,7 @@
  CLEANFILES = *.gcno *.gcda make-debug-archive none_ld.os \
  	$(ld_modules:.c=.os) *.gconv
  textrel_msg = echo "WARNING: TEXTREL found in '$@'"
-@@ -469,8 +472,8 @@ AM_LFLAGS = -Pld -olex.yy.c
+@@ -480,8 +483,8 @@ AM_LFLAGS = -Pld -olex.yy.c
  native_ld = @native_ld@
  ld_dsos = libld_elf_i386_pic.a
  @NATIVE_LD_FALSE@noinst_LIBRARIES = libld_elf.a libar.a $(ld_dsos) \
@@ -1744,7 +1786,7 @@
  @NATIVE_LD_TRUE@native_ld_cflags = -DBASE_ELF_NAME=elf_$(base_cpu)
  @NEVER_TRUE@libdummy_a_SOURCES = i386_ld.c
  ld_SOURCES = ld.c ldgeneric.c ldlex.l ldscript.y symbolhash.c sectionhash.c \
-@@ -498,6 +501,11 @@ libeu = ../lib/libeu.a
+@@ -509,6 +512,11 @@ libeu = ../lib/libeu.a
  ldgeneric_no_Wunused = yes
  ldgeneric_no_Wstack_usage = yes
  
@@ -1756,7 +1798,7 @@
  # Bad, bad stack usage...
  readelf_no_Wstack_usage = yes
  nm_no_Wstack_usage = yes
-@@ -517,7 +525,7 @@ nm_LDADD = $(libdw) $(libebl) $(libelf)
+@@ -528,7 +536,7 @@ nm_LDADD = $(libdw) $(libebl) $(libelf)
  size_LDADD = $(libelf) $(libeu) $(argp_LDADD)
  strip_LDADD = $(libebl) $(libelf) $(libeu) $(argp_LDADD) -ldl
  ld_LDADD = $(libebl) $(libelf) $(libeu) $(argp_LDADD) -ldl \
@@ -1765,9 +1807,10 @@
  ld_LDFLAGS = -rdynamic
  elflint_LDADD = $(libebl) $(libelf) $(libeu) $(argp_LDADD) -ldl
  findtextrel_LDADD = $(libdw) $(libelf) $(argp_LDADD)
+diffelfutils/src/readelf.c git-portable/src/readelf.c
 --- elfutils/src/readelf.c
 +++ elfutils/src/readelf.c
-@@ -4364,10 +4364,12 @@ listptr_base (struct listptr *p)
+@@ -4366,10 +4366,12 @@ listptr_base (struct listptr *p)
    return base;
  }
  
@@ -1782,7 +1825,7 @@
    struct listptr *p1 = (void *) a;
    struct listptr *p2 = (void *) b;
  
-@@ -4463,8 +4465,11 @@ static void
+@@ -4465,8 +4467,11 @@ static void
  sort_listptr (struct listptr_table *table, const char *name)
  {
    if (table->n > 0)
@@ -1796,7 +1839,7 @@
  }
  
  static bool
-@@ -9561,7 +9566,7 @@ dump_archive_index (Elf *elf, const char
+@@ -9563,7 +9568,7 @@ dump_archive_index (Elf *elf, const char
  	  if (unlikely (elf_rand (elf, as_off) == 0)
  	      || unlikely ((subelf = elf_begin (-1, ELF_C_READ_MMAP, elf))
  			   == NULL))
@@ -1805,6 +1848,7 @@
  	    while (1)
  #endif
  	      error (EXIT_FAILURE, 0,
+diffelfutils/src/strings.c git-portable/src/strings.c
 --- elfutils/src/strings.c
 +++ elfutils/src/strings.c
 @@ -43,6 +43,10 @@
@@ -1844,6 +1888,7 @@
      }
  
    if (unlikely (elfmap == MAP_FAILED))
+diffelfutils/src/strip.c git-portable/src/strip.c
 --- elfutils/src/strip.c
 +++ elfutils/src/strip.c
 @@ -2191,7 +2191,14 @@ while computing checksum for debug infor
@@ -1876,6 +1921,7 @@
  	{
  	  error (0, errno, gettext ("\
  cannot set access and modification date of '%s'"), fname);
+diffelfutils/tests/backtrace.c git-portable/tests/backtrace.c
 --- elfutils/tests/backtrace.c
 +++ elfutils/tests/backtrace.c
 @@ -36,6 +36,7 @@
@@ -1886,9 +1932,10 @@
  #include ELFUTILS_HEADER(dwfl)
  
  #ifndef __linux__
+diffelfutils/tests/ChangeLog git-portable/tests/ChangeLog
 --- elfutils/tests/ChangeLog
 +++ elfutils/tests/ChangeLog
-@@ -609,6 +609,13 @@
+@@ -614,6 +614,13 @@
  
  2013-12-02  Jan Kratochvil  <jan.kratochvil@redhat.com>
  
@@ -1902,7 +1949,7 @@
  	* Makefile.am (check_PROGRAMS): Add backtrace, backtrace-child,
  	backtrace-data and backtrace-dwarf.
  	(BUILT_SOURCES, clean-local, backtrace-child-biarch): New.
-@@ -1473,6 +1480,8 @@
+@@ -1478,6 +1485,8 @@
  
  2008-01-21  Roland McGrath  <roland@redhat.com>
  
@@ -1911,7 +1958,7 @@
  	* testfile45.S.bz2: Add tests for cltq, cqto.
  	* testfile45.expect.bz2: Adjust.
  
-@@ -2181,6 +2190,11 @@
+@@ -2186,6 +2195,11 @@
  	* Makefile.am (TESTS): Add run-elflint-test.sh.
  	(EXTRA_DIST): Add run-elflint-test.sh and testfile18.bz2.
  
@@ -1923,6 +1970,7 @@
  2005-05-24  Ulrich Drepper  <drepper@redhat.com>
  
  	* get-files.c (main): Use correct format specifier.
+diffelfutils/tests/line2addr.c git-portable/tests/line2addr.c
 --- elfutils/tests/line2addr.c
 +++ elfutils/tests/line2addr.c
 @@ -124,7 +124,7 @@ main (int argc, char *argv[])
@@ -1934,6 +1982,7 @@
  	{
  	default:
  	case 0:
+diffelfutils/tests/Makefile.am git-portable/tests/Makefile.am
 --- elfutils/tests/Makefile.am
 +++ elfutils/tests/Makefile.am
 @@ -382,6 +382,7 @@ get_lines_LDADD = $(libdw) $(libelf)
@@ -1944,12 +1993,13 @@
  line2addr_LDADD = $(libdw) $(argp_LDADD)
  addrscopes_LDADD = $(libdw) $(argp_LDADD)
  funcscopes_LDADD = $(libdw) $(argp_LDADD)
+diffelfutils/tests/Makefile.in git-portable/tests/Makefile.in
 --- elfutils/tests/Makefile.in
 +++ elfutils/tests/Makefile.in
-@@ -80,14 +80,15 @@ host_triplet = @host@
- DIST_COMMON = $(top_srcdir)/config/eu.am $(srcdir)/Makefile.in \
- 	$(srcdir)/Makefile.am $(top_srcdir)/config/depcomp \
- 	$(top_srcdir)/config/test-driver ChangeLog
+@@ -87,14 +87,15 @@ PRE_UNINSTALL = :
+ POST_UNINSTALL = :
+ build_triplet = @build@
+ host_triplet = @host@
 -@SYMBOL_VERSIONING_TRUE@am__append_1 = -DSYMBOL_VERSIONING
 -@STANDALONE_FALSE@am__append_2 = -I$(top_srcdir)/libasm -I$(top_srcdir)/libdw \
 +@BUILD_WERROR_TRUE@am__append_1 = $(if $($(*F)_no_Werror),,-Werror)
@@ -1966,7 +2016,7 @@
  check_PROGRAMS = arextract$(EXEEXT) arsymtest$(EXEEXT) \
  	newfile$(EXEEXT) saridx$(EXEEXT) scnnames$(EXEEXT) \
  	sectiondump$(EXEEXT) showptable$(EXEEXT) update1$(EXEEXT) \
-@@ -116,7 +117,7 @@ check_PROGRAMS = arextract$(EXEEXT) arsy
+@@ -123,7 +124,7 @@ check_PROGRAMS = arextract$(EXEEXT) arsy
  	aggregate_size$(EXEEXT) vdsosyms$(EXEEXT) getsrc_die$(EXEEXT) \
  	strptr$(EXEEXT) newdata$(EXEEXT) elfstrtab$(EXEEXT) \
  	$(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_4)
@@ -1975,7 +2025,7 @@
  TESTS = run-arextract.sh run-arsymtest.sh newfile$(EXEEXT) \
  	test-nlist$(EXEEXT) update1$(EXEEXT) update2$(EXEEXT) \
  	update3$(EXEEXT) update4$(EXEEXT) run-show-die-info.sh \
-@@ -166,14 +167,14 @@ TESTS = run-arextract.sh run-arsymtest.s
+@@ -173,14 +174,14 @@ TESTS = run-arextract.sh run-arsymtest.s
  	run-allfcts-multi.sh run-deleted.sh run-linkmap-cut.sh \
  	run-aggregate-size.sh vdsosyms$(EXEEXT) run-readelf-A.sh \
  	run-getsrc-die.sh run-strptr.sh newdata$(EXEEXT) \
@@ -1996,7 +2046,7 @@
  subdir = tests
  ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
  am__aclocal_m4_deps = $(top_srcdir)/m4/biarch.m4 \
-@@ -819,6 +820,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
+@@ -830,6 +831,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
  INSTALL_SCRIPT = @INSTALL_SCRIPT@
  INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
  LDFLAGS = @LDFLAGS@
@@ -2004,7 +2054,7 @@
  LEX = @LEX@
  LEXLIB = @LEXLIB@
  LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
-@@ -850,6 +852,7 @@ SHELL = @SHELL@
+@@ -861,6 +863,7 @@ SHELL = @SHELL@
  STRIP = @STRIP@
  USE_NLS = @USE_NLS@
  VERSION = @VERSION@
@@ -2012,7 +2062,7 @@
  XGETTEXT = @XGETTEXT@
  XGETTEXT_015 = @XGETTEXT_015@
  XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
-@@ -910,26 +913,26 @@ top_build_prefix = @top_build_prefix@
+@@ -921,26 +924,26 @@ top_build_prefix = @top_build_prefix@
  top_builddir = @top_builddir@
  top_srcdir = @top_srcdir@
  zip_LIBS = @zip_LIBS@
@@ -2048,7 +2098,7 @@
  @TESTS_RPATH_FALSE@tests_rpath = no
  @TESTS_RPATH_TRUE@tests_rpath = yes
  asm_TESTS = asm-tst1 asm-tst2 asm-tst3 asm-tst4 asm-tst5 \
-@@ -1156,6 +1159,7 @@ get_lines_LDADD = $(libdw) $(libelf)
+@@ -1167,6 +1170,7 @@ get_lines_LDADD = $(libdw) $(libelf)
  get_files_LDADD = $(libdw) $(libelf)
  get_aranges_LDADD = $(libdw) $(libelf)
  allfcts_LDADD = $(libdw) $(libelf)
