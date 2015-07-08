@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
-Version: 0.161
-%global baserelease 6
+Version: 0.163
+%global baserelease 1
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -46,13 +46,6 @@ Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 Patch1: %{?source_url}elfutils-portability-%{version}.patch
 
-Patch2: elfutils-0.161-ar-long-name.patch
-# libdw: fix offset for sig8 lookup in dwarf_formref_die
-Patch3: elfutils-0.161-formref-type.patch
-# rhbz#1189928 - Consider sh_addralign 0 as 1
-Patch4: elfutils-0.161-addralign.patch
-Patch5: elfutils-0.161-copyreloc.patch
-
 %if !%{compat}
 Release: %{baserelease}%{?dist}
 %else
@@ -72,8 +65,6 @@ BuildRequires: flex >= 2.5.4a
 BuildRequires: bzip2
 %if !%{compat}
 BuildRequires: gcc >= 3.4
-# Need <byteswap.h> that gives unsigned bswap_16 etc.
-BuildRequires: glibc-headers >= 2.3.4-11
 %else
 BuildRequires: gcc >= 3.2
 %endif
@@ -214,11 +205,6 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 %endif
 
-%patch2 -p1 -b .ar_long_name
-%patch3 -p1 -b .formref_type
-%patch4 -p1 -b .addralign
-%patch5 -p1 -b .copyreloc
-
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
@@ -312,6 +298,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_includedir}/dwarf.h
 %dir %{_includedir}/elfutils
 %{_includedir}/elfutils/elf-knowledge.h
+%{_includedir}/elfutils/known-dwarf.h
 %{_includedir}/elfutils/libasm.h
 %{_includedir}/elfutils/libebl.h
 %{_includedir}/elfutils/libdw.h
@@ -346,6 +333,30 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Fri Jun 19 2015 Mark Wielaard <mjw@redhat.com> - 0.163-1
+- Update to 0.163
+  - Drop elfutils-0.162-ftruncate-allocate.patch
+
+* Tue Jun 16 2015 Mark Wielaard <mjw@redhat.com> - 0.162-2
+- Add elfutils-0.162-ftruncate-allocate.patch (#1232206)
+
+* Thu Jun 11 2015 Mark Wielaard <mjw@redhat.com> - 0.162-1
+- Update to 0.162 (#1170810, #1139815, #1129756, #1020842)
+- Include elfutils/known-dwarf.h
+- Drop BuildRequires glibc-headers (#1230468)
+- Removed integrated upstream patches:
+  - elfutils-0.161-aarch64relro.patch
+  - elfutils-0.161-copyreloc.patch
+  - elfutils-0.161-addralign.patch
+  - elfutils-0.161-ar-long-name.patch
+  - elfutils-0.161-formref-type.patch
+
+* Sat May 02 2015 Kalev Lember <kalevlember@gmail.com> - 0.161-8
+- Rebuilt for GCC 5 C++11 ABI change
+
+* Mon Mar 23 2015 Mark Wielaard <mjw@redhat.com> - 0.161-7
+- Add elfutils-0.161-aarch64relro.patch (#1201778)
+
 * Mon Mar 09 2015 Mark Wielaard <mjw@redhat.com> - 0.161-6
 - Add elfutils-0.161-copyreloc.patch.
 
