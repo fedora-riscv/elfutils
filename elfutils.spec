@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.163
-%global baserelease 1
+%global baserelease 2
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -45,6 +45,8 @@ Group: Development/Tools
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 Patch1: %{?source_url}elfutils-portability-%{version}.patch
+
+Patch2: elfutils-0.163-unstrip-shf_info_link.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -205,6 +207,8 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 %endif
 
+%patch2 -p1 -b .shf_info_link
+
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
@@ -333,6 +337,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libelf.a
 
 %changelog
+* Mon Aug 03 2015 Mark Wielaard <mjw@redhat.com> - 0.163-2
+- Add elfutils-0.163-unstrip-shf_info_link.patch
+
 * Fri Jun 19 2015 Mark Wielaard <mjw@redhat.com> - 0.163-1
 - Update to 0.163
   - Drop elfutils-0.162-ftruncate-allocate.patch
