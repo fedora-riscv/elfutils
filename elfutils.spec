@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.163
-%global baserelease 3
+%global baserelease 4
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -49,8 +49,8 @@ Source: %{?source_url}%{name}-%{version}.tar.bz2
 Patch1: %{?source_url}elfutils-portability-%{version}.patch
 
 Patch2: elfutils-0.163-unstrip-shf_info_link.patch
-
 Patch3: elfutils-0.163-default-yama-conf.patch
+Patch4: elfutils-0.163-readelf-n-undefined-shift.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -236,6 +236,7 @@ sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 
 %patch2 -p1 -b .shf_info_link
 %patch3 -p1 -b .yama_scope
+%patch4 -p1 -b .right_shift
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -380,6 +381,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %endif
 
 %changelog
+* Mon Sep 07 2015 Mark Wielaard <mjw@redhat.com> - 0.163-4
+- Add elfutils-0.163-readelf-n-undefined-shift.patch (#1259259)
+
 * Tue Aug 04 2015 Mark Wielaard <mjw@redhat.com> - 0.163-3
 - Add elfutils-0.163-default-yama-conf.patch (#1250079)
   Provides: default-yama-scope
