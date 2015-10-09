@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.163
-%global baserelease 1
+%global baserelease 4
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -18,6 +18,7 @@ Group: Development/Tools
 %global separate_devel_static   1
 %global use_zlib                0
 %global use_xz                  0
+%global provide_yama_scope	0
 
 %if 0%{?rhel}
 %global portability             (%rhel < 6)
@@ -32,6 +33,7 @@ Group: Development/Tools
 %global separate_devel_static   (%fedora >= 7)
 %global use_zlib                (%fedora >= 5)
 %global use_xz                  (%fedora >= 10)
+%global provide_yama_scope	(%fedora >= 22)
 %endif
 
 %if %{compat} || %{!?rhel:6}%{?rhel} < 6
@@ -45,6 +47,10 @@ Group: Development/Tools
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 Patch1: %{?source_url}elfutils-portability-%{version}.patch
+
+Patch2: elfutils-0.163-unstrip-shf_info_link.patch
+Patch3: elfutils-0.163-default-yama-conf.patch
+Patch4: elfutils-0.163-readelf-n-undefined-shift.patch
 
 %if !%{compat}
 Release: %{baserelease}%{?dist}
@@ -97,6 +103,9 @@ License: GPLv2+ or LGPLv3+
 Provides: elfutils-libs%{depsuffix} = %{version}-%{release}
 %endif
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
+%if %{provide_yama_scope}
+Requires: default-yama-scope
+%endif
 
 %description libs
 The elfutils-libs package contains libraries which implement DWARF, ELF,
@@ -185,6 +194,26 @@ Requires: elfutils-libelf-devel%{depsuffix} = %{version}-%{release}
 The elfutils-libelf-static package contains the static archive
 for libelf.
 
+%if %{provide_yama_scope}
+%package default-yama-scope
+Summary: Default yama attach scope sysctl setting
+Group: Development/Tools
+License: GPLv2+ or LGPLv3+
+Provides: default-yama-scope
+BuildArch: noarch
+# For the sysctl_apply macro
+BuildRequires: systemd >= 215
+
+%description default-yama-scope
+Yama sysctl setting to enable default attach scope settings
+enabling programs to use ptrace attach, access to
+/proc/PID/{mem,personality,stack,syscall}, and the syscalls
+process_vm_readv and process_vm_writev which are used for
+interprocess services, communication and introspection
+(like synchronisation, signaling, debugging, tracing and
+profiling) of processes.
+%endif
+
 %prep
 %setup -q
 
@@ -204,6 +233,10 @@ find . \( -name configure -o -name config.h.in \) -print | xargs touch
 sed -i.scanf-m -e 's/%m/%a/g' src/addr2line.c tests/line2addr.c
 %endif
 %endif
+
+%patch2 -p1 -b .shf_info_link
+%patch3 -p1 -b .yama_scope
+%patch4 -p1 -b .right_shift
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -246,6 +279,10 @@ chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
 
 %find_lang %{name}
 
+%if %{provide_yama_scope}
+install -Dm0644 config/10-default-yama-scope.conf ${RPM_BUILD_ROOT}%{_sysctldir}/10-default-yama-scope.conf
+%endif
+
 %check
 make -s %{?_smp_mflags} check || (cat tests/test-suite.log; %{nocheck})
 
@@ -259,6 +296,11 @@ rm -rf ${RPM_BUILD_ROOT}
 %post libelf -p /sbin/ldconfig
 
 %postun libelf -p /sbin/ldconfig
+
+%if %{provide_yama_scope}
+%post default-yama-scope
+%sysctl_apply 10-default-yama-scope.conf
+%endif
 
 %files
 %defattr(-,root,root)
@@ -332,7 +374,23 @@ rm -rf ${RPM_BUILD_ROOT}
 %defattr(-,root,root)
 %{_libdir}/libelf.a
 
+%if %{provide_yama_scope}
+%files default-yama-scope
+%defattr(-,root,root)
+%config(noreplace) %{_sysctldir}/10-default-yama-scope.conf
+%endif
+
 %changelog
+* Mon Sep 07 2015 Mark Wielaard <mjw@redhat.com> - 0.163-4
+- Add elfutils-0.163-readelf-n-undefined-shift.patch (#1259259)
+
+* Tue Aug 04 2015 Mark Wielaard <mjw@redhat.com> - 0.163-3
+- Add elfutils-0.163-default-yama-conf.patch (#1250079)
+  Provides: default-yama-scope
+
+* Mon Aug 03 2015 Mark Wielaard <mjw@redhat.com> - 0.163-2
+- Add elfutils-0.163-unstrip-shf_info_link.patch
+
 * Fri Jun 19 2015 Mark Wielaard <mjw@redhat.com> - 0.163-1
 - Update to 0.163
   - Drop elfutils-0.162-ftruncate-allocate.patch
