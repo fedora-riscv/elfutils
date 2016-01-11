@@ -1,6 +1,6 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
-Version: 0.164
+Version: 0.165
 %global baserelease 1
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
@@ -42,7 +42,8 @@ Elfutils is a collection of utilities, including stack (to show
 backtraces), nm (for listing symbols from object files), size
 (for listing the section sizes of an object or archive file),
 strip (for discarding symbols), readelf (to see the raw ELF file
-structures), and elflint (to check for well-formed ELF files).
+structures), elflint (to check for well-formed ELF files) and
+elfcompress (to compress or decompress ELF sections).
 
 
 %package libs
@@ -237,6 +238,7 @@ rm -rf ${RPM_BUILD_ROOT}
 #%%{_bindir}/eu-ld
 %{_bindir}/eu-unstrip
 %{_bindir}/eu-make-debug-archive
+%{_bindir}/eu-elfcompress
 
 %files libs
 %defattr(-,root,root)
@@ -264,6 +266,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libebl.a
 %{_libdir}/libasm.so
 %{_libdir}/libdw.so
+%{_libdir}/pkgconfig/libdw.pc
 
 %files devel-static
 %defattr(-,root,root)
@@ -283,6 +286,7 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_includedir}/gelf.h
 %{_includedir}/nlist.h
 %{_libdir}/libelf.so
+%{_libdir}/pkgconfig/libelf.pc
 
 %files libelf-devel-static
 %defattr(-,root,root)
@@ -295,6 +299,11 @@ rm -rf ${RPM_BUILD_ROOT}
 %endif
 
 %changelog
+* Mon Jan 11 2016 Mark Wielaard <mjw@redhat.com> - 0.165-1
+- Update to elfutils-0.165 (#1294079, #1236699, #807053)
+  - Add eu-elfcompress
+  - Add pkg-config files for libelf and libdw.
+
 * Fri Oct 16 2015 Mark Wielaard <mjw@redhat.com> - 0.164-1
 - Update to elfutils-0.164
 - Drop old compat stuff
