@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.165
-%global baserelease 2
+%global baserelease 3
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -23,6 +23,7 @@ Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 # Needed for older (pre-2.22) glibc (f22 and earlier)
 Patch1: elfutils-0.165-elf-libelf.patch
+Patch2: elfutils-0.165-reloc.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -167,6 +168,7 @@ profiling) of processes.
 
 # Apply patches
 %patch1 -p1 -b .elf_libelf
+%patch2 -p1 -b .reloc
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -303,6 +305,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %endif
 
 %changelog
+* Thu Jan 28 2016 Mark Wielaard <mjw@redhat.com> - 0.165-3
+- Add elfutils-0.165-reloc.patch.
+
 * Thu Jan 14 2016 Mark Wielaard <mjw@redhat.com> - 0.165-2
 - Add elfutils-0.165-elf-libelf.patch.
 
