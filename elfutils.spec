@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.165
-%global baserelease 4
+%global baserelease 5
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -24,6 +24,7 @@ Source: %{?source_url}%{name}-%{version}.tar.bz2
 # Needed for older (pre-2.22) glibc (f22 and earlier)
 Patch1: elfutils-0.165-elf-libelf.patch
 Patch2: elfutils-0.165-reloc.patch
+Patch3: elfutils-0.165-nobitsalign-strip.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -169,6 +170,7 @@ profiling) of processes.
 # Apply patches
 %patch1 -p1 -b .elf_libelf
 %patch2 -p1 -b .reloc
+%patch3 -p1 -b .nobitsalign
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -305,6 +307,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %endif
 
 %changelog
+* Thu Feb 04 2016 Mark Wielaard <mjw@redhat.com> - 0.165-5
+- Add elfutils-0.165-nobitsalign-strip.patch.
+
 * Wed Feb 03 2016 Fedora Release Engineering <releng@fedoraproject.org> - 0.165-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
 
