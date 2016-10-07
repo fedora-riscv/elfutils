@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle compiled objects
 Version: 0.167
-%global baserelease 1
+%global baserelease 2
 URL: https://fedorahosted.org/elfutils/
 %global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -20,6 +20,7 @@ Release: %{baserelease}%{?dist}
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 # Patches
+Patch1: elfutils-0.167-strip-alloc-symbol.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -163,6 +164,7 @@ profiling) of processes.
 %setup -q
 
 # Apply patches
+%patch1 -p1 -b .strip_alloc_sym
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -293,6 +295,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %endif
 
 %changelog
+* Fri Oct  7 2016 Mark Wielaard <mjw@redhat.com> - 0.167-2
+- Add elfutils-0.167-strip-alloc-symbol.patch (#1380961)
+
 * Fri Aug 26 2016 Mark Wielaard <mjw@redhat.com> - 0.167-1
 - Upgrade to elfutils-0.167
   Drop upstream elfutils-0.166-elfcmp-comp-gcc6.patch
