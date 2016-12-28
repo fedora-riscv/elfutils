@@ -1,9 +1,9 @@
 Name: elfutils
-Summary: A collection of utilities and DSOs to handle compiled objects
-Version: 0.167
-%global baserelease 2
-URL: https://fedorahosted.org/elfutils/
-%global source_url http://fedorahosted.org/releases/e/l/elfutils/%{version}/
+Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
+Version: 0.168
+%global baserelease 1
+URL: http://elfutils.org/
+%global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
 Group: Development/Tools
 
@@ -20,7 +20,6 @@ Release: %{baserelease}%{?dist}
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 # Patches
-Patch1: elfutils-0.167-strip-alloc-symbol.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -164,7 +163,6 @@ profiling) of processes.
 %setup -q
 
 # Apply patches
-%patch1 -p1 -b .strip_alloc_sym
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -295,6 +293,13 @@ rm -rf ${RPM_BUILD_ROOT}
 %endif
 
 %changelog
+* Wed Dec 28 2016 Mark Wielaard <mark@klomp.org> - 0.168-1
+- New upstream release from new home https://sourceware.org/elfutils/
+- Resolves:
+  - #1396092 Please implement eu-readelf --symbols[=SECTION]
+  - #1388057 memory allocation failure in allocate_elf
+  - #1387584 memory allocation failure in __libelf_set_rawdata_wrlock
+
 * Fri Oct  7 2016 Mark Wielaard <mjw@redhat.com> - 0.167-2
 - Add elfutils-0.167-strip-alloc-symbol.patch (#1380961)
 
