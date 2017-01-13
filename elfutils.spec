@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.168
-%global baserelease 1
+%global baserelease 2
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -36,6 +36,16 @@ BuildRequires: xz-devel
 
 %global _gnu %{nil}
 %global _program_prefix eu-
+
+# The lib[64]/elfutils directory contains the private ebl backend
+# libraries. They must not be exposed as global provides. We don't
+# need to filter the requires since they are only loaded with dlopen.
+%if 0%{?fedora} >= 15
+%global __provides_exclude ^libebl_.*\\.so.*$
+%else
+%filter_provides_in %{_libdir}/elfutils/libebl_.*\.so$
+%filter_setup
+%endif
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -293,6 +303,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %endif
 
 %changelog
+* Fri Jan 13 2017 Mark Wielaard <mark@klomp.org> - 0.168-2
+- Filter out private libebl backends from provides.
+
 * Wed Dec 28 2016 Mark Wielaard <mark@klomp.org> - 0.168-1
 - New upstream release from new home https://sourceware.org/elfutils/
 - Resolves:
