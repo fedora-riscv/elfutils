@@ -1,0 +1,275 @@
+From 1b2cd3f4dc581eed0fc1ee98f97aa492a19873b0 Mon Sep 17 00:00:00 2001
+From: Mark Wielaard <mark@klomp.org>
+Date: Sun, 21 May 2017 23:33:15 +0200
+Subject: [PATCH] ppc64: Add minimal fallback unwinder.
+
+This adds a minimal fallback unwinder for ppc64[le] in case we cannot find
+CFI for a particular address. It simply always sets the program counter to
+the link register, picks the previous stack pointer from the backchain,
+and the previous link register from the LR save area.
+
+This is enough for some simple situations when we don't have CFI and
+seems to work nicely in the case of perf with libdw powerpc support:
+https://lkml.org/lkml/2017/5/18/998
+
+Signed-off-by: Mark Wielaard <mark@klomp.org>
+---
+ backends/ChangeLog                     |   6 +++
+ backends/Makefile.am                   |   2 +-
+ backends/ppc64_init.c                  |   1 +
+ backends/ppc64_unwind.c                |  76 +++++++++++++++++++++++++++++++++
+ tests/ChangeLog                        |  10 +++++
+ tests/Makefile.am                      |   3 ++
+ tests/backtrace-subr.sh                |   2 +-
+ tests/backtrace.ppc64le.fp.core.bz2    | Bin 0 -> 37786 bytes
+ tests/backtrace.ppc64le.fp.exec.bz2    | Bin 0 -> 383808 bytes
+ tests/run-backtrace-fp-core-ppc64le.sh |  29 +++++++++++++
+ 10 files changed, 127 insertions(+), 2 deletions(-)
+ create mode 100644 backends/ppc64_unwind.c
+ create mode 100644 tests/backtrace.ppc64le.fp.core.bz2
+ create mode 100755 tests/backtrace.ppc64le.fp.exec.bz2
+ create mode 100755 tests/run-backtrace-fp-core-ppc64le.sh
+
+index ff80a82..ac45a45 100644
+--- a/backends/Makefile.am
++++ b/backends/Makefile.am
+@@ -98,7 +98,7 @@ am_libebl_ppc_pic_a_OBJECTS = $(ppc_SRCS:.c=.os)
+ 
+ ppc64_SRCS = ppc64_init.c ppc64_symbol.c ppc64_retval.c \
+ 	     ppc64_corenote.c ppc_regs.c ppc_auxv.c ppc_attrs.c ppc_syscall.c \
+-	     ppc_cfi.c ppc_initreg.c ppc64_resolve_sym.c
++	     ppc_cfi.c ppc_initreg.c ppc64_unwind.c ppc64_resolve_sym.c
+ libebl_ppc64_pic_a_SOURCES = $(ppc64_SRCS)
+ am_libebl_ppc64_pic_a_OBJECTS = $(ppc64_SRCS:.c=.os)
+ 
+diff --git a/backends/ppc64_init.c b/backends/ppc64_init.c
+index 11d3a77..e567033 100644
+--- a/backends/ppc64_init.c
++++ b/backends/ppc64_init.c
+@@ -73,6 +73,7 @@ ppc64_init (Elf *elf __attribute__ ((unused)),
+   eh->frame_nregs = (114 - 1) + 32;
+   HOOK (eh, set_initial_registers_tid);
+   HOOK (eh, dwarf_to_regno);
++  HOOK (eh, unwind);
+   HOOK (eh, resolve_sym_value);
+ 
+   /* Find the function descriptor .opd table for resolve_sym_value.  */
+diff --git a/backends/ppc64_unwind.c b/backends/ppc64_unwind.c
+new file mode 100644
+index 0000000..4fa0b5a
+--- /dev/null
++++ b/backends/ppc64_unwind.c
+@@ -0,0 +1,76 @@
++/* Get previous frame state for an existing frame state.
++   Copyright (C) 2017 Red Hat, Inc.
++   This file is part of elfutils.
++
++   This file is free software; you can redistribute it and/or modify
++   it under the terms of either
++
++     * the GNU Lesser General Public License as published by the Free
++       Software Foundation; either version 3 of the License, or (at
++       your option) any later version
++
++   or
++
++     * the GNU General Public License as published by the Free
++       Software Foundation; either version 2 of the License, or (at
++       your option) any later version
++
++   or both in parallel, as here.
++
++   elfutils is distributed in the hope that it will be useful, but
++   WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   General Public License for more details.
++
++   You should have received copies of the GNU General Public License and
++   the GNU Lesser General Public License along with this program.  If
++   not, see <http://www.gnu.org/licenses/>.  */
++
++#ifdef HAVE_CONFIG_H
++# include <config.h>
++#endif
++
++#define BACKEND ppc64_
++
++#define LR_REG 65 /* Not 108, see ppc_dwarf_to_regno.  */
++#define SP_REG  1
++
++#define LR_OFFSET 16
++
++#include "libebl_CPU.h"
++
++/* Simplistic fallback frame unwinder. SP points to the backchain (contains
++   address of previous stack pointer). At SP offset 16 is the LR save area
++   (contains the value of the previous LR).  */
++
++bool
++EBLHOOK(unwind) (Ebl *ebl __attribute__ ((unused)),
++		 Dwarf_Addr pc __attribute__ ((unused)),
++                 ebl_tid_registers_t *setfunc, ebl_tid_registers_get_t *getfunc,
++                 ebl_pid_memory_read_t *readfunc, void *arg,
++                 bool *signal_framep __attribute__ ((unused)))
++{
++  Dwarf_Word sp, newSp, lr, newLr;
++
++  /* Stack pointer points to the backchain which contains the previous sp.  */
++  if (! getfunc (SP_REG, 1, &sp, arg))
++    sp = 0;
++
++  /* Link register contains previous program counter.  */
++  if (! getfunc (LR_REG, 1, &lr, arg)
++      || lr == 0
++      || ! setfunc (-1, 1, &lr, arg))
++    return false;
++
++  if (! readfunc(sp, &newSp, arg))
++    newSp = 0;
++
++  if (! readfunc(newSp + LR_OFFSET, &newLr, arg))
++    newLr = 0;
++
++  setfunc(SP_REG, 1, &newSp, arg);
++  setfunc(LR_REG, 1, &newLr, arg);
++
++  /* Sanity check the stack grows down.  */
++  return newSp > sp;
++}
+diff --git a/tests/Makefile.am b/tests/Makefile.am
+index 3a12fe3..50648db 100644
+--- a/tests/Makefile.am
++++ b/tests/Makefile.am
+@@ -117,6 +117,7 @@ TESTS = run-arextract.sh run-arsymtest.sh newfile test-nlist \
+ 	run-backtrace-native-core-biarch.sh run-backtrace-core-x86_64.sh \
+ 	run-backtrace-fp-core-x86_64.sh \
+ 	run-backtrace-fp-core-aarch64.sh \
++	run-backtrace-fp-core-ppc64le.sh \
+ 	run-backtrace-core-x32.sh \
+ 	run-backtrace-core-i386.sh run-backtrace-fp-core-i386.sh \
+ 	run-backtrace-core-ppc.sh \
+@@ -303,6 +304,8 @@ EXTRA_DIST = run-arextract.sh run-arsymtest.sh \
+ 	     backtrace-subr.sh backtrace.i386.core.bz2 backtrace.i386.exec.bz2 \
+ 	     run-backtrace-fp-core-i386.sh \
+ 	     backtrace.i386.fp.core.bz2 backtrace.i386.fp.exec.bz2 \
++	     run-backtrace-fp-core-ppc64le.sh \
++	     backtrace.ppc64le.fp.core.bz2 backtrace.ppc64le.fp.exec.bz2 \
+ 	     backtrace.x86_64.core.bz2 backtrace.x86_64.exec.bz2 \
+ 	     backtrace.x86_64.fp.core.bz2 backtrace.x86_64.fp.exec.bz2 \
+ 	     backtrace.ppc.core.bz2 backtrace.ppc.exec.bz2 \
+diff --git a/tests/backtrace-subr.sh b/tests/backtrace-subr.sh
+index 9731c43..c1f3156 100644
+--- a/tests/backtrace-subr.sh
++++ b/tests/backtrace-subr.sh
+@@ -59,7 +59,7 @@ check_backtracegen()
+ # Ignore it here as it is a bug of OS, not a bug of elfutils.
+ check_err()
+ {
+-  if [ $(egrep -v <$1 'dwfl_thread_getframes: (No DWARF information found|no matching address range|address out of range|Invalid register)$' \
++  if [ $(egrep -v <$1 'dwfl_thread_getframes: (No DWARF information found|no matching address range|address out of range|Invalid register|\(null\))$' \
+          | wc -c) \
+        -eq 0 ]
+   then
+diff --git a/tests/run-backtrace-fp-core-ppc64le.sh b/tests/run-backtrace-fp-core-ppc64le.sh
+new file mode 100755
+index 0000000..326ca34
+--- /dev/null
++++ b/tests/run-backtrace-fp-core-ppc64le.sh
+@@ -0,0 +1,29 @@
++#! /bin/bash
++# Copyright (C) 2017 Red Hat, Inc.
++# This file is part of elfutils.
++#
++# This file is free software; you can redistribute it and/or modify
++# it under the terms of the GNU General Public License as published by
++# the Free Software Foundation; either version 3 of the License, or
++# (at your option) any later version.
++#
++# elfutils is distributed in the hope that it will be useful, but
++# WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++# GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with this program.  If not, see <http://www.gnu.org/licenses/>.
++
++. $srcdir/backtrace-subr.sh
++
++# The binary is generated by compiling backtrace-child without unwind
++# information, but with -fno-omit-frame-pointer.
++#
++# gcc -static -O2 -fno-omit-frame-pointer -fno-asynchronous-unwind-tables \
++#     -D_GNU_SOURCE -pthread -o tests/backtrace.ppc64le.fp.exec -I. -Ilib \
++#     tests/backtrace-child.c
++#
++# The core is generated by calling tests/backtrace.ppc64le.fp.exec --gencore
++
++check_core ppc64le.fp
+-- 
+1.8.3.1
+
+diff -ru elfutils-0.169.orig/backends/Makefile.in elfutils-0.169/backends/Makefile.in
+--- elfutils-0.169.orig/backends/Makefile.in	2017-05-30 21:43:28.725454717 +0200
++++ elfutils-0.169/backends/Makefile.in	2017-05-30 21:43:55.681944556 +0200
+@@ -159,7 +159,7 @@
+ 	ppc64_retval.$(OBJEXT) ppc64_corenote.$(OBJEXT) \
+ 	ppc_regs.$(OBJEXT) ppc_auxv.$(OBJEXT) ppc_attrs.$(OBJEXT) \
+ 	ppc_syscall.$(OBJEXT) ppc_cfi.$(OBJEXT) ppc_initreg.$(OBJEXT) \
+-	ppc64_resolve_sym.$(OBJEXT)
++	ppc64_unwind.$(OBJEXT) ppc64_resolve_sym.$(OBJEXT)
+ libebl_ppc64_pic_a_OBJECTS = $(am_libebl_ppc64_pic_a_OBJECTS)
+ libebl_ppc_pic_a_AR = $(AR) $(ARFLAGS)
+ libebl_ppc_pic_a_LIBADD =
+@@ -505,7 +505,7 @@
+ am_libebl_ppc_pic_a_OBJECTS = $(ppc_SRCS:.c=.os)
+ ppc64_SRCS = ppc64_init.c ppc64_symbol.c ppc64_retval.c \
+ 	     ppc64_corenote.c ppc_regs.c ppc_auxv.c ppc_attrs.c ppc_syscall.c \
+-	     ppc_cfi.c ppc_initreg.c ppc64_resolve_sym.c
++	     ppc_cfi.c ppc_initreg.c ppc64_unwind.c ppc64_resolve_sym.c
+ 
+ libebl_ppc64_pic_a_SOURCES = $(ppc64_SRCS)
+ am_libebl_ppc64_pic_a_OBJECTS = $(ppc64_SRCS:.c=.os)
+@@ -696,6 +696,7 @@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ppc64_resolve_sym.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ppc64_retval.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ppc64_symbol.Po@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ppc64_unwind.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ppc_attrs.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ppc_auxv.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ppc_cfi.Po@am__quote@
+diff -ru elfutils-0.169.orig/tests/Makefile.in elfutils-0.169/tests/Makefile.in
+--- elfutils-0.169.orig/tests/Makefile.in	2017-05-30 21:43:28.743454377 +0200
++++ elfutils-0.169/tests/Makefile.in	2017-05-30 21:43:56.191934904 +0200
+@@ -174,7 +174,8 @@
+ 	run-backtrace-native-biarch.sh run-backtrace-native-core.sh \
+ 	run-backtrace-native-core-biarch.sh \
+ 	run-backtrace-core-x86_64.sh run-backtrace-fp-core-x86_64.sh \
+-	run-backtrace-fp-core-aarch64.sh run-backtrace-core-x32.sh \
++	run-backtrace-fp-core-aarch64.sh \
++	run-backtrace-fp-core-ppc64le.sh run-backtrace-core-x32.sh \
+ 	run-backtrace-core-i386.sh run-backtrace-fp-core-i386.sh \
+ 	run-backtrace-core-ppc.sh run-backtrace-core-s390x.sh \
+ 	run-backtrace-core-s390.sh run-backtrace-core-aarch64.sh \
+@@ -1174,6 +1175,8 @@
+ 	     backtrace-subr.sh backtrace.i386.core.bz2 backtrace.i386.exec.bz2 \
+ 	     run-backtrace-fp-core-i386.sh \
+ 	     backtrace.i386.fp.core.bz2 backtrace.i386.fp.exec.bz2 \
++	     run-backtrace-fp-core-ppc64le.sh \
++	     backtrace.ppc64le.fp.core.bz2 backtrace.ppc64le.fp.exec.bz2 \
+ 	     backtrace.x86_64.core.bz2 backtrace.x86_64.exec.bz2 \
+ 	     backtrace.x86_64.fp.core.bz2 backtrace.x86_64.fp.exec.bz2 \
+ 	     backtrace.ppc.core.bz2 backtrace.ppc.exec.bz2 \
+@@ -2924,6 +2927,13 @@
+ 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+ 	--log-file $$b.log --trs-file $$b.trs \
+ 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
++	"$$tst" $(AM_TESTS_FD_REDIRECT)
++run-backtrace-fp-core-ppc64le.sh.log: run-backtrace-fp-core-ppc64le.sh
++	@p='run-backtrace-fp-core-ppc64le.sh'; \
++	b='run-backtrace-fp-core-ppc64le.sh'; \
++	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
++	--log-file $$b.log --trs-file $$b.trs \
++	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+ 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+ run-backtrace-core-x32.sh.log: run-backtrace-core-x32.sh
+ 	@p='run-backtrace-core-x32.sh'; \

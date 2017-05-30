@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.169
-%global baserelease 1
+%global baserelease 2
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -20,6 +20,9 @@ Release: %{baserelease}%{?dist}
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 # Patches
+Patch1: elfutils-0.169-ppc64-fallback-unwinder.patch
+Source1: backtrace.ppc64le.fp.exec.bz2
+Source2: backtrace.ppc64le.fp.core.bz2
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -170,6 +173,8 @@ profiling) of processes.
 %setup -q
 
 # Apply patches
+%patch1 -p1 -b .ppc64_unwind
+cp %SOURCE1 %SOURCE2 tests/
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -300,6 +305,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %endif
 
 %changelog
+* Tue May 30 2017 Mark Wielaard <mjw@fedoraproject.org> - 0.169-2
+- Add ppc64 fallback unwinder.
+
 * Fri May  5 2017 Mark Wielaard <mjw@fedoraproject.org> - 0.169-1
 - New upstream release. Removed upstreamed patches.
 
