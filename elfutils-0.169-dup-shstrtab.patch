@@ -1,0 +1,98 @@
+commit e014cbba4e16f717807bca88512d2875a1c17ee4
+Author: Mark Wielaard <mark@klomp.org>
+Date:   Wed Jun 7 14:05:36 2017 +0200
+
+    strip: Make sure old .shstrab is removed when eu-strip recreates it.
+    
+    Although we always recreate the .shstrtab section for the new output
+    file we never explicitly assumed it could be removed. It might not be
+    possible to remove it when the section string table is shared with
+    a symbol table. But if it is removable we should (and recreate it for
+    the new section list).
+    
+    Regression introduced in commit elfutils-0.163-33-gdf7dfab.
+    "Handle merged strtab/shstrtab string tables in strip and unstrip."
+    Add extra testcase to explicitly check for this case.
+    
+    https://sourceware.org/bugzilla/show_bug.cgi?id=21525
+    
+    Signed-off-by: Mark Wielaard <mark@klomp.org>
+
+diff --git a/src/ChangeLog b/src/ChangeLog
+index cbb77fc..6ac0ef2 100644
+--- a/src/ChangeLog
++++ b/src/ChangeLog
+@@ -1,3 +1,7 @@
++2017-06-06  Mark Wielaard  <mark@klomp.org>
++
++	* strip.c (handle_elf): Assume e_shstrndx section can be removed.
++
+ 2017-04-20  Ulf Hermann  <ulf.hermann@qt.io>
+ 
+ 	* readelf.c: Include strings.h.
+diff --git a/src/strip.c b/src/strip.c
+index f747441..11b2a37 100644
+--- a/src/strip.c
++++ b/src/strip.c
+@@ -711,11 +711,13 @@ handle_elf (int fd, Elf *elf, const char *prefix, const char *fname,
+        in the sh_link or sh_info element it cannot be removed either
+   */
+   for (cnt = 1; cnt < shnum; ++cnt)
+-    /* Check whether the section can be removed.  */
++    /* Check whether the section can be removed.  Since we will create
++       a new .shstrtab assume it will be removed too.  */
+     if (remove_shdrs ? !(shdr_info[cnt].shdr.sh_flags & SHF_ALLOC)
+-	: ebl_section_strip_p (ebl, ehdr, &shdr_info[cnt].shdr,
+-			       shdr_info[cnt].name, remove_comment,
+-			       remove_debug))
++	: (ebl_section_strip_p (ebl, ehdr, &shdr_info[cnt].shdr,
++				shdr_info[cnt].name, remove_comment,
++				remove_debug)
++	   || cnt == ehdr->e_shstrndx))
+       {
+ 	/* For now assume this section will be removed.  */
+ 	shdr_info[cnt].idx = 0;
+@@ -1062,8 +1064,10 @@ handle_elf (int fd, Elf *elf, const char *prefix, const char *fname,
+       }
+ 
+   /* Test whether we are doing anything at all.  */
+-  if (cnt == idx)
+-    /* Nope, all removable sections are already gone.  */
++  if (cnt == idx
++      || (cnt == idx + 1 && shdr_info[ehdr->e_shstrndx].idx == 0))
++    /* Nope, all removable sections are already gone.  Or the only section
++       we would remove is the .shstrtab section which we will add again.  */
+     goto fail_close;
+ 
+   /* Create the reference to the file with the debug info.  */
+diff --git a/tests/ChangeLog b/tests/ChangeLog
+index 5b0d486..5800946 100644
+--- a/tests/ChangeLog
++++ b/tests/ChangeLog
+@@ -1,3 +1,7 @@
++2017-06-06  Mark Wielaard  <mark@klomp.org>
++
++	* run-strip-test.sh: Test strip -g doesn't introduce extra .shstrtab.
++
+ 2017-02-13  Ulf Hermann  <ulf.hermann@qt.io>
+ 	    Mark Wielaard  <mark@klomp.org>
+ 
+diff --git a/tests/run-strip-test.sh b/tests/run-strip-test.sh
+index 42aa988..280814e 100755
+--- a/tests/run-strip-test.sh
++++ b/tests/run-strip-test.sh
+@@ -49,6 +49,14 @@ testrun ${abs_top_builddir}/src/unstrip -o testfile.unstrip testfile.temp testfi
+ testrun ${abs_top_builddir}/src/elfcmp --hash-inexact $original testfile.unstrip
+ }
+ 
++# test strip -g
++testrun ${abs_top_builddir}/src/strip -g -o testfile.temp $original
++
++# Buggy eu-strip created multiple .shstrtab sections
++shstrtab_SECS=$(testrun ${abs_top_builddir}/src/readelf -S testfile.temp | grep '.shstrtab' | wc --lines)
++test $shstrtab_SECS -eq 1 ||
++  { echo "*** failure not just one '.shstrtab' testfile.temp ($shstrtab_SECS)"; status=1; }
++
+ # Now strip in-place and make sure it is smaller.
+ SIZE_original=$(stat -c%s $original)
+ testrun ${abs_top_builddir}/src/strip $original
