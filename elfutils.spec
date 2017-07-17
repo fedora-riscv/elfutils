@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.169
-%global baserelease 4
+%global baserelease 5
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -26,6 +26,7 @@ Source2: backtrace.ppc64le.fp.core.bz2
 Patch2: elfutils-0.169-dup-shstrtab.patch
 Patch3: elfutils-0.169-strip-empty.patch
 Patch4: elfutils-0.169-strip-keep-remove-section.patch
+Patch5: elfutils-0.169-s390x-ptrace.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -181,6 +182,7 @@ cp %SOURCE1 %SOURCE2 tests/
 %patch2 -p1 -b .shstrtab_dup
 %patch3 -p1 -b .strip_empty
 %patch4 -p1 -b .strip_keep_remove
+%patch5 -p1 -b .s390_ptrace
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -311,6 +313,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %endif
 
 %changelog
+* Mon Jul 17 2017 Mark Wielaard <mjw@fedoraproject.org> - 0.169-5
+- Fix build on s390 (ptrace.h). Add elfutils-0.169-s390x-ptrace.patch.
+
 * Mon Jul 17 2017 Mark Wielaard <mjw@fedoraproject.org> - 0.169-4
 - Add elfutils-0.169-strip-keep-remove-section.patch (#1465997)
 
