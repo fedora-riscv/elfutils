@@ -1,0 +1,1063 @@
+commit d03be4f70c688a8c675935973663014c3c4bba76
+Author: Mark Wielaard <mark@klomp.org>
+Date:   Fri Jul 14 17:09:40 2017 +0200
+
+    strip: Add --keep-section=SECTION and --remove-section=SECTION.
+    
+    Adds two new output options:
+    
+      --keep-section=SECTION Keep the named section.  SECTION is an extended
+                             wildcard pattern.  May be given more than once.
+    
+      --remove-section=SECTION   Remove the named section.  SECTION is an
+                             extended wildcard pattern.  May be given more than
+                             once.  Only non-allocated sections can be removed.
+    
+    The --remove-section was already partially implemented, but only for the
+    .comment section. The short option -R is to be compatible with binutils.
+    
+    The new testcase makes sure that various combinations of kept/removed
+    sections pull the correct dependencies into the output and/or debug files.
+    
+    https://bugzilla.redhat.com/show_bug.cgi?id=1465997
+    
+    Signed-off-by: Mark Wielaard <mark@klomp.org>
+
+diff --git a/ChangeLog b/ChangeLog
+index 0d6cd2b..c9db732 100644
+--- a/ChangeLog
++++ b/ChangeLog
+@@ -1,3 +1,7 @@
++2017-07-14  Mark Wielaard  <mark@klomp.org>
++
++	* NEWS: Add 0.170 section and new strip options.
++
+ 2017-05-05  Mark Wielaard  <mark@klomp.org>
+ 
+ 	* configure.ac: Set version to 0.169. Update copyright year.
+diff --git a/NEWS b/NEWS
+index eb7dd97..b69aef4 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,3 +1,7 @@
++Version 0.170
++
++strip: Add -R, --remove-section=SECTION and --keep-section=SECTION.
++
+ Version 0.169
+ 
+ backends: Add support for EM_PPC64 GNU_ATTRIBUTES.
+diff --git a/src/ChangeLog b/src/ChangeLog
+index e19122e..0b60fc7 100644
+--- a/src/ChangeLog
++++ b/src/ChangeLog
+@@ -1,3 +1,16 @@
++2017-07-14  Mark Wielaard  <mark@klomp.org>
++
++	* strip (OPT_KEEP_SECTION): New define.
++	(options): Add documentation for remove-section. Add keep-section.
++	(struct section_pattern): New data type.
++	(keep_secs, remove_secs): New globals.
++	(add_pattern, free_sec_patterns, free_patterns, section_name_matches):
++	New functions.
++	(main): Call free_patterns.
++	(parse_opt): Handle 'R' and OPT_KEEP_SECTION. Check remove_comment
++	on ARGP_KEY_SUCCESS.
++	(handle_elf): Handle and sanity check keep_secs and remove_secs.
++
+ 2017-06-07  Mark Wielaard  <mark@klomp.org>
+ 
+ 	* strip.c (handle_elf): Introduce new handle_elf boolean. Use it to
+diff --git a/src/strip.c b/src/strip.c
+index 2bf95f9..4a35ea1 100644
+--- a/src/strip.c
++++ b/src/strip.c
+@@ -26,6 +26,7 @@
+ #include <endian.h>
+ #include <error.h>
+ #include <fcntl.h>
++#include <fnmatch.h>
+ #include <gelf.h>
+ #include <libelf.h>
+ #include <libintl.h>
+@@ -60,6 +61,7 @@ ARGP_PROGRAM_BUG_ADDRESS_DEF = PACKAGE_BUGREPORT;
+ #define OPT_PERMISSIVE		0x101
+ #define OPT_STRIP_SECTIONS	0x102
+ #define OPT_RELOC_DEBUG 	0x103
++#define OPT_KEEP_SECTION 	0x104
+ 
+ 
+ /* Definitions of arguments for argp functions.  */
+@@ -83,7 +85,8 @@ static const struct argp_option options[] =
+     N_("Resolve all trivial relocations between debug sections if the removed sections are placed in a debug file (only relevant for ET_REL files, operation is not reversable, needs -f)"), 0 },
+   { "remove-comment", OPT_REMOVE_COMMENT, NULL, 0,
+     N_("Remove .comment section"), 0 },
+-  { "remove-section", 'R', "SECTION", OPTION_HIDDEN, NULL, 0 },
++  { "remove-section", 'R', "SECTION", 0, N_("Remove the named section.  SECTION is an extended wildcard pattern.  May be given more than once.  Only non-allocated sections can be removed."), 0 },
++  { "keep-section", OPT_KEEP_SECTION, "SECTION", 0, N_("Keep the named section.  SECTION is an extended wildcard pattern.  May be given more than once."), 0 },
+   { "permissive", OPT_PERMISSIVE, NULL, 0,
+     N_("Relax a few rules to handle slightly broken ELF files"), 0 },
+   { NULL, 0, NULL, 0, NULL, 0 }
+@@ -157,6 +160,58 @@ static bool permissive;
+ /* If true perform relocations between debug sections.  */
+ static bool reloc_debug;
+ 
++/* Sections the user explicitly wants to keep or remove.  */
++struct section_pattern
++{
++  char *pattern;
++  struct section_pattern *next;
++};
++
++static struct section_pattern *keep_secs = NULL;
++static struct section_pattern *remove_secs = NULL;
++
++static void
++add_pattern (struct section_pattern **patterns, const char *pattern)
++{
++  struct section_pattern *p = xmalloc (sizeof *p);
++  p->pattern = xstrdup (pattern);
++  p->next = *patterns;
++  *patterns = p;
++}
++
++static void
++free_sec_patterns (struct section_pattern *patterns)
++{
++  struct section_pattern *pattern = patterns;
++  while (pattern != NULL)
++    {
++      struct section_pattern *p = pattern;
++      pattern = p->next;
++      free (p->pattern);
++      free (p);
++    }
++}
++
++static void
++free_patterns (void)
++{
++  free_sec_patterns (keep_secs);
++  free_sec_patterns (remove_secs);
++}
++
++static bool
++section_name_matches (struct section_pattern *patterns, const char *name)
++{
++  struct section_pattern *pattern = patterns;
++  while (pattern != NULL)
++    {
++      if (fnmatch (pattern->pattern, name, FNM_EXTMATCH) == 0)
++	return true;
++      pattern = pattern->next;
++    }
++  return false;
++}
++
+ 
+ int
+ main (int argc, char *argv[])
+@@ -207,6 +262,7 @@ Only one input file allowed together with '-o' and '-f'"));
+       while (++remaining < argc);
+     }
+ 
++  free_patterns ();
+   return result;
+ }
+ 
+@@ -257,14 +313,13 @@ parse_opt (int key, char *arg, struct argp_state *state)
+       break;
+ 
+     case 'R':
+-      if (!strcmp (arg, ".comment"))
++      if (fnmatch (arg, ".comment", FNM_EXTMATCH) == 0)
+ 	remove_comment = true;
+-      else
+-	{
+-	  argp_error (state,
+-		      gettext ("-R option supports only .comment section"));
+-	  return EINVAL;
+-	}
++      add_pattern (&remove_secs, arg);
++      break;
++
++    case OPT_KEEP_SECTION:
++      add_pattern (&keep_secs, arg);
+       break;
+ 
+     case 'g':
+@@ -284,6 +339,16 @@ parse_opt (int key, char *arg, struct argp_state *state)
+     case 's':			/* Ignored for compatibility.  */
+       break;
+ 
++    case ARGP_KEY_SUCCESS:
++      if (remove_comment == true
++	  && section_name_matches (keep_secs, ".comment"))
++	{
++	  argp_error (state,
++		      gettext ("cannot both keep and remove .comment section"));
++	  return EINVAL;
++	}
++      break;
++
+     default:
+       return ARGP_ERR_UNKNOWN;
+     }
+@@ -622,6 +687,28 @@ handle_elf (int fd, Elf *elf, const char *prefix, const char *fname,
+ 	  goto fail_close;
+ 	}
+ 
++      /* Sanity check the user.  */
++      if (section_name_matches (remove_secs, shdr_info[cnt].name))
++	{
++	  if ((shdr_info[cnt].shdr.sh_flags & SHF_ALLOC) != 0)
++	    {
++	      error (0, 0,
++		     gettext ("Cannot remove allocated section '%s'"),
++		     shdr_info[cnt].name);
++	      result = 1;
++	      goto fail_close;
++	    }
++
++	  if (section_name_matches (keep_secs, shdr_info[cnt].name))
++	    {
++	      error (0, 0,
++		     gettext ("Cannot both keep and remove section '%s'"),
++		     shdr_info[cnt].name);
++	      result = 1;
++	      goto fail_close;
++	    }
++	}
++
+       /* Mark them as present but not yet investigated.  */
+       shdr_info[cnt].idx = 1;
+ 
+@@ -709,6 +796,7 @@ handle_elf (int fd, Elf *elf, const char *prefix, const char *fname,
+        know how to handle them
+      - if a section is referred to from a section which is not removed
+        in the sh_link or sh_info element it cannot be removed either
++     - the user might have explicitly said to remove or keep a section
+   */
+   for (cnt = 1; cnt < shnum; ++cnt)
+     /* Check whether the section can be removed.  Since we will create
+@@ -717,8 +805,13 @@ handle_elf (int fd, Elf *elf, const char *prefix, const char *fname,
+ 	: (ebl_section_strip_p (ebl, ehdr, &shdr_info[cnt].shdr,
+ 				shdr_info[cnt].name, remove_comment,
+ 				remove_debug)
+-	   || cnt == ehdr->e_shstrndx))
++	   || cnt == ehdr->e_shstrndx
++	   || section_name_matches (remove_secs, shdr_info[cnt].name)))
+       {
++	/* The user might want to explicitly keep this one.  */
++	if (section_name_matches (keep_secs, shdr_info[cnt].name))
++	  continue;
++
+ 	/* For now assume this section will be removed.  */
+ 	shdr_info[cnt].idx = 0;
+ 
+@@ -2174,14 +2267,14 @@ while computing checksum for debug information"));
+   if (shdr_info != NULL)
+     {
+       /* For some sections we might have created an table to map symbol
+-	 table indices.  */
+-      if (any_symtab_changes)
+-	for (cnt = 1; cnt <= shdridx; ++cnt)
+-	  {
+-	    free (shdr_info[cnt].newsymidx);
+-	    if (shdr_info[cnt].debug_data != NULL)
+-	      free (shdr_info[cnt].debug_data->d_buf);
+-	  }
++	 table indices.  Or we might kept (original) data around to put
++	 into the .debug file.  */
++      for (cnt = 1; cnt <= shdridx; ++cnt)
++	{
++	  free (shdr_info[cnt].newsymidx);
++	  if (shdr_info[cnt].debug_data != NULL)
++	    free (shdr_info[cnt].debug_data->d_buf);
++	}
+ 
+       /* Free data we allocated for the .gnu_debuglink section. */
+       free (debuglink_buf);
+diff --git a/tests/ChangeLog b/tests/ChangeLog
+index ecf6263..3dd6f2a 100644
+--- a/tests/ChangeLog
++++ b/tests/ChangeLog
+@@ -1,3 +1,9 @@
++2017-07-14  Mark Wielaard  <mark@klomp.org>
++
++	* run-strip-remove-keep.sh: New test.
++	* Makefile.am (TESTS): Add run-strip-remove-keep.sh.
++	(EXTRA_DIST): Likewise.
++
+ 2017-06-07  Mark Wielaard  <mark@klomp.org>
+ 
+ 	* run-strip-nothing.sh: New test.
+diff --git a/tests/Makefile.am b/tests/Makefile.am
+index 0aa16da..7fd4b21 100644
+--- a/tests/Makefile.am
++++ b/tests/Makefile.am
+@@ -83,7 +83,7 @@ TESTS = run-arextract.sh run-arsymtest.sh newfile test-nlist \
+ 	run-strip-test9.sh run-strip-test10.sh run-strip-test11.sh \
+ 	run-strip-nothing.sh \
+ 	run-strip-groups.sh run-strip-reloc.sh run-strip-strmerge.sh \
+-	run-strip-nobitsalign.sh \
++	run-strip-nobitsalign.sh run-strip-remove-keep.sh \
+ 	run-unstrip-test.sh run-unstrip-test2.sh run-unstrip-test3.sh \
+ 	run-unstrip-test4.sh run-unstrip-M.sh run-elfstrmerge-test.sh \
+ 	run-ecp-test.sh run-ecp-test2.sh run-alldts.sh \
+@@ -176,7 +176,7 @@ EXTRA_DIST = run-arextract.sh run-arsymtest.sh \
+ 	     run-strip-test4.sh run-strip-test5.sh run-strip-test6.sh \
+ 	     run-strip-test7.sh run-strip-test8.sh run-strip-groups.sh \
+ 	     run-strip-test9.sh run-strip-test10.sh run-strip-test11.sh \
+-	     run-strip-nothing.sh \
++	     run-strip-nothing.sh run-strip-remove-keep.sh \
+ 	     run-strip-strmerge.sh run-strip-nobitsalign.sh \
+ 	     testfile-nobitsalign.bz2 testfile-nobitsalign.strip.bz2 \
+ 	     run-strip-reloc.sh hello_i386.ko.bz2 hello_x86_64.ko.bz2 \
+diff --git a/tests/run-strip-remove-keep.sh b/tests/run-strip-remove-keep.sh
+new file mode 100755
+index 0000000..92647fa
+--- /dev/null
++++ b/tests/run-strip-remove-keep.sh
+@@ -0,0 +1,688 @@
++#! /bin/sh
++# Copyright (C) 2017 Red Hat, Inc.
++# This file is part of elfutils.
++#
++# This file is free software; you can redistribute it and/or modify
++# it under the terms of the GNU General Public License as published by
++# the Free Software Foundation; either version 3 of the License, or
++# (at your option) any later version.
++#
++# elfutils is distributed in the hope that it will be useful, but
++# WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++# GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with this program.  If not, see <http://www.gnu.org/licenses/>.
++
++. $srcdir/test-subr.sh
++
++# strip -o output and -f debug files
++tempfiles testfile.elf testfile.debug
++
++# A random 32bit testfile
++testfiles testfile
++
++# Explicitly keep .strtab (but not .symtab, so .strtab will be in both). 32bit
++echo strip --keep-section=.strtab testfile
++testrun ${abs_top_builddir}/src/strip --keep-section=.strtab -o testfile.elf -f testfile.debug testfile
++echo elflint testfile.elf
++testrun ${abs_top_builddir}/src/elflint --gnu testfile.elf
++echo elflint testfile.debug
++testrun ${abs_top_builddir}/src/elflint --gnu -d testfile.debug
++echo readelf testfile.elf
++testrun_compare ${abs_top_builddir}/src/readelf -S testfile.elf <<\EOF
++There are 27 section headers, starting at offset 0xaf8:
++
++Section Headers:
++[Nr] Name                 Type         Addr     Off    Size   ES Flags Lk Inf Al
++[ 0]                      NULL         00000000 000000 000000  0        0   0  0
++[ 1] .interp              PROGBITS     080480f4 0000f4 000013  0 A      0   0  1
++[ 2] .note.ABI-tag        NOTE         08048108 000108 000020  0 A      0   0  4
++[ 3] .hash                HASH         08048128 000128 000030  4 A      4   0  4
++[ 4] .dynsym              DYNSYM       08048158 000158 000070 16 A      5   1  4
++[ 5] .dynstr              STRTAB       080481c8 0001c8 00008e  0 A      0   0  1
++[ 6] .gnu.version         GNU_versym   08048256 000256 00000e  2 A      4   0  2
++[ 7] .gnu.version_r       GNU_verneed  08048264 000264 000030  0 A      5   1  4
++[ 8] .rel.got             REL          08048294 000294 000008  8 A      4  19  4
++[ 9] .rel.plt             REL          0804829c 00029c 000020  8 A      4  11  4
++[10] .init                PROGBITS     080482bc 0002bc 000018  0 AX     0   0  4
++[11] .plt                 PROGBITS     080482d4 0002d4 000050  4 AX     0   0  4
++[12] .text                PROGBITS     08048330 000330 00018c  0 AX     0   0 16
++[13] .fini                PROGBITS     080484bc 0004bc 00001e  0 AX     0   0  4
++[14] .rodata              PROGBITS     080484dc 0004dc 000008  0 A      0   0  4
++[15] .data                PROGBITS     080494e4 0004e4 000010  0 WA     0   0  4
++[16] .eh_frame            PROGBITS     080494f4 0004f4 000004  0 WA     0   0  4
++[17] .ctors               PROGBITS     080494f8 0004f8 000008  0 WA     0   0  4
++[18] .dtors               PROGBITS     08049500 000500 000008  0 WA     0   0  4
++[19] .got                 PROGBITS     08049508 000508 000020  4 WA     0   0  4
++[20] .dynamic             DYNAMIC      08049528 000528 0000a0  8 WA     5   0  4
++[21] .bss                 NOBITS       080495c8 0005c8 00001c  0 WA     0   0  4
++[22] .comment             PROGBITS     00000000 0005c8 000170  0        0   0  1
++[23] .note                NOTE         00000000 000738 0000a0  0        0   0  1
++[24] .strtab              STRTAB       00000000 0007d8 000235  0        0   0  1
++[25] .gnu_debuglink       PROGBITS     00000000 000a10 000014  0        0   0  4
++[26] .shstrtab            STRTAB       00000000 000a24 0000d1  0        0   0  1
++
++EOF
++echo readelf testfile.debug
++testrun_compare ${abs_top_builddir}/src/readelf -S testfile.debug <<\EOF
++There are 35 section headers, starting at offset 0x463c:
++
++Section Headers:
++[Nr] Name                 Type         Addr     Off    Size   ES Flags Lk Inf Al
++[ 0]                      NULL         00000000 000000 000000  0        0   0  0
++[ 1] .interp              NOBITS       080480f4 0000f4 000013  0 A      0   0  1
++[ 2] .note.ABI-tag        NOTE         08048108 0000f4 000020  0 A      0   0  4
++[ 3] .hash                NOBITS       08048128 000114 000030  4 A      4   0  4
++[ 4] .dynsym              NOBITS       08048158 000114 000070 16 A      5   1  4
++[ 5] .dynstr              NOBITS       080481c8 000114 00008e  0 A      0   0  1
++[ 6] .gnu.version         NOBITS       08048256 000114 00000e  2 A      4   0  2
++[ 7] .gnu.version_r       NOBITS       08048264 000114 000030  0 A      5   1  4
++[ 8] .rel.got             NOBITS       08048294 000114 000008  8 A      4  19  4
++[ 9] .rel.plt             NOBITS       0804829c 000114 000020  8 A      4  11  4
++[10] .init                NOBITS       080482bc 000114 000018  0 AX     0   0  4
++[11] .plt                 NOBITS       080482d4 000114 000050  4 AX     0   0  4
++[12] .text                NOBITS       08048330 000120 00018c  0 AX     0   0 16
++[13] .fini                NOBITS       080484bc 000120 00001e  0 AX     0   0  4
++[14] .rodata              NOBITS       080484dc 000120 000008  0 A      0   0  4
++[15] .data                NOBITS       080494e4 000120 000010  0 WA     0   0  4
++[16] .eh_frame            NOBITS       080494f4 000120 000004  0 WA     0   0  4
++[17] .ctors               NOBITS       080494f8 000120 000008  0 WA     0   0  4
++[18] .dtors               NOBITS       08049500 000120 000008  0 WA     0   0  4
++[19] .got                 NOBITS       08049508 000120 000020  4 WA     0   0  4
++[20] .dynamic             NOBITS       08049528 000120 0000a0  8 WA     5   0  4
++[21] .sbss                PROGBITS     080495c8 000120 000000  0 W      0   0  1
++[22] .bss                 NOBITS       080495c8 000120 00001c  0 WA     0   0  4
++[23] .stab                PROGBITS     00000000 000120 000720 12       24   0  4
++[24] .stabstr             STRTAB       00000000 000840 001934  0        0   0  1
++[25] .comment             NOBITS       00000000 002174 000170  0        0   0  1
++[26] .debug_aranges       PROGBITS     00000000 002174 000060  0        0   0  1
++[27] .debug_pubnames      PROGBITS     00000000 0021d4 000055  0        0   0  1
++[28] .debug_info          PROGBITS     00000000 002229 001678  0        0   0  1
++[29] .debug_abbrev        PROGBITS     00000000 0038a1 0001d2  0        0   0  1
++[30] .debug_line          PROGBITS     00000000 003a73 000223  0        0   0  1
++[31] .note                NOTE         00000000 003c96 0000a0  0        0   0  1
++[32] .shstrtab            STRTAB       00000000 003d36 00012e  0        0   0  1
++[33] .symtab              SYMTAB       00000000 003e64 0005a0 16       34  68  4
++[34] .strtab              STRTAB       00000000 004404 000235  0        0   0  1
++
++EOF
++
++# Explicitly keep .symtab (pulls in .strtab, so they will both be in elf). 32bit
++echo strip --keep-section=.symtab testfile
++testrun ${abs_top_builddir}/src/strip --keep-section=.symtab -o testfile.elf -f testfile.debug testfile
++echo elflint testfile.elf
++testrun ${abs_top_builddir}/src/elflint --gnu testfile.elf
++echo elflint testfile.debug
++testrun ${abs_top_builddir}/src/elflint --gnu -d testfile.debug
++echo readelf testfile.elf
++testrun_compare ${abs_top_builddir}/src/readelf -S testfile.elf <<\EOF
++There are 28 section headers, starting at offset 0x1010:
++
++Section Headers:
++[Nr] Name                 Type         Addr     Off    Size   ES Flags Lk Inf Al
++[ 0]                      NULL         00000000 000000 000000  0        0   0  0
++[ 1] .interp              PROGBITS     080480f4 0000f4 000013  0 A      0   0  1
++[ 2] .note.ABI-tag        NOTE         08048108 000108 000020  0 A      0   0  4
++[ 3] .hash                HASH         08048128 000128 000030  4 A      4   0  4
++[ 4] .dynsym              DYNSYM       08048158 000158 000070 16 A      5   1  4
++[ 5] .dynstr              STRTAB       080481c8 0001c8 00008e  0 A      0   0  1
++[ 6] .gnu.version         GNU_versym   08048256 000256 00000e  2 A      4   0  2
++[ 7] .gnu.version_r       GNU_verneed  08048264 000264 000030  0 A      5   1  4
++[ 8] .rel.got             REL          08048294 000294 000008  8 A      4  19  4
++[ 9] .rel.plt             REL          0804829c 00029c 000020  8 A      4  11  4
++[10] .init                PROGBITS     080482bc 0002bc 000018  0 AX     0   0  4
++[11] .plt                 PROGBITS     080482d4 0002d4 000050  4 AX     0   0  4
++[12] .text                PROGBITS     08048330 000330 00018c  0 AX     0   0 16
++[13] .fini                PROGBITS     080484bc 0004bc 00001e  0 AX     0   0  4
++[14] .rodata              PROGBITS     080484dc 0004dc 000008  0 A      0   0  4
++[15] .data                PROGBITS     080494e4 0004e4 000010  0 WA     0   0  4
++[16] .eh_frame            PROGBITS     080494f4 0004f4 000004  0 WA     0   0  4
++[17] .ctors               PROGBITS     080494f8 0004f8 000008  0 WA     0   0  4
++[18] .dtors               PROGBITS     08049500 000500 000008  0 WA     0   0  4
++[19] .got                 PROGBITS     08049508 000508 000020  4 WA     0   0  4
++[20] .dynamic             DYNAMIC      08049528 000528 0000a0  8 WA     5   0  4
++[21] .bss                 NOBITS       080495c8 0005c8 00001c  0 WA     0   0  4
++[22] .comment             PROGBITS     00000000 0005c8 000170  0        0   0  1
++[23] .note                NOTE         00000000 000738 0000a0  0        0   0  1
++[24] .symtab              SYMTAB       00000000 0007d8 000510 16       25  59  4
++[25] .strtab              STRTAB       00000000 000ce8 000235  0        0   0  1
++[26] .gnu_debuglink       PROGBITS     00000000 000f20 000014  0        0   0  4
++[27] .shstrtab            STRTAB       00000000 000f34 0000d9  0        0   0  1
++
++EOF
++echo readelf testfile.debug
++testrun_compare ${abs_top_builddir}/src/readelf -S testfile.debug <<\EOF
++There are 35 section headers, starting at offset 0x3e64:
++
++Section Headers:
++[Nr] Name                 Type         Addr     Off    Size   ES Flags Lk Inf Al
++[ 0]                      NULL         00000000 000000 000000  0        0   0  0
++[ 1] .interp              NOBITS       080480f4 0000f4 000013  0 A      0   0  1
++[ 2] .note.ABI-tag        NOTE         08048108 0000f4 000020  0 A      0   0  4
++[ 3] .hash                NOBITS       08048128 000114 000030  4 A      4   0  4
++[ 4] .dynsym              NOBITS       08048158 000114 000070 16 A      5   1  4
++[ 5] .dynstr              NOBITS       080481c8 000114 00008e  0 A      0   0  1
++[ 6] .gnu.version         NOBITS       08048256 000114 00000e  2 A      4   0  2
++[ 7] .gnu.version_r       NOBITS       08048264 000114 000030  0 A      5   1  4
++[ 8] .rel.got             NOBITS       08048294 000114 000008  8 A      4  19  4
++[ 9] .rel.plt             NOBITS       0804829c 000114 000020  8 A      4  11  4
++[10] .init                NOBITS       080482bc 000114 000018  0 AX     0   0  4
++[11] .plt                 NOBITS       080482d4 000114 000050  4 AX     0   0  4
++[12] .text                NOBITS       08048330 000120 00018c  0 AX     0   0 16
++[13] .fini                NOBITS       080484bc 000120 00001e  0 AX     0   0  4
++[14] .rodata              NOBITS       080484dc 000120 000008  0 A      0   0  4
++[15] .data                NOBITS       080494e4 000120 000010  0 WA     0   0  4
++[16] .eh_frame            NOBITS       080494f4 000120 000004  0 WA     0   0  4
++[17] .ctors               NOBITS       080494f8 000120 000008  0 WA     0   0  4
++[18] .dtors               NOBITS       08049500 000120 000008  0 WA     0   0  4
++[19] .got                 NOBITS       08049508 000120 000020  4 WA     0   0  4
++[20] .dynamic             NOBITS       08049528 000120 0000a0  8 WA     5   0  4
++[21] .sbss                PROGBITS     080495c8 000120 000000  0 W      0   0  1
++[22] .bss                 NOBITS       080495c8 000120 00001c  0 WA     0   0  4
++[23] .stab                PROGBITS     00000000 000120 000720 12       24   0  4
++[24] .stabstr             STRTAB       00000000 000840 001934  0        0   0  1
++[25] .comment             NOBITS       00000000 002174 000170  0        0   0  1
++[26] .debug_aranges       PROGBITS     00000000 002174 000060  0        0   0  1
++[27] .debug_pubnames      PROGBITS     00000000 0021d4 000055  0        0   0  1
++[28] .debug_info          PROGBITS     00000000 002229 001678  0        0   0  1
++[29] .debug_abbrev        PROGBITS     00000000 0038a1 0001d2  0        0   0  1
++[30] .debug_line          PROGBITS     00000000 003a73 000223  0        0   0  1
++[31] .note                NOTE         00000000 003c96 0000a0  0        0   0  1
++[32] .shstrtab            STRTAB       00000000 003d36 00012e  0        0   0  1
++[33] .symtab              NOBITS       00000000 003e64 0005a0 16       34  68  4
++[34] .strtab              NOBITS       00000000 003e64 000235  0        0   0  1
++
++EOF
++
++# A random 64bit testfile
++testfiles testfile69.so
++# Explicitly keep .strtab (but not .symtab, so .strtab will be in both). 64bit
++echo strip --keep-section=.strtab testfile69.so
++testrun ${abs_top_builddir}/src/strip --keep-section=.strtab -o testfile.elf -f testfile.debug testfile69.so
++echo elflint testfile.elf
++testrun ${abs_top_builddir}/src/elflint --gnu testfile.elf
++echo elflint testfile.debug
++testrun ${abs_top_builddir}/src/elflint --gnu -d testfile.debug
++echo readelf testfile.elf
++testrun_compare ${abs_top_builddir}/src/readelf -S testfile.elf <<\EOF
++There are 27 section headers, starting at offset 0xad8:
++
++Section Headers:
++[Nr] Name                 Type         Addr             Off      Size     ES Flags Lk Inf Al
++[ 0]                      NULL         0000000000000000 00000000 00000000  0        0   0  0
++[ 1] .note.gnu.build-id   NOTE         0000000000000190 00000190 00000024  0 A      0   0  4
++[ 2] .gnu.hash            GNU_HASH     00000000000001b8 000001b8 0000003c  0 A      3   0  8
++[ 3] .dynsym              DYNSYM       00000000000001f8 000001f8 00000108 24 A      4   2  8
++[ 4] .dynstr              STRTAB       0000000000000300 00000300 00000077  0 A      0   0  1
++[ 5] .gnu.version         GNU_versym   0000000000000378 00000378 00000016  2 A      3   0  2
++[ 6] .gnu.version_r       GNU_verneed  0000000000000390 00000390 00000020  0 A      4   1  8
++[ 7] .rela.dyn            RELA         00000000000003b0 000003b0 00000060 24 A      3   0  8
++[ 8] .rela.plt            RELA         0000000000000410 00000410 00000018 24 A      3  10  8
++[ 9] .init                PROGBITS     0000000000000428 00000428 00000018  0 AX     0   0  4
++[10] .plt                 PROGBITS     0000000000000440 00000440 00000020 16 AX     0   0 16
++[11] .text                PROGBITS     0000000000000460 00000460 00000128  0 AX     0   0 16
++[12] .fini                PROGBITS     0000000000000588 00000588 0000000e  0 AX     0   0  4
++[13] .eh_frame_hdr        PROGBITS     0000000000000598 00000598 00000024  0 A      0   0  4
++[14] .eh_frame            PROGBITS     00000000000005c0 000005c0 00000084  0 A      0   0  8
++[15] .ctors               PROGBITS     0000000000200648 00000648 00000010  0 WA     0   0  8
++[16] .dtors               PROGBITS     0000000000200658 00000658 00000010  0 WA     0   0  8
++[17] .jcr                 PROGBITS     0000000000200668 00000668 00000008  0 WA     0   0  8
++[18] .data.rel.ro         PROGBITS     0000000000200670 00000670 00000008  0 WA     0   0  8
++[19] .dynamic             DYNAMIC      0000000000200678 00000678 00000180 16 WA     4   0  8
++[20] .got                 PROGBITS     00000000002007f8 000007f8 00000018  8 WA     0   0  8
++[21] .got.plt             PROGBITS     0000000000200810 00000810 00000020  8 WA     0   0  8
++[22] .bss                 NOBITS       0000000000200830 00000830 00000010  0 WA     0   0  8
++[23] .comment             PROGBITS     0000000000000000 00000830 0000002c  1 MS     0   0  1
++[24] .strtab              STRTAB       0000000000000000 0000085c 00000175  0        0   0  1
++[25] .gnu_debuglink       PROGBITS     0000000000000000 000009d4 00000014  0        0   0  4
++[26] .shstrtab            STRTAB       0000000000000000 000009e8 000000ee  0        0   0  1
++
++EOF
++echo readelf testfile.debug
++testrun_compare ${abs_top_builddir}/src/readelf -S testfile.debug <<\EOF
++There are 27 section headers, starting at offset 0x918:
++
++Section Headers:
++[Nr] Name                 Type         Addr             Off      Size     ES Flags Lk Inf Al
++[ 0]                      NULL         0000000000000000 00000000 00000000  0        0   0  0
++[ 1] .note.gnu.build-id   NOTE         0000000000000190 00000190 00000024  0 A      0   0  4
++[ 2] .gnu.hash            NOBITS       00000000000001b8 000001b8 0000003c  0 A      3   0  8
++[ 3] .dynsym              NOBITS       00000000000001f8 000001b8 00000108 24 A      4   2  8
++[ 4] .dynstr              NOBITS       0000000000000300 000001b8 00000077  0 A      0   0  1
++[ 5] .gnu.version         NOBITS       0000000000000378 000001b8 00000016  2 A      3   0  2
++[ 6] .gnu.version_r       NOBITS       0000000000000390 000001b8 00000020  0 A      4   1  8
++[ 7] .rela.dyn            NOBITS       00000000000003b0 000001b8 00000060 24 A      3   0  8
++[ 8] .rela.plt            NOBITS       0000000000000410 000001b8 00000018 24 A      3  10  8
++[ 9] .init                NOBITS       0000000000000428 000001b8 00000018  0 AX     0   0  4
++[10] .plt                 NOBITS       0000000000000440 000001c0 00000020 16 AX     0   0 16
++[11] .text                NOBITS       0000000000000460 000001c0 00000128  0 AX     0   0 16
++[12] .fini                NOBITS       0000000000000588 000001c0 0000000e  0 AX     0   0  4
++[13] .eh_frame_hdr        NOBITS       0000000000000598 000001c0 00000024  0 A      0   0  4
++[14] .eh_frame            NOBITS       00000000000005c0 000001c0 00000084  0 A      0   0  8
++[15] .ctors               NOBITS       0000000000200648 000001c0 00000010  0 WA     0   0  8
++[16] .dtors               NOBITS       0000000000200658 000001c0 00000010  0 WA     0   0  8
++[17] .jcr                 NOBITS       0000000000200668 000001c0 00000008  0 WA     0   0  8
++[18] .data.rel.ro         NOBITS       0000000000200670 000001c0 00000008  0 WA     0   0  8
++[19] .dynamic             NOBITS       0000000000200678 000001c0 00000180 16 WA     4   0  8
++[20] .got                 NOBITS       00000000002007f8 000001c0 00000018  8 WA     0   0  8
++[21] .got.plt             NOBITS       0000000000200810 000001c0 00000020  8 WA     0   0  8
++[22] .bss                 NOBITS       0000000000200830 000001c0 00000010  0 WA     0   0  8
++[23] .comment             NOBITS       0000000000000000 000001c0 0000002c  1 MS     0   0  1
++[24] .shstrtab            STRTAB       0000000000000000 000001c0 000000e7  0        0   0  1
++[25] .symtab              SYMTAB       0000000000000000 000002a8 000004f8 24       26  44  8
++[26] .strtab              STRTAB       0000000000000000 000007a0 00000175  0        0   0  1
++
++EOF
++
++# Explicitly keep .symtab (pulls in .strtab, so they will both be in elf). 64bit
++# Use --remove-comment to make sure testfile.debug isn't empty.
++echo strip --keep-section=.symtab --remove-comment testfile69.so
++testrun ${abs_top_builddir}/src/strip --keep-section=.symtab --remove-comment -o testfile.elf -f testfile.debug testfile69.so
++echo elflint testfile.elf
++testrun ${abs_top_builddir}/src/elflint --gnu testfile.elf
++echo elflint testfile.debug
++testrun ${abs_top_builddir}/src/elflint --gnu -d testfile.debug
++echo readelf testfile.elf
++testrun_compare ${abs_top_builddir}/src/readelf -S testfile.elf <<\EOF
++There are 27 section headers, starting at offset 0xf90:
++
++Section Headers:
++[Nr] Name                 Type         Addr             Off      Size     ES Flags Lk Inf Al
++[ 0]                      NULL         0000000000000000 00000000 00000000  0        0   0  0
++[ 1] .note.gnu.build-id   NOTE         0000000000000190 00000190 00000024  0 A      0   0  4
++[ 2] .gnu.hash            GNU_HASH     00000000000001b8 000001b8 0000003c  0 A      3   0  8
++[ 3] .dynsym              DYNSYM       00000000000001f8 000001f8 00000108 24 A      4   2  8
++[ 4] .dynstr              STRTAB       0000000000000300 00000300 00000077  0 A      0   0  1
++[ 5] .gnu.version         GNU_versym   0000000000000378 00000378 00000016  2 A      3   0  2
++[ 6] .gnu.version_r       GNU_verneed  0000000000000390 00000390 00000020  0 A      4   1  8
++[ 7] .rela.dyn            RELA         00000000000003b0 000003b0 00000060 24 A      3   0  8
++[ 8] .rela.plt            RELA         0000000000000410 00000410 00000018 24 A      3  10  8
++[ 9] .init                PROGBITS     0000000000000428 00000428 00000018  0 AX     0   0  4
++[10] .plt                 PROGBITS     0000000000000440 00000440 00000020 16 AX     0   0 16
++[11] .text                PROGBITS     0000000000000460 00000460 00000128  0 AX     0   0 16
++[12] .fini                PROGBITS     0000000000000588 00000588 0000000e  0 AX     0   0  4
++[13] .eh_frame_hdr        PROGBITS     0000000000000598 00000598 00000024  0 A      0   0  4
++[14] .eh_frame            PROGBITS     00000000000005c0 000005c0 00000084  0 A      0   0  8
++[15] .ctors               PROGBITS     0000000000200648 00000648 00000010  0 WA     0   0  8
++[16] .dtors               PROGBITS     0000000000200658 00000658 00000010  0 WA     0   0  8
++[17] .jcr                 PROGBITS     0000000000200668 00000668 00000008  0 WA     0   0  8
++[18] .data.rel.ro         PROGBITS     0000000000200670 00000670 00000008  0 WA     0   0  8
++[19] .dynamic             DYNAMIC      0000000000200678 00000678 00000180 16 WA     4   0  8
++[20] .got                 PROGBITS     00000000002007f8 000007f8 00000018  8 WA     0   0  8
++[21] .got.plt             PROGBITS     0000000000200810 00000810 00000020  8 WA     0   0  8
++[22] .bss                 NOBITS       0000000000200830 00000830 00000010  0 WA     0   0  8
++[23] .symtab              SYMTAB       0000000000000000 00000830 000004e0 24       24  43  8
++[24] .strtab              STRTAB       0000000000000000 00000d10 00000175  0        0   0  1
++[25] .gnu_debuglink       PROGBITS     0000000000000000 00000e88 00000014  0        0   0  4
++[26] .shstrtab            STRTAB       0000000000000000 00000e9c 000000ed  0        0   0  1
++
++EOF
++echo readelf testfile.debug
++testrun_compare ${abs_top_builddir}/src/readelf -S testfile.debug <<\EOF
++There are 27 section headers, starting at offset 0x2d8:
++
++Section Headers:
++[Nr] Name                 Type         Addr             Off      Size     ES Flags Lk Inf Al
++[ 0]                      NULL         0000000000000000 00000000 00000000  0        0   0  0
++[ 1] .note.gnu.build-id   NOTE         0000000000000190 00000190 00000024  0 A      0   0  4
++[ 2] .gnu.hash            NOBITS       00000000000001b8 000001b8 0000003c  0 A      3   0  8
++[ 3] .dynsym              NOBITS       00000000000001f8 000001b8 00000108 24 A      4   2  8
++[ 4] .dynstr              NOBITS       0000000000000300 000001b8 00000077  0 A      0   0  1
++[ 5] .gnu.version         NOBITS       0000000000000378 000001b8 00000016  2 A      3   0  2
++[ 6] .gnu.version_r       NOBITS       0000000000000390 000001b8 00000020  0 A      4   1  8
++[ 7] .rela.dyn            NOBITS       00000000000003b0 000001b8 00000060 24 A      3   0  8
++[ 8] .rela.plt            NOBITS       0000000000000410 000001b8 00000018 24 A      3  10  8
++[ 9] .init                NOBITS       0000000000000428 000001b8 00000018  0 AX     0   0  4
++[10] .plt                 NOBITS       0000000000000440 000001c0 00000020 16 AX     0   0 16
++[11] .text                NOBITS       0000000000000460 000001c0 00000128  0 AX     0   0 16
++[12] .fini                NOBITS       0000000000000588 000001c0 0000000e  0 AX     0   0  4
++[13] .eh_frame_hdr        NOBITS       0000000000000598 000001c0 00000024  0 A      0   0  4
++[14] .eh_frame            NOBITS       00000000000005c0 000001c0 00000084  0 A      0   0  8
++[15] .ctors               NOBITS       0000000000200648 000001c0 00000010  0 WA     0   0  8
++[16] .dtors               NOBITS       0000000000200658 000001c0 00000010  0 WA     0   0  8
++[17] .jcr                 NOBITS       0000000000200668 000001c0 00000008  0 WA     0   0  8
++[18] .data.rel.ro         NOBITS       0000000000200670 000001c0 00000008  0 WA     0   0  8
++[19] .dynamic             NOBITS       0000000000200678 000001c0 00000180 16 WA     4   0  8
++[20] .got                 NOBITS       00000000002007f8 000001c0 00000018  8 WA     0   0  8
++[21] .got.plt             NOBITS       0000000000200810 000001c0 00000020  8 WA     0   0  8
++[22] .bss                 NOBITS       0000000000200830 000001c0 00000010  0 WA     0   0  8
++[23] .comment             PROGBITS     0000000000000000 000001c0 0000002c  1 MS     0   0  1
++[24] .shstrtab            STRTAB       0000000000000000 000001ec 000000e7  0        0   0  1
++[25] .symtab              NOBITS       0000000000000000 000002d8 000004f8 24       26  44  8
++[26] .strtab              NOBITS       0000000000000000 000002d8 00000175  0        0   0  1
++
++EOF
++
++# Explicitly remove .symtab (but not .strtab, so it will be in both). 32bit
++echo strip -g --remove-section=.symtab testfile
++testrun ${abs_top_builddir}/src/strip -g --remove-section=.symtab -o testfile.elf -f testfile.debug testfile
++echo elflint testfile.elf
++testrun ${abs_top_builddir}/src/elflint --gnu testfile.elf
++echo elflint testfile.debug
++testrun ${abs_top_builddir}/src/elflint --gnu -d testfile.debug
++echo readelf testfile.elf
++testrun_compare ${abs_top_builddir}/src/readelf -S testfile.elf <<\EOF
++There are 28 section headers, starting at offset 0xafc:
++
++Section Headers:
++[Nr] Name                 Type         Addr     Off    Size   ES Flags Lk Inf Al
++[ 0]                      NULL         00000000 000000 000000  0        0   0  0
++[ 1] .interp              PROGBITS     080480f4 0000f4 000013  0 A      0   0  1
++[ 2] .note.ABI-tag        NOTE         08048108 000108 000020  0 A      0   0  4
++[ 3] .hash                HASH         08048128 000128 000030  4 A      4   0  4
++[ 4] .dynsym              DYNSYM       08048158 000158 000070 16 A      5   1  4
++[ 5] .dynstr              STRTAB       080481c8 0001c8 00008e  0 A      0   0  1
++[ 6] .gnu.version         GNU_versym   08048256 000256 00000e  2 A      4   0  2
++[ 7] .gnu.version_r       GNU_verneed  08048264 000264 000030  0 A      5   1  4
++[ 8] .rel.got             REL          08048294 000294 000008  8 A      4  19  4
++[ 9] .rel.plt             REL          0804829c 00029c 000020  8 A      4  11  4
++[10] .init                PROGBITS     080482bc 0002bc 000018  0 AX     0   0  4
++[11] .plt                 PROGBITS     080482d4 0002d4 000050  4 AX     0   0  4
++[12] .text                PROGBITS     08048330 000330 00018c  0 AX     0   0 16
++[13] .fini                PROGBITS     080484bc 0004bc 00001e  0 AX     0   0  4
++[14] .rodata              PROGBITS     080484dc 0004dc 000008  0 A      0   0  4
++[15] .data                PROGBITS     080494e4 0004e4 000010  0 WA     0   0  4
++[16] .eh_frame            PROGBITS     080494f4 0004f4 000004  0 WA     0   0  4
++[17] .ctors               PROGBITS     080494f8 0004f8 000008  0 WA     0   0  4
++[18] .dtors               PROGBITS     08049500 000500 000008  0 WA     0   0  4
++[19] .got                 PROGBITS     08049508 000508 000020  4 WA     0   0  4
++[20] .dynamic             DYNAMIC      08049528 000528 0000a0  8 WA     5   0  4
++[21] .sbss                PROGBITS     080495c8 0005c8 000000  0 W      0   0  1
++[22] .bss                 NOBITS       080495c8 0005c8 00001c  0 WA     0   0  4
++[23] .comment             PROGBITS     00000000 0005c8 000170  0        0   0  1
++[24] .note                NOTE         00000000 000738 0000a0  0        0   0  1
++[25] .strtab              STRTAB       00000000 0007d8 000235  0        0   0  1
++[26] .gnu_debuglink       PROGBITS     00000000 000a10 000014  0        0   0  4
++[27] .shstrtab            STRTAB       00000000 000a24 0000d7  0        0   0  1
++
++EOF
++echo readelf testfile.debug
++testrun_compare ${abs_top_builddir}/src/readelf -S testfile.debug <<\EOF
++There are 35 section headers, starting at offset 0x463c:
++
++Section Headers:
++[Nr] Name                 Type         Addr     Off    Size   ES Flags Lk Inf Al
++[ 0]                      NULL         00000000 000000 000000  0        0   0  0
++[ 1] .interp              NOBITS       080480f4 0000f4 000013  0 A      0   0  1
++[ 2] .note.ABI-tag        NOTE         08048108 0000f4 000020  0 A      0   0  4
++[ 3] .hash                NOBITS       08048128 000114 000030  4 A      4   0  4
++[ 4] .dynsym              NOBITS       08048158 000114 000070 16 A      5   1  4
++[ 5] .dynstr              NOBITS       080481c8 000114 00008e  0 A      0   0  1
++[ 6] .gnu.version         NOBITS       08048256 000114 00000e  2 A      4   0  2
++[ 7] .gnu.version_r       NOBITS       08048264 000114 000030  0 A      5   1  4
++[ 8] .rel.got             NOBITS       08048294 000114 000008  8 A      4  19  4
++[ 9] .rel.plt             NOBITS       0804829c 000114 000020  8 A      4  11  4
++[10] .init                NOBITS       080482bc 000114 000018  0 AX     0   0  4
++[11] .plt                 NOBITS       080482d4 000114 000050  4 AX     0   0  4
++[12] .text                NOBITS       08048330 000120 00018c  0 AX     0   0 16
++[13] .fini                NOBITS       080484bc 000120 00001e  0 AX     0   0  4
++[14] .rodata              NOBITS       080484dc 000120 000008  0 A      0   0  4
++[15] .data                NOBITS       080494e4 000120 000010  0 WA     0   0  4
++[16] .eh_frame            NOBITS       080494f4 000120 000004  0 WA     0   0  4
++[17] .ctors               NOBITS       080494f8 000120 000008  0 WA     0   0  4
++[18] .dtors               NOBITS       08049500 000120 000008  0 WA     0   0  4
++[19] .got                 NOBITS       08049508 000120 000020  4 WA     0   0  4
++[20] .dynamic             NOBITS       08049528 000120 0000a0  8 WA     5   0  4
++[21] .sbss                NOBITS       080495c8 000120 000000  0 W      0   0  1
++[22] .bss                 NOBITS       080495c8 000120 00001c  0 WA     0   0  4
++[23] .stab                PROGBITS     00000000 000120 000720 12       24   0  4
++[24] .stabstr             STRTAB       00000000 000840 001934  0        0   0  1
++[25] .comment             NOBITS       00000000 002174 000170  0        0   0  1
++[26] .debug_aranges       PROGBITS     00000000 002174 000060  0        0   0  1
++[27] .debug_pubnames      PROGBITS     00000000 0021d4 000055  0        0   0  1
++[28] .debug_info          PROGBITS     00000000 002229 001678  0        0   0  1
++[29] .debug_abbrev        PROGBITS     00000000 0038a1 0001d2  0        0   0  1
++[30] .debug_line          PROGBITS     00000000 003a73 000223  0        0   0  1
++[31] .note                NOTE         00000000 003c96 0000a0  0        0   0  1
++[32] .shstrtab            STRTAB       00000000 003d36 00012e  0        0   0  1
++[33] .symtab              SYMTAB       00000000 003e64 0005a0 16       34  68  4
++[34] .strtab              STRTAB       00000000 004404 000235  0        0   0  1
++
++EOF
++
++# Explicitly remove both .symtab and .strtab. Keep .stab and .stabstr 32bit
++echo strip -g --remove-section=".s[yt][mr]tab" --keep-section=".stab*" testfile
++testrun ${abs_top_builddir}/src/strip -g --remove-section=".s[yt][mr]tab" --keep-section=".stab*" -o testfile.elf -f testfile.debug testfile
++echo elflint testfile.elf
++testrun ${abs_top_builddir}/src/elflint --gnu testfile.elf
++echo elflint testfile.debug
++testrun ${abs_top_builddir}/src/elflint --gnu -d testfile.debug
++echo readelf testfile.elf
++testrun_compare ${abs_top_builddir}/src/readelf -S testfile.elf <<\EOF
++There are 29 section headers, starting at offset 0x2920:
++
++Section Headers:
++[Nr] Name                 Type         Addr     Off    Size   ES Flags Lk Inf Al
++[ 0]                      NULL         00000000 000000 000000  0        0   0  0
++[ 1] .interp              PROGBITS     080480f4 0000f4 000013  0 A      0   0  1
++[ 2] .note.ABI-tag        NOTE         08048108 000108 000020  0 A      0   0  4
++[ 3] .hash                HASH         08048128 000128 000030  4 A      4   0  4
++[ 4] .dynsym              DYNSYM       08048158 000158 000070 16 A      5   1  4
++[ 5] .dynstr              STRTAB       080481c8 0001c8 00008e  0 A      0   0  1
++[ 6] .gnu.version         GNU_versym   08048256 000256 00000e  2 A      4   0  2
++[ 7] .gnu.version_r       GNU_verneed  08048264 000264 000030  0 A      5   1  4
++[ 8] .rel.got             REL          08048294 000294 000008  8 A      4  19  4
++[ 9] .rel.plt             REL          0804829c 00029c 000020  8 A      4  11  4
++[10] .init                PROGBITS     080482bc 0002bc 000018  0 AX     0   0  4
++[11] .plt                 PROGBITS     080482d4 0002d4 000050  4 AX     0   0  4
++[12] .text                PROGBITS     08048330 000330 00018c  0 AX     0   0 16
++[13] .fini                PROGBITS     080484bc 0004bc 00001e  0 AX     0   0  4
++[14] .rodata              PROGBITS     080484dc 0004dc 000008  0 A      0   0  4
++[15] .data                PROGBITS     080494e4 0004e4 000010  0 WA     0   0  4
++[16] .eh_frame            PROGBITS     080494f4 0004f4 000004  0 WA     0   0  4
++[17] .ctors               PROGBITS     080494f8 0004f8 000008  0 WA     0   0  4
++[18] .dtors               PROGBITS     08049500 000500 000008  0 WA     0   0  4
++[19] .got                 PROGBITS     08049508 000508 000020  4 WA     0   0  4
++[20] .dynamic             DYNAMIC      08049528 000528 0000a0  8 WA     5   0  4
++[21] .sbss                PROGBITS     080495c8 0005c8 000000  0 W      0   0  1
++[22] .bss                 NOBITS       080495c8 0005c8 00001c  0 WA     0   0  4
++[23] .stab                PROGBITS     00000000 0005c8 000720 12       24   0  4
++[24] .stabstr             STRTAB       00000000 000ce8 001934  0        0   0  1
++[25] .comment             PROGBITS     00000000 00261c 000170  0        0   0  1
++[26] .note                NOTE         00000000 00278c 0000a0  0        0   0  1
++[27] .gnu_debuglink       PROGBITS     00000000 00282c 000014  0        0   0  4
++[28] .shstrtab            STRTAB       00000000 002840 0000de  0        0   0  1
++
++EOF
++echo readelf testfile.debug
++testrun_compare ${abs_top_builddir}/src/readelf -S testfile.debug <<\EOF
++There are 35 section headers, starting at offset 0x25e8:
++
++Section Headers:
++[Nr] Name                 Type         Addr     Off    Size   ES Flags Lk Inf Al
++[ 0]                      NULL         00000000 000000 000000  0        0   0  0
++[ 1] .interp              NOBITS       080480f4 0000f4 000013  0 A      0   0  1
++[ 2] .note.ABI-tag        NOTE         08048108 0000f4 000020  0 A      0   0  4
++[ 3] .hash                NOBITS       08048128 000114 000030  4 A      4   0  4
++[ 4] .dynsym              NOBITS       08048158 000114 000070 16 A      5   1  4
++[ 5] .dynstr              NOBITS       080481c8 000114 00008e  0 A      0   0  1
++[ 6] .gnu.version         NOBITS       08048256 000114 00000e  2 A      4   0  2
++[ 7] .gnu.version_r       NOBITS       08048264 000114 000030  0 A      5   1  4
++[ 8] .rel.got             NOBITS       08048294 000114 000008  8 A      4  19  4
++[ 9] .rel.plt             NOBITS       0804829c 000114 000020  8 A      4  11  4
++[10] .init                NOBITS       080482bc 000114 000018  0 AX     0   0  4
++[11] .plt                 NOBITS       080482d4 000114 000050  4 AX     0   0  4
++[12] .text                NOBITS       08048330 000120 00018c  0 AX     0   0 16
++[13] .fini                NOBITS       080484bc 000120 00001e  0 AX     0   0  4
++[14] .rodata              NOBITS       080484dc 000120 000008  0 A      0   0  4
++[15] .data                NOBITS       080494e4 000120 000010  0 WA     0   0  4
++[16] .eh_frame            NOBITS       080494f4 000120 000004  0 WA     0   0  4
++[17] .ctors               NOBITS       080494f8 000120 000008  0 WA     0   0  4
++[18] .dtors               NOBITS       08049500 000120 000008  0 WA     0   0  4
++[19] .got                 NOBITS       08049508 000120 000020  4 WA     0   0  4
++[20] .dynamic             NOBITS       08049528 000120 0000a0  8 WA     5   0  4
++[21] .sbss                NOBITS       080495c8 000120 000000  0 W      0   0  1
++[22] .bss                 NOBITS       080495c8 000120 00001c  0 WA     0   0  4
++[23] .stab                NOBITS       00000000 000120 000720 12       24   0  4
++[24] .stabstr             NOBITS       00000000 000120 001934  0        0   0  1
++[25] .comment             NOBITS       00000000 000120 000170  0        0   0  1
++[26] .debug_aranges       PROGBITS     00000000 000120 000060  0        0   0  1
++[27] .debug_pubnames      PROGBITS     00000000 000180 000055  0        0   0  1
++[28] .debug_info          PROGBITS     00000000 0001d5 001678  0        0   0  1
++[29] .debug_abbrev        PROGBITS     00000000 00184d 0001d2  0        0   0  1
++[30] .debug_line          PROGBITS     00000000 001a1f 000223  0        0   0  1
++[31] .note                NOTE         00000000 001c42 0000a0  0        0   0  1
++[32] .shstrtab            STRTAB       00000000 001ce2 00012e  0        0   0  1
++[33] .symtab              SYMTAB       00000000 001e10 0005a0 16       34  68  4
++[34] .strtab              STRTAB       00000000 0023b0 000235  0        0   0  1
++
++EOF
++
++# Explicitly remove .symtab (but not .strtab, so it will be in both). 64bit
++echo strip -g --remove-section=.symtab testfile69.so
++testrun ${abs_top_builddir}/src/strip -g --remove-section=.symtab -o testfile.elf -f testfile.debug testfile69.so
++echo elflint testfile.elf
++testrun ${abs_top_builddir}/src/elflint --gnu testfile.elf
++echo elflint testfile.debug
++testrun ${abs_top_builddir}/src/elflint --gnu -d testfile.debug
++echo readelf testfile.elf
++testrun_compare ${abs_top_builddir}/src/readelf -S testfile.elf <<\EOF
++There are 27 section headers, starting at offset 0xad8:
++
++Section Headers:
++[Nr] Name                 Type         Addr             Off      Size     ES Flags Lk Inf Al
++[ 0]                      NULL         0000000000000000 00000000 00000000  0        0   0  0
++[ 1] .note.gnu.build-id   NOTE         0000000000000190 00000190 00000024  0 A      0   0  4
++[ 2] .gnu.hash            GNU_HASH     00000000000001b8 000001b8 0000003c  0 A      3   0  8
++[ 3] .dynsym              DYNSYM       00000000000001f8 000001f8 00000108 24 A      4   2  8
++[ 4] .dynstr              STRTAB       0000000000000300 00000300 00000077  0 A      0   0  1
++[ 5] .gnu.version         GNU_versym   0000000000000378 00000378 00000016  2 A      3   0  2
++[ 6] .gnu.version_r       GNU_verneed  0000000000000390 00000390 00000020  0 A      4   1  8
++[ 7] .rela.dyn            RELA         00000000000003b0 000003b0 00000060 24 A      3   0  8
++[ 8] .rela.plt            RELA         0000000000000410 00000410 00000018 24 A      3  10  8
++[ 9] .init                PROGBITS     0000000000000428 00000428 00000018  0 AX     0   0  4
++[10] .plt                 PROGBITS     0000000000000440 00000440 00000020 16 AX     0   0 16
++[11] .text                PROGBITS     0000000000000460 00000460 00000128  0 AX     0   0 16
++[12] .fini                PROGBITS     0000000000000588 00000588 0000000e  0 AX     0   0  4
++[13] .eh_frame_hdr        PROGBITS     0000000000000598 00000598 00000024  0 A      0   0  4
++[14] .eh_frame            PROGBITS     00000000000005c0 000005c0 00000084  0 A      0   0  8
++[15] .ctors               PROGBITS     0000000000200648 00000648 00000010  0 WA     0   0  8
++[16] .dtors               PROGBITS     0000000000200658 00000658 00000010  0 WA     0   0  8
++[17] .jcr                 PROGBITS     0000000000200668 00000668 00000008  0 WA     0   0  8
++[18] .data.rel.ro         PROGBITS     0000000000200670 00000670 00000008  0 WA     0   0  8
++[19] .dynamic             DYNAMIC      0000000000200678 00000678 00000180 16 WA     4   0  8
++[20] .got                 PROGBITS     00000000002007f8 000007f8 00000018  8 WA     0   0  8
++[21] .got.plt             PROGBITS     0000000000200810 00000810 00000020  8 WA     0   0  8
++[22] .bss                 NOBITS       0000000000200830 00000830 00000010  0 WA     0   0  8
++[23] .comment             PROGBITS     0000000000000000 00000830 0000002c  1 MS     0   0  1
++[24] .strtab              STRTAB       0000000000000000 0000085c 00000175  0        0   0  1
++[25] .gnu_debuglink       PROGBITS     0000000000000000 000009d4 00000014  0        0   0  4
++[26] .shstrtab            STRTAB       0000000000000000 000009e8 000000ee  0        0   0  1
++
++EOF
++echo readelf testfile.debug
++testrun_compare ${abs_top_builddir}/src/readelf -S testfile.debug <<\EOF
++There are 27 section headers, starting at offset 0x918:
++
++Section Headers:
++[Nr] Name                 Type         Addr             Off      Size     ES Flags Lk Inf Al
++[ 0]                      NULL         0000000000000000 00000000 00000000  0        0   0  0
++[ 1] .note.gnu.build-id   NOTE         0000000000000190 00000190 00000024  0 A      0   0  4
++[ 2] .gnu.hash            NOBITS       00000000000001b8 000001b8 0000003c  0 A      3   0  8
++[ 3] .dynsym              NOBITS       00000000000001f8 000001b8 00000108 24 A      4   2  8
++[ 4] .dynstr              NOBITS       0000000000000300 000001b8 00000077  0 A      0   0  1
++[ 5] .gnu.version         NOBITS       0000000000000378 000001b8 00000016  2 A      3   0  2
++[ 6] .gnu.version_r       NOBITS       0000000000000390 000001b8 00000020  0 A      4   1  8
++[ 7] .rela.dyn            NOBITS       00000000000003b0 000001b8 00000060 24 A      3   0  8
++[ 8] .rela.plt            NOBITS       0000000000000410 000001b8 00000018 24 A      3  10  8
++[ 9] .init                NOBITS       0000000000000428 000001b8 00000018  0 AX     0   0  4
++[10] .plt                 NOBITS       0000000000000440 000001c0 00000020 16 AX     0   0 16
++[11] .text                NOBITS       0000000000000460 000001c0 00000128  0 AX     0   0 16
++[12] .fini                NOBITS       0000000000000588 000001c0 0000000e  0 AX     0   0  4
++[13] .eh_frame_hdr        NOBITS       0000000000000598 000001c0 00000024  0 A      0   0  4
++[14] .eh_frame            NOBITS       00000000000005c0 000001c0 00000084  0 A      0   0  8
++[15] .ctors               NOBITS       0000000000200648 000001c0 00000010  0 WA     0   0  8
++[16] .dtors               NOBITS       0000000000200658 000001c0 00000010  0 WA     0   0  8
++[17] .jcr                 NOBITS       0000000000200668 000001c0 00000008  0 WA     0   0  8
++[18] .data.rel.ro         NOBITS       0000000000200670 000001c0 00000008  0 WA     0   0  8
++[19] .dynamic             NOBITS       0000000000200678 000001c0 00000180 16 WA     4   0  8
++[20] .got                 NOBITS       00000000002007f8 000001c0 00000018  8 WA     0   0  8
++[21] .got.plt             NOBITS       0000000000200810 000001c0 00000020  8 WA     0   0  8
++[22] .bss                 NOBITS       0000000000200830 000001c0 00000010  0 WA     0   0  8
++[23] .comment             NOBITS       0000000000000000 000001c0 0000002c  1 MS     0   0  1
++[24] .shstrtab            STRTAB       0000000000000000 000001c0 000000e7  0        0   0  1
++[25] .symtab              SYMTAB       0000000000000000 000002a8 000004f8 24       26  44  8
++[26] .strtab              STRTAB       0000000000000000 000007a0 00000175  0        0   0  1
++
++EOF
++
++# Explicitly remove both .symtab and .strtab. Keep .comment section. 64bit
++echo strip -g --remove-section=".s[yt][mr]tab" --keep-section=.comment testfile69.so
++testrun ${abs_top_builddir}/src/strip -g --remove-section=".s[yt][mr]tab" --keep-section=.comment -o testfile.elf -f testfile.debug testfile69.so
++echo elflint testfile.elf
++testrun ${abs_top_builddir}/src/elflint --gnu testfile.elf
++echo elflint testfile.debug
++testrun ${abs_top_builddir}/src/elflint --gnu -d testfile.debug
++echo readelf testfile.elf
++testrun_compare ${abs_top_builddir}/src/readelf -S testfile.elf <<\EOF
++There are 26 section headers, starting at offset 0x958:
++
++Section Headers:
++[Nr] Name                 Type         Addr             Off      Size     ES Flags Lk Inf Al
++[ 0]                      NULL         0000000000000000 00000000 00000000  0        0   0  0
++[ 1] .note.gnu.build-id   NOTE         0000000000000190 00000190 00000024  0 A      0   0  4
++[ 2] .gnu.hash            GNU_HASH     00000000000001b8 000001b8 0000003c  0 A      3   0  8
++[ 3] .dynsym              DYNSYM       00000000000001f8 000001f8 00000108 24 A      4   2  8
++[ 4] .dynstr              STRTAB       0000000000000300 00000300 00000077  0 A      0   0  1
++[ 5] .gnu.version         GNU_versym   0000000000000378 00000378 00000016  2 A      3   0  2
++[ 6] .gnu.version_r       GNU_verneed  0000000000000390 00000390 00000020  0 A      4   1  8
++[ 7] .rela.dyn            RELA         00000000000003b0 000003b0 00000060 24 A      3   0  8
++[ 8] .rela.plt            RELA         0000000000000410 00000410 00000018 24 A      3  10  8
++[ 9] .init                PROGBITS     0000000000000428 00000428 00000018  0 AX     0   0  4
++[10] .plt                 PROGBITS     0000000000000440 00000440 00000020 16 AX     0   0 16
++[11] .text                PROGBITS     0000000000000460 00000460 00000128  0 AX     0   0 16
++[12] .fini                PROGBITS     0000000000000588 00000588 0000000e  0 AX     0   0  4
++[13] .eh_frame_hdr        PROGBITS     0000000000000598 00000598 00000024  0 A      0   0  4
++[14] .eh_frame            PROGBITS     00000000000005c0 000005c0 00000084  0 A      0   0  8
++[15] .ctors               PROGBITS     0000000000200648 00000648 00000010  0 WA     0   0  8
++[16] .dtors               PROGBITS     0000000000200658 00000658 00000010  0 WA     0   0  8
++[17] .jcr                 PROGBITS     0000000000200668 00000668 00000008  0 WA     0   0  8
++[18] .data.rel.ro         PROGBITS     0000000000200670 00000670 00000008  0 WA     0   0  8
++[19] .dynamic             DYNAMIC      0000000000200678 00000678 00000180 16 WA     4   0  8
++[20] .got                 PROGBITS     00000000002007f8 000007f8 00000018  8 WA     0   0  8
++[21] .got.plt             PROGBITS     0000000000200810 00000810 00000020  8 WA     0   0  8
++[22] .bss                 NOBITS       0000000000200830 00000830 00000010  0 WA     0   0  8
++[23] .comment             PROGBITS     0000000000000000 00000830 0000002c  1 MS     0   0  1
++[24] .gnu_debuglink       PROGBITS     0000000000000000 0000085c 00000014  0        0   0  4
++[25] .shstrtab            STRTAB       0000000000000000 00000870 000000e6  0        0   0  1
++
++EOF
++echo readelf testfile.debug
++testrun_compare ${abs_top_builddir}/src/readelf -S testfile.debug <<\EOF
++There are 27 section headers, starting at offset 0x918:
++
++Section Headers:
++[Nr] Name                 Type         Addr             Off      Size     ES Flags Lk Inf Al
++[ 0]                      NULL         0000000000000000 00000000 00000000  0        0   0  0
++[ 1] .note.gnu.build-id   NOTE         0000000000000190 00000190 00000024  0 A      0   0  4
++[ 2] .gnu.hash            NOBITS       00000000000001b8 000001b8 0000003c  0 A      3   0  8
++[ 3] .dynsym              NOBITS       00000000000001f8 000001b8 00000108 24 A      4   2  8
++[ 4] .dynstr              NOBITS       0000000000000300 000001b8 00000077  0 A      0   0  1
++[ 5] .gnu.version         NOBITS       0000000000000378 000001b8 00000016  2 A      3   0  2
++[ 6] .gnu.version_r       NOBITS       0000000000000390 000001b8 00000020  0 A      4   1  8
++[ 7] .rela.dyn            NOBITS       00000000000003b0 000001b8 00000060 24 A      3   0  8
++[ 8] .rela.plt            NOBITS       0000000000000410 000001b8 00000018 24 A      3  10  8
++[ 9] .init                NOBITS       0000000000000428 000001b8 00000018  0 AX     0   0  4
++[10] .plt                 NOBITS       0000000000000440 000001c0 00000020 16 AX     0   0 16
++[11] .text                NOBITS       0000000000000460 000001c0 00000128  0 AX     0   0 16
++[12] .fini                NOBITS       0000000000000588 000001c0 0000000e  0 AX     0   0  4
++[13] .eh_frame_hdr        NOBITS       0000000000000598 000001c0 00000024  0 A      0   0  4
++[14] .eh_frame            NOBITS       00000000000005c0 000001c0 00000084  0 A      0   0  8
++[15] .ctors               NOBITS       0000000000200648 000001c0 00000010  0 WA     0   0  8
++[16] .dtors               NOBITS       0000000000200658 000001c0 00000010  0 WA     0   0  8
++[17] .jcr                 NOBITS       0000000000200668 000001c0 00000008  0 WA     0   0  8
++[18] .data.rel.ro         NOBITS       0000000000200670 000001c0 00000008  0 WA     0   0  8
++[19] .dynamic             NOBITS       0000000000200678 000001c0 00000180 16 WA     4   0  8
++[20] .got                 NOBITS       00000000002007f8 000001c0 00000018  8 WA     0   0  8
++[21] .got.plt             NOBITS       0000000000200810 000001c0 00000020  8 WA     0   0  8
++[22] .bss                 NOBITS       0000000000200830 000001c0 00000010  0 WA     0   0  8
++[23] .comment             NOBITS       0000000000000000 000001c0 0000002c  1 MS     0   0  1
++[24] .shstrtab            STRTAB       0000000000000000 000001c0 000000e7  0        0   0  1
++[25] .symtab              SYMTAB       0000000000000000 000002a8 000004f8 24       26  44  8
++[26] .strtab              STRTAB       0000000000000000 000007a0 00000175  0        0   0  1
++
++EOF
++
++exit 0
+diff -ur elfutils-0.169.orig/tests/Makefile.in elfutils-0.169/tests/Makefile.in
+--- elfutils-0.169.orig/tests/Makefile.in	2017-07-17 11:25:44.681190429 +0200
++++ elfutils-0.169/tests/Makefile.in	2017-07-17 11:25:56.177935408 +0200
+@@ -140,16 +140,16 @@
+ 	run-strip-test7.sh run-strip-test8.sh run-strip-test9.sh \
+ 	run-strip-test10.sh run-strip-test11.sh run-strip-nothing.sh \
+ 	run-strip-groups.sh run-strip-reloc.sh run-strip-strmerge.sh \
+-	run-strip-nobitsalign.sh run-unstrip-test.sh \
+-	run-unstrip-test2.sh run-unstrip-test3.sh run-unstrip-test4.sh \
+-	run-unstrip-M.sh run-elfstrmerge-test.sh run-ecp-test.sh \
+-	run-ecp-test2.sh run-alldts.sh run-elflint-test.sh \
+-	run-elflint-self.sh run-ranlib-test.sh run-ranlib-test2.sh \
+-	run-ranlib-test3.sh run-ranlib-test4.sh run-addrscopes.sh \
+-	run-strings-test.sh run-funcscopes.sh run-find-prologues.sh \
+-	run-allregs.sh run-addrcfi.sh run-nm-self.sh \
+-	run-readelf-self.sh run-readelf-test1.sh run-readelf-test2.sh \
+-	run-readelf-test3.sh run-readelf-test4.sh \
++	run-strip-nobitsalign.sh run-strip-remove-keep.sh \
++	run-unstrip-test.sh run-unstrip-test2.sh run-unstrip-test3.sh \
++	run-unstrip-test4.sh run-unstrip-M.sh run-elfstrmerge-test.sh \
++	run-ecp-test.sh run-ecp-test2.sh run-alldts.sh \
++	run-elflint-test.sh run-elflint-self.sh run-ranlib-test.sh \
++	run-ranlib-test2.sh run-ranlib-test3.sh run-ranlib-test4.sh \
++	run-addrscopes.sh run-strings-test.sh run-funcscopes.sh \
++	run-find-prologues.sh run-allregs.sh run-addrcfi.sh \
++	run-nm-self.sh run-readelf-self.sh run-readelf-test1.sh \
++	run-readelf-test2.sh run-readelf-test3.sh run-readelf-test4.sh \
+ 	run-readelf-twofiles.sh run-readelf-macro.sh \
+ 	run-readelf-loc.sh run-readelf-aranges.sh run-readelf-line.sh \
+ 	run-readelf-z.sh run-native-test.sh run-bug1-test.sh \
+@@ -1046,7 +1046,7 @@
+ 	     run-strip-test4.sh run-strip-test5.sh run-strip-test6.sh \
+ 	     run-strip-test7.sh run-strip-test8.sh run-strip-groups.sh \
+ 	     run-strip-test9.sh run-strip-test10.sh run-strip-test11.sh \
+-	     run-strip-nothing.sh \
++	     run-strip-nothing.sh run-strip-remove-keep.sh \
+ 	     run-strip-strmerge.sh run-strip-nobitsalign.sh \
+ 	     testfile-nobitsalign.bz2 testfile-nobitsalign.strip.bz2 \
+ 	     run-strip-reloc.sh hello_i386.ko.bz2 hello_x86_64.ko.bz2 \
+@@ -2368,6 +2368,13 @@
+ 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+ 	--log-file $$b.log --trs-file $$b.trs \
+ 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
++	"$$tst" $(AM_TESTS_FD_REDIRECT)
++run-strip-remove-keep.sh.log: run-strip-remove-keep.sh
++	@p='run-strip-remove-keep.sh'; \
++	b='run-strip-remove-keep.sh'; \
++	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
++	--log-file $$b.log --trs-file $$b.trs \
++	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+ 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+ run-unstrip-test.sh.log: run-unstrip-test.sh
+ 	@p='run-unstrip-test.sh'; \

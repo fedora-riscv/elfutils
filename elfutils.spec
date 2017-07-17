@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.169
-%global baserelease 3
+%global baserelease 4
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -25,6 +25,7 @@ Source1: backtrace.ppc64le.fp.exec.bz2
 Source2: backtrace.ppc64le.fp.core.bz2
 Patch2: elfutils-0.169-dup-shstrtab.patch
 Patch3: elfutils-0.169-strip-empty.patch
+Patch4: elfutils-0.169-strip-keep-remove-section.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -179,6 +180,7 @@ profiling) of processes.
 cp %SOURCE1 %SOURCE2 tests/
 %patch2 -p1 -b .shstrtab_dup
 %patch3 -p1 -b .strip_empty
+%patch4 -p1 -b .strip_keep_remove
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -309,6 +311,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %endif
 
 %changelog
+* Mon Jul 17 2017 Mark Wielaard <mjw@fedoraproject.org> - 0.169-4
+- Add elfutils-0.169-strip-keep-remove-section.patch (#1465997)
+
 * Wed Jun  7 2017 Mark Wielaard <mjw@fedoraproject.org> - 0.169-3
 - Add elfutils-0.169-dup-shstrtab.patch
 - Add elfutils-0.169-strip-empty.patch
