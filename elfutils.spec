@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.169
-%global baserelease 6
+%global baserelease 7
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -315,6 +315,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %endif
 
 %changelog
+* Wed Jul 26 2017 Fedora Release Engineering <releng@fedoraproject.org> - 0.169-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Mass_Rebuild
+
 * Fri Jul 21 2017 Mark Wielaard <mjw@fedoraproject.org> - 0.169-6
 - Add elfutils-0.169-strip-data-marker-symbols.patch.
 
