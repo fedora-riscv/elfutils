@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
-Version: 0.169
-%global baserelease 8
+Version: 0.170
+%global baserelease 1
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -11,8 +11,8 @@ Release: %{baserelease}%{?dist}
 
 %global provide_yama_scope	0
 
-%if 0%{?fedora}
-%global provide_yama_scope	(%fedora >= 22)
+%if 0%{?fedora} >= 22 || 0%{?rhel} >= 7
+%global provide_yama_scope	1
 %endif
 
 %global depsuffix %{?_isa}%{!?_isa:-%{_arch}}
@@ -20,14 +20,6 @@ Release: %{baserelease}%{?dist}
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 # Patches
-Patch1: elfutils-0.169-ppc64-fallback-unwinder.patch
-Source1: backtrace.ppc64le.fp.exec.bz2
-Source2: backtrace.ppc64le.fp.core.bz2
-Patch2: elfutils-0.169-dup-shstrtab.patch
-Patch3: elfutils-0.169-strip-empty.patch
-Patch4: elfutils-0.169-strip-keep-remove-section.patch
-Patch5: elfutils-0.169-s390x-ptrace.patch
-Patch6: elfutils-0.169-strip-data-marker-symbols.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -178,13 +170,6 @@ profiling) of processes.
 %setup -q
 
 # Apply patches
-%patch1 -p1 -b .ppc64_unwind
-cp %SOURCE1 %SOURCE2 tests/
-%patch2 -p1 -b .shstrtab_dup
-%patch3 -p1 -b .strip_empty
-%patch4 -p1 -b .strip_keep_remove
-%patch5 -p1 -b .s390_ptrace
-%patch6 -p1 -b .data_markers
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -315,6 +300,10 @@ rm -rf ${RPM_BUILD_ROOT}
 %endif
 
 %changelog
+* Thu Aug  3 2017 Mark Wielaard <mjw@fedoraproject.org> - 0.170-1
+- New upstream release. Remove upstreamed patches.
+- provide_yama_scope for either fedora >= 22 and rhel >= 7.
+
 * Wed Aug 02 2017 Fedora Release Engineering <releng@fedoraproject.org> - 0.169-8
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
 
