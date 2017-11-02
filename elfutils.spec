@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.170
-%global baserelease 1
+%global baserelease 2
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -296,10 +296,14 @@ rm -rf ${RPM_BUILD_ROOT}
 %if %{provide_yama_scope}
 %files default-yama-scope
 %defattr(-,root,root)
-%config(noreplace) %{_sysctldir}/10-default-yama-scope.conf
+%{_sysctldir}/10-default-yama-scope.conf
 %endif
 
 %changelog
+* Thu Nov  2 2017 Mark Wielaard <mjw@redhat.com> - 0.170-2
+- Config files under /usr/lib/sysctl.d (_sysctldir) aren't %config (#1506660)
+  Admin can place the real config file under /etc/sysctl.d as override.
+
 * Thu Aug  3 2017 Mark Wielaard <mjw@fedoraproject.org> - 0.170-1
 - New upstream release. Remove upstreamed patches.
 - provide_yama_scope for either fedora >= 22 and rhel >= 7.
