@@ -300,12 +300,16 @@ rm -rf ${RPM_BUILD_ROOT}
 %if %{provide_yama_scope}
 %files default-yama-scope
 %defattr(-,root,root)
-%config(noreplace) %{_sysctldir}/10-default-yama-scope.conf
+%{_sysctldir}/10-default-yama-scope.conf
 %endif
 
 %changelog
 * Wed Dec 20 2017 Mark Wielaard <mjw@fedoraproject.org> - 0.170-4
 - Add elfutils-0.170-dwarf_aggregate_size.patch.
+
+* Thu Nov  2 2017 Mark Wielaard <mjw@redhat.com> - 0.170-2
+- Config files under /usr/lib/sysctl.d (_sysctldir) aren't %config (#1506660)
+  Admin can place the real config file under /etc/sysctl.d as override.
 
 * Thu Aug  3 2017 Mark Wielaard <mjw@fedoraproject.org> - 0.170-1
 - New upstream release. Remove upstreamed patches.
