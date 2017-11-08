@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.170
-%global baserelease 2
+%global baserelease 3
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -154,6 +154,7 @@ License: GPLv2+ or LGPLv3+
 Provides: default-yama-scope
 BuildArch: noarch
 # For the sysctl_apply macro
+%{?systemd_requires}
 BuildRequires: systemd >= 215
 
 %description default-yama-scope
@@ -216,7 +217,11 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %if %{provide_yama_scope}
 %post default-yama-scope
+# Due to circular dependencies might not be installed yet, so double check.
+# (systemd -> elfutils-libs -> default-yama-scope -> systemd)
+if [ -x /usr/lib/systemd/systemd-sysctl ] ; then
 %sysctl_apply 10-default-yama-scope.conf
+fi
 %endif
 
 %files
@@ -300,6 +305,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %endif
 
 %changelog
+* Wed Nov  8 2017 Mark Wielaard <mjw@fedoraproject.org> - 0.170-3
+- Rely on (and check) systemd_requires for sysctl_apply default-yama-scope.
+
 * Thu Nov  2 2017 Mark Wielaard <mjw@redhat.com> - 0.170-2
 - Config files under /usr/lib/sysctl.d (_sysctldir) aren't %config (#1506660)
   Admin can place the real config file under /etc/sysctl.d as override.
