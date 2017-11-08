@@ -156,6 +156,7 @@ License: GPLv2+ or LGPLv3+
 Provides: default-yama-scope
 BuildArch: noarch
 # For the sysctl_apply macro
+%{?systemd_requires}
 BuildRequires: systemd >= 215
 
 %description default-yama-scope
@@ -220,7 +221,11 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %if %{provide_yama_scope}
 %post default-yama-scope
+# Due to circular dependencies might not be installed yet, so double check.
+# (systemd -> elfutils-libs -> default-yama-scope -> systemd)
+if [ -x /usr/lib/systemd/systemd-sysctl ] ; then
 %sysctl_apply 10-default-yama-scope.conf
+fi
 %endif
 
 %files
@@ -306,6 +311,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %changelog
 * Wed Dec 20 2017 Mark Wielaard <mjw@fedoraproject.org> - 0.170-4
 - Add elfutils-0.170-dwarf_aggregate_size.patch.
+
+* Wed Nov  8 2017 Mark Wielaard <mjw@fedoraproject.org> - 0.170-3
+- Rely on (and check) systemd_requires for sysctl_apply default-yama-scope.
 
 * Thu Nov  2 2017 Mark Wielaard <mjw@redhat.com> - 0.170-2
 - Config files under /usr/lib/sysctl.d (_sysctldir) aren't %config (#1506660)
