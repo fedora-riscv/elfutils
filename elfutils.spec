@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.170
-%global baserelease 3
+%global baserelease 4
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -20,6 +20,8 @@ Release: %{baserelease}%{?dist}
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 # Patches
+Patch1: elfutils-0.170-dwarf_aggregate_size.patch
+Source1: testfile-sizes3.o.bz2
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -171,6 +173,8 @@ profiling) of processes.
 %setup -q
 
 # Apply patches
+%patch1 -p1 -b .aggregate_size
+cp %SOURCE1 tests/
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -305,6 +309,9 @@ fi
 %endif
 
 %changelog
+* Wed Dec 20 2017 Mark Wielaard <mjw@fedoraproject.org> - 0.170-4
+- Add elfutils-0.170-dwarf_aggregate_size.patch.
+
 * Wed Nov  8 2017 Mark Wielaard <mjw@fedoraproject.org> - 0.170-3
 - Rely on (and check) systemd_requires for sysctl_apply default-yama-scope.
 
