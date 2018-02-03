@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.170
-%global baserelease 4
+%global baserelease 5
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -208,16 +208,8 @@ install -Dm0644 config/10-default-yama-scope.conf ${RPM_BUILD_ROOT}%{_sysctldir}
 %check
 make -s %{?_smp_mflags} check || (cat tests/test-suite.log; false)
 
-%clean
-rm -rf ${RPM_BUILD_ROOT}
-
-%post libs -p /sbin/ldconfig
-
-%postun libs -p /sbin/ldconfig
-
-%post libelf -p /sbin/ldconfig
-
-%postun libelf -p /sbin/ldconfig
+%ldconfig_scriptlets libs
+%ldconfig_scriptlets libelf
 
 %if %{provide_yama_scope}
 %post default-yama-scope
@@ -309,6 +301,9 @@ fi
 %endif
 
 %changelog
+* Sat Feb 03 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 0.170-5
+- Switch to %%ldconfig_scriptlets
+
 * Wed Dec 20 2017 Mark Wielaard <mjw@fedoraproject.org> - 0.170-4
 - Add elfutils-0.170-dwarf_aggregate_size.patch.
 
