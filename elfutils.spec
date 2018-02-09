@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.170
-%global baserelease 5
+%global baserelease 7
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -301,6 +301,9 @@ fi
 %endif
 
 %changelog
+* Fri Feb 09 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 0.170-7
+- Escape macros in %%changelog
+
 * Sat Feb 03 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 0.170-5
 - Switch to %%ldconfig_scriptlets
 
@@ -311,7 +314,7 @@ fi
 - Rely on (and check) systemd_requires for sysctl_apply default-yama-scope.
 
 * Thu Nov  2 2017 Mark Wielaard <mjw@redhat.com> - 0.170-2
-- Config files under /usr/lib/sysctl.d (_sysctldir) aren't %config (#1506660)
+- Config files under /usr/lib/sysctl.d (_sysctldir) aren't %%config (#1506660)
   Admin can place the real config file under /etc/sysctl.d as override.
 
 * Thu Aug  3 2017 Mark Wielaard <mjw@fedoraproject.org> - 0.170-1
@@ -571,7 +574,7 @@ fi
 
 * Mon Aug 27 2012 Mark Wielaard <mjw@redhat.com> - 0.155-1
 - Update to 0.155.
-  - #844270 - eu-nm invalid %N$ use detected.
+  - #844270 - eu-nm invalid %%N$ use detected.
   - #847454 - Ukrainian translation update.
   - Removed local ar 64-bit symbol patch, dwz support patch and xlatetom fix.
 
