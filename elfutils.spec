@@ -23,6 +23,7 @@ Source: %{?source_url}%{name}-%{version}.tar.bz2
 Patch1: elfutils-0.170-dwarf_aggregate_size.patch
 Source1: testfile-sizes3.o.bz2
 Patch2: elfutils-0.170-sys-ptrace.patch
+Patch3: elfutils-0.170-m68k-packed-not-aligned.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -177,6 +178,7 @@ profiling) of processes.
 %patch1 -p1 -b .aggregate_size
 cp %SOURCE1 tests/
 %patch2 -p1 -b .sys_ptrace
+%patch3 -p1 -b .m68k_packed
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -315,6 +317,7 @@ fi
 * Thu Feb 15 2018 Mark Wielaard <mjw@fedoraproject.org>
 - Add elfutils-0.170-sys-ptrace.patch
 - Make sure spec can be build even when ldconfig_scriplets aren't defined.
+- Add elfutils-0.170-m68k-packed-not-aligned.patch
 
 * Fri Feb 09 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 0.170-7
 - Escape macros in %%changelog
