@@ -22,6 +22,7 @@ Source: %{?source_url}%{name}-%{version}.tar.bz2
 # Patches
 Patch1: elfutils-0.170-dwarf_aggregate_size.patch
 Source1: testfile-sizes3.o.bz2
+Patch2: elfutils-0.170-sys-ptrace.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -175,6 +176,7 @@ profiling) of processes.
 # Apply patches
 %patch1 -p1 -b .aggregate_size
 cp %SOURCE1 tests/
+%patch2 -p1 -b .sys_ptrace
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -301,6 +303,9 @@ fi
 %endif
 
 %changelog
+* Thu Feb 15 2018 Mark Wielaard <mjw@fedoraproject.org>
+- Add elfutils-0.170-sys-ptrace.patch
+
 * Fri Feb 09 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 0.170-7
 - Escape macros in %%changelog
 
