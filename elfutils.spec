@@ -210,8 +210,17 @@ install -Dm0644 config/10-default-yama-scope.conf ${RPM_BUILD_ROOT}%{_sysctldir}
 %check
 make -s %{?_smp_mflags} check || (cat tests/test-suite.log; false)
 
+# Only the latest Fedora and EPEL have these scriptlets,
+# older Fedora and plain RHEL don't.
+%if 0%{?ldconfig_scriptlets:1}
 %ldconfig_scriptlets libs
 %ldconfig_scriptlets libelf
+%else
+%post libs -p /sbin/ldconfig
+%postun libs -p /sbin/ldconfig
+%post libelf -p /sbin/ldconfig
+%postun libelf -p /sbin/ldconfig
+%endif
 
 %if %{provide_yama_scope}
 %post default-yama-scope
@@ -305,6 +314,7 @@ fi
 %changelog
 * Thu Feb 15 2018 Mark Wielaard <mjw@fedoraproject.org>
 - Add elfutils-0.170-sys-ptrace.patch
+- Make sure spec can be build even when ldconfig_scriplets aren't defined.
 
 * Fri Feb 09 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 0.170-7
 - Escape macros in %%changelog
