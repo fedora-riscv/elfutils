@@ -24,6 +24,7 @@ Patch1: elfutils-0.170-dwarf_aggregate_size.patch
 Source1: testfile-sizes3.o.bz2
 Patch2: elfutils-0.170-sys-ptrace.patch
 Patch3: elfutils-0.170-m68k-packed-not-aligned.patch
+Patch4: elfutils-0.170-core-pid.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -179,6 +180,7 @@ profiling) of processes.
 cp %SOURCE1 tests/
 %patch2 -p1 -b .sys_ptrace
 %patch3 -p1 -b .m68k_packed
+%patch4 -p1 -b .core_pid
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -314,7 +316,10 @@ fi
 %endif
 
 %changelog
-* Thu Feb 15 2018 Mark Wielaard <mjw@fedoraproject.org>
+* Fri Feb 16 2018 Mark Wielaard <mjw@fedoraproject.org>
+- Add elfutils-0.170-core-pid.patch
+
+* Thu Feb 15 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.170-8
 - Add elfutils-0.170-sys-ptrace.patch
 - Make sure spec can be build even when ldconfig_scriplets aren't defined.
 - Add elfutils-0.170-m68k-packed-not-aligned.patch
