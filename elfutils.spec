@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.170
-%global baserelease 7
+%global baserelease 8
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -314,7 +314,7 @@ fi
 %endif
 
 %changelog
-* Thu Feb 15 2018 Mark Wielaard <mjw@fedoraproject.org>
+* Thu Feb 15 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.170-8
 - Add elfutils-0.170-sys-ptrace.patch
 - Make sure spec can be build even when ldconfig_scriplets aren't defined.
 - Add elfutils-0.170-m68k-packed-not-aligned.patch
