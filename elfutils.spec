@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.170
-%global baserelease 8
+%global baserelease 9
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -320,7 +320,7 @@ fi
 %endif
 
 %changelog
-* Fri Feb 16 2018 Mark Wielaard <mjw@fedoraproject.org>
+* Fri Feb 16 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.170-9
 - Add elfutils-0.170-core-pid.patch
 - Add elfutils-0.170-elf_sync.patch
 - Add elfutils-0.170-new-notes-hack.patch
