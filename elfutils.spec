@@ -26,6 +26,7 @@ Patch2: elfutils-0.170-sys-ptrace.patch
 Patch3: elfutils-0.170-m68k-packed-not-aligned.patch
 Patch4: elfutils-0.170-core-pid.patch
 Patch5: elfutils-0.170-elf_sync.patch
+Patch6: elfutils-0.170-new-notes-hack.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -183,6 +184,7 @@ cp %SOURCE1 tests/
 %patch3 -p1 -b .m68k_packed
 %patch4 -p1 -b .core_pid
 %patch5 -p1 -b .elf_sync
+%patch6 -p1 -b .notes_hack
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -321,6 +323,7 @@ fi
 * Fri Feb 16 2018 Mark Wielaard <mjw@fedoraproject.org>
 - Add elfutils-0.170-core-pid.patch
 - Add elfutils-0.170-elf_sync.patch
+- Add elfutils-0.170-new-notes-hack.patch
 
 * Thu Feb 15 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.170-8
 - Add elfutils-0.170-sys-ptrace.patch
