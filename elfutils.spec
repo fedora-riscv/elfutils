@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.170
-%global baserelease 9
+%global baserelease 10
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -28,6 +28,7 @@ Patch4: elfutils-0.170-core-pid.patch
 Patch5: elfutils-0.170-elf_sync.patch
 Patch6: elfutils-0.170-new-notes-hack.patch
 Patch7: elfutils-0.170-GNU_variable_value.patch
+Patch8: elfutils-0.170-locviews.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -187,6 +188,7 @@ cp %SOURCE1 tests/
 %patch5 -p1 -b .elf_sync
 %patch6 -p1 -b .notes_hack
 %patch7 -p1 -b .variable_value
+%patch8 -p1 -b .locviews
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -322,8 +324,9 @@ fi
 %endif
 
 %changelog
-* Thu Mar 01 2018 Mark Wielaard <mjw@fedoraproject.org>
+* Thu Mar 01 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.170-10
 - Add elfutils-0.170-GNU_variable_value.patch
+- Add elfutils-0.170-locviews.patch
 
 * Fri Feb 16 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.170-9
 - Add elfutils-0.170-core-pid.patch
