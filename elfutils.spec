@@ -38,6 +38,8 @@ BuildRequires: bison >= 1.875
 BuildRequires: flex >= 2.5.4a
 BuildRequires: bzip2
 BuildRequires: gcc >= 4.4
+# For libstdc++ demangle support
+BuildRequires: libstdc++-devel
 
 BuildRequires: zlib-devel >= 1.2.2.3
 BuildRequires: bzip2-devel
@@ -324,6 +326,9 @@ fi
 %endif
 
 %changelog
+* Thu Apr 10 2018 Mark Wielaard <mjw@fedoraproject.org>
+- Add explict libstdc++-devel BuildRequires for demangle support.
+
 * Thu Mar 01 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.170-10
 - Add elfutils-0.170-GNU_variable_value.patch
 - Add elfutils-0.170-locviews.patch
