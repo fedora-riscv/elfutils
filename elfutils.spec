@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.170
-%global baserelease 10
+%global baserelease 11
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -29,6 +29,7 @@ Patch5: elfutils-0.170-elf_sync.patch
 Patch6: elfutils-0.170-new-notes-hack.patch
 Patch7: elfutils-0.170-GNU_variable_value.patch
 Patch8: elfutils-0.170-locviews.patch
+Patch9: elfutils-0.170-unwind.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -191,6 +192,7 @@ cp %SOURCE1 tests/
 %patch6 -p1 -b .notes_hack
 %patch7 -p1 -b .variable_value
 %patch8 -p1 -b .locviews
+%patch9 -p1 -b .unwind
 
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
@@ -326,8 +328,9 @@ fi
 %endif
 
 %changelog
-* Thu Apr 10 2018 Mark Wielaard <mjw@fedoraproject.org>
+* Wed Apr 11 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.170-11
 - Add explict libstdc++-devel BuildRequires for demangle support.
+- Add elfutils-0.170-unwind.patch. (#1555726)
 
 * Thu Mar 01 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.170-10
 - Add elfutils-0.170-GNU_variable_value.patch
