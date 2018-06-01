@@ -1,0 +1,30 @@
+diff --git a/src/elflint.c b/src/elflint.c
+index df1b3a0..f4d82d9 100644
+--- a/src/elflint.c
++++ b/src/elflint.c
+@@ -4329,6 +4329,8 @@ section [%2d] '%s': unknown core file note type %" PRIu32
+ 	  case NT_GNU_HWCAP:
+ 	  case NT_GNU_BUILD_ID:
+ 	  case NT_GNU_GOLD_VERSION:
++	  case NT_GNU_PROPERTY_TYPE_0:
++	  case 256:
+ 	    break;
+ 
+ 	  case 0:
+diff --git a/src/elflint.c b/src/elflint.c
+index 0a26d97..1cbf570 100644
+--- a/src/elflint.c
++++ b/src/elflint.c
+@@ -3906,10 +3906,11 @@ section [%2zu] '%s': size not multiple of entry size\n"),
+ 	       cnt, section_name (ebl, cnt),
+ 	       (int) shdr->sh_type);
+ 
++#define SHF_GNU_BUILD_NOTE    (1 << 20)
+ #define ALL_SH_FLAGS (SHF_WRITE | SHF_ALLOC | SHF_EXECINSTR | SHF_MERGE \
+ 		      | SHF_STRINGS | SHF_INFO_LINK | SHF_LINK_ORDER \
+ 		      | SHF_OS_NONCONFORMING | SHF_GROUP | SHF_TLS \
+-		      | SHF_COMPRESSED)
++		      | SHF_COMPRESSED | SHF_GNU_BUILD_NOTE)
+       if (shdr->sh_flags & ~(GElf_Xword) ALL_SH_FLAGS)
+ 	{
+ 	  GElf_Xword sh_flags = shdr->sh_flags & ~(GElf_Xword) ALL_SH_FLAGS;

@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
-Version: 0.170
-%global baserelease 11
+Version: 0.171
+%global baserelease 1
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -20,16 +20,7 @@ Release: %{baserelease}%{?dist}
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 # Patches
-Patch1: elfutils-0.170-dwarf_aggregate_size.patch
-Source1: testfile-sizes3.o.bz2
-Patch2: elfutils-0.170-sys-ptrace.patch
-Patch3: elfutils-0.170-m68k-packed-not-aligned.patch
-Patch4: elfutils-0.170-core-pid.patch
-Patch5: elfutils-0.170-elf_sync.patch
-Patch6: elfutils-0.170-new-notes-hack.patch
-Patch7: elfutils-0.170-GNU_variable_value.patch
-Patch8: elfutils-0.170-locviews.patch
-Patch9: elfutils-0.170-unwind.patch
+Patch1: elfutils-0.171-new-notes-hack.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -183,17 +174,10 @@ profiling) of processes.
 %setup -q
 
 # Apply patches
-%patch1 -p1 -b .aggregate_size
-cp %SOURCE1 tests/
-%patch2 -p1 -b .sys_ptrace
-%patch3 -p1 -b .m68k_packed
-%patch4 -p1 -b .core_pid
-%patch5 -p1 -b .elf_sync
-%patch6 -p1 -b .notes_hack
-%patch7 -p1 -b .variable_value
-%patch8 -p1 -b .locviews
-%patch9 -p1 -b .unwind
+%patch1 -p1 -b .notes_hack
 
+# In case the above patches added any new test scripts, make sure they
+# are executable.
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
@@ -328,6 +312,21 @@ fi
 %endif
 
 %changelog
+* Fri Jun 01 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.171-1
+- New upstream release.
+  - DWARF5 and split dwarf, including GNU DebugFission, support.
+  - readelf: Handle all new DWARF5 sections.
+    --debug-dump=info+ will show split unit DIEs when found.
+    --dwarf-skeleton can be used when inspecting a .dwo file.
+    Recognizes GNU locviews with --debug-dump=loc.
+  - libdw: New functions dwarf_die_addr_die, dwarf_get_units,
+    dwarf_getabbrevattr_data and dwarf_cu_info.
+    libdw will now try to resolve the alt file on first use
+    when not set yet with dwarf_set_alt.
+    dwarf_aggregate_size() now works with multi-dimensional arrays.
+  - libdwfl: Use process_vm_readv when available instead of ptrace.
+  - backends: Add a RISC-V backend.
+
 * Wed Apr 11 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.170-11
 - Add explict libstdc++-devel BuildRequires for demangle support.
 - Add elfutils-0.170-unwind.patch. (#1555726)
