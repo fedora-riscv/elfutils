@@ -1,6 +1,6 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
-Version: 0.171
+Version: 0.172
 %global baserelease 1
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -208,6 +208,9 @@ install -Dm0644 config/10-default-yama-scope.conf ${RPM_BUILD_ROOT}%{_sysctldir}
 %endif
 
 %check
+# Record some build root versions in build.log
+uname -r; rpm -q glibc
+
 make -s %{?_smp_mflags} check || (cat tests/test-suite.log; false)
 
 # Only the latest Fedora and EPEL have these scriptlets,
@@ -312,6 +315,14 @@ fi
 %endif
 
 %changelog
+* Mon Jun 11 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.172-1
+- New upstream release.
+  - No functional changes compared to 0.171.
+  - Various bug fixes in libdw and eu-readelf dealing with bad DWARF5
+    data. Thanks to running the afl fuzzer on eu-readelf and various
+    testcases.
+  - eu-readelf -N is ~15% faster.
+
 * Fri Jun 01 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.171-1
 - New upstream release.
   - DWARF5 and split dwarf, including GNU DebugFission, support.
