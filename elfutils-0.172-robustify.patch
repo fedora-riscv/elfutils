@@ -1,0 +1,400 @@
+Upstream commits since 0.172:
+
+  b4dced3 readelf: While printing .debug_loc make sure that next_off doesn't overflow.
+  bb11e36 libdw: Make __libdw_dieabbrev more robust on failure.
+  3647b5b readelf: Make sure print_form_data always consumes DW_FORM_strx[1234] data.
+  eaaf908 readelf: Check there are at least 4 bytes available for DWARF_FORM_block4.
+  0d93f49 libdw, readelf: Don't handle DW_FORM_data16 as expression block/location.
+  9495c26 libdw: aggregate_size check NULL result from get_type.
+  e636112 libdw: dwarf_peel_type break long chains/cycles.
+  5956b8a libdw: Break dwarf_aggregate_size recursion because of type cycles.
+  ca0d831 libelf: Don't return unaligned data returned from elf_getdata[_rawchunk].
+
+diff --git a/libdw/dwarf_aggregate_size.c b/libdw/dwarf_aggregate_size.c
+index 6e50185..75105e4 100644
+--- a/libdw/dwarf_aggregate_size.c
++++ b/libdw/dwarf_aggregate_size.c
+@@ -46,13 +46,17 @@ get_type (Dwarf_Die *die, Dwarf_Attribute *attr_mem, Dwarf_Die *type_mem)
+   return type;
+ }
+ 
++static int aggregate_size (Dwarf_Die *die, Dwarf_Word *size,
++			   Dwarf_Die *type_mem, int depth);
++
+ static int
+ array_size (Dwarf_Die *die, Dwarf_Word *size,
+-	    Dwarf_Attribute *attr_mem, Dwarf_Die *type_mem)
++	    Dwarf_Attribute *attr_mem, int depth)
+ {
+   Dwarf_Word eltsize;
+-  if (INTUSE(dwarf_aggregate_size) (get_type (die, attr_mem, type_mem),
+-				    &eltsize) != 0)
++  Dwarf_Die type_mem, aggregate_type_mem;
++  if (aggregate_size (get_type (die, attr_mem, &type_mem), &eltsize,
++		      &aggregate_type_mem, depth) != 0)
+       return -1;
+ 
+   /* An array can have DW_TAG_subrange_type or DW_TAG_enumeration_type
+@@ -167,21 +171,30 @@ array_size (Dwarf_Die *die, Dwarf_Word *size,
+ }
+ 
+ static int
+-aggregate_size (Dwarf_Die *die, Dwarf_Word *size, Dwarf_Die *type_mem)
++aggregate_size (Dwarf_Die *die, Dwarf_Word *size,
++		Dwarf_Die *type_mem, int depth)
+ {
+   Dwarf_Attribute attr_mem;
+ 
++/* Arrays of arrays of subrange types of arrays... Don't recurse too deep.  */
++#define MAX_DEPTH 256
++  if (die == NULL || depth++ >= MAX_DEPTH)
++    return -1;
++
+   if (INTUSE(dwarf_attr_integrate) (die, DW_AT_byte_size, &attr_mem) != NULL)
+     return INTUSE(dwarf_formudata) (&attr_mem, size);
+ 
+   switch (INTUSE(dwarf_tag) (die))
+     {
+     case DW_TAG_subrange_type:
+-      return aggregate_size (get_type (die, &attr_mem, type_mem),
+-			     size, type_mem); /* Tail call.  */
++      {
++	Dwarf_Die aggregate_type_mem;
++	return aggregate_size (get_type (die, &attr_mem, type_mem),
++			       size, &aggregate_type_mem, depth);
++      }
+ 
+     case DW_TAG_array_type:
+-      return array_size (die, size, &attr_mem, type_mem);
++      return array_size (die, size, &attr_mem, depth);
+ 
+     /* Assume references and pointers have pointer size if not given an
+        explicit DW_AT_byte_size.  */
+@@ -204,7 +217,7 @@ dwarf_aggregate_size (Dwarf_Die *die, Dwarf_Word *size)
+   if (INTUSE (dwarf_peel_type) (die, &die_mem) != 0)
+     return -1;
+ 
+-  return aggregate_size (&die_mem, size, &type_mem);
++  return aggregate_size (&die_mem, size, &type_mem, 0);
+ }
+ INTDEF (dwarf_aggregate_size)
+ OLD_VERSION (dwarf_aggregate_size, ELFUTILS_0.144)
+diff --git a/libdw/dwarf_getlocation.c b/libdw/dwarf_getlocation.c
+index 7f294fe..fc59a2a 100644
+--- a/libdw/dwarf_getlocation.c
++++ b/libdw/dwarf_getlocation.c
+@@ -174,6 +174,8 @@ check_constant_offset (Dwarf_Attribute *attr,
+     default:
+       return 1;
+ 
++      /* Note, we don't regard DW_FORM_data16 as a constant form,
++	 even though technically it is according to the standard.  */
+     case DW_FORM_data1:
+     case DW_FORM_data2:
+     case DW_FORM_data4:
+@@ -665,7 +667,13 @@ dwarf_getlocation (Dwarf_Attribute *attr, Dwarf_Op **llbuf, size_t *listlen)
+   if (result != 1)
+     return result;
+ 
+-  /* If it has a block form, it's a single location expression.  */
++  /* If it has a block form, it's a single location expression.
++     Except for DW_FORM_data16, which is a 128bit constant.  */
++  if (attr->form == DW_FORM_data16)
++    {
++      __libdw_seterrno (DWARF_E_NO_BLOCK);
++      return -1;
++    }
+   Dwarf_Block block;
+   if (INTUSE(dwarf_formblock) (attr, &block) != 0)
+     return -1;
+@@ -863,9 +871,11 @@ dwarf_getlocation_addr (Dwarf_Attribute *attr, Dwarf_Addr address,
+   if (llbufs == NULL)
+     maxlocs = SIZE_MAX;
+ 
+-  /* If it has a block form, it's a single location expression.  */
++  /* If it has a block form, it's a single location expression.
++     Except for DW_FORM_data16, which is a 128bit constant.  */
+   Dwarf_Block block;
+-  if (INTUSE(dwarf_formblock) (attr, &block) == 0)
++  if (attr->form != DW_FORM_data16
++      && INTUSE(dwarf_formblock) (attr, &block) == 0)
+     {
+       if (maxlocs == 0)
+ 	return 0;
+@@ -876,11 +886,14 @@ dwarf_getlocation_addr (Dwarf_Attribute *attr, Dwarf_Addr address,
+       return listlens[0] == 0 ? 0 : 1;
+     }
+ 
+-  int error = INTUSE(dwarf_errno) ();
+-  if (unlikely (error != DWARF_E_NO_BLOCK))
++  if (attr->form != DW_FORM_data16)
+     {
+-      __libdw_seterrno (error);
+-      return -1;
++      int error = INTUSE(dwarf_errno) ();
++      if (unlikely (error != DWARF_E_NO_BLOCK))
++	{
++	  __libdw_seterrno (error);
++	  return -1;
++	}
+     }
+ 
+   int result = check_constant_offset (attr, &llbufs[0], &listlens[0]);
+@@ -938,9 +951,11 @@ dwarf_getlocations (Dwarf_Attribute *attr, ptrdiff_t offset, Dwarf_Addr *basep,
+ 
+   if (offset == 0)
+     {
+-      /* If it has a block form, it's a single location expression.  */
++      /* If it has a block form, it's a single location expression.
++	 Except for DW_FORM_data16, which is a 128bit constant.  */
+       Dwarf_Block block;
+-      if (INTUSE(dwarf_formblock) (attr, &block) == 0)
++      if (attr->form != DW_FORM_data16
++	  && INTUSE(dwarf_formblock) (attr, &block) == 0)
+ 	{
+ 	  if (getlocation (attr->cu, &block, expr, exprlen,
+ 			   cu_sec_idx (attr->cu)) != 0)
+@@ -952,11 +967,14 @@ dwarf_getlocations (Dwarf_Attribute *attr, ptrdiff_t offset, Dwarf_Addr *basep,
+ 	  return 1;
+ 	}
+ 
+-      int error = INTUSE(dwarf_errno) ();
+-      if (unlikely (error != DWARF_E_NO_BLOCK))
++      if (attr->form != DW_FORM_data16)
+ 	{
+-	  __libdw_seterrno (error);
+-	  return -1;
++	  int error = INTUSE(dwarf_errno) ();
++	  if (unlikely (error != DWARF_E_NO_BLOCK))
++	    {
++	      __libdw_seterrno (error);
++	      return -1;
++	    }
+ 	}
+ 
+       int result = check_constant_offset (attr, expr, exprlen);
+diff --git a/libdw/dwarf_peel_type.c b/libdw/dwarf_peel_type.c
+index 6bbfd42..59fc6f1 100644
+--- a/libdw/dwarf_peel_type.c
++++ b/libdw/dwarf_peel_type.c
+@@ -46,14 +46,19 @@ dwarf_peel_type (Dwarf_Die *die, Dwarf_Die *result)
+ 
+   *result = *die;
+   tag = INTUSE (dwarf_tag) (result);
+-  while (tag == DW_TAG_typedef
+-	 || tag == DW_TAG_const_type
+-	 || tag == DW_TAG_volatile_type
+-	 || tag == DW_TAG_restrict_type
+-	 || tag == DW_TAG_atomic_type
+-	 || tag == DW_TAG_immutable_type
+-	 || tag == DW_TAG_packed_type
+-	 || tag == DW_TAG_shared_type)
++
++/* Stack 8 of all these modifiers, after that it gets silly.  */
++#define MAX_DEPTH (8 * 8)
++  int max_depth = MAX_DEPTH;
++  while ((tag == DW_TAG_typedef
++	  || tag == DW_TAG_const_type
++	  || tag == DW_TAG_volatile_type
++	  || tag == DW_TAG_restrict_type
++	  || tag == DW_TAG_atomic_type
++	  || tag == DW_TAG_immutable_type
++	  || tag == DW_TAG_packed_type
++	  || tag == DW_TAG_shared_type)
++	&& max_depth-- > 0)
+     {
+       Dwarf_Attribute attr_mem;
+       Dwarf_Attribute *attr = INTUSE (dwarf_attr_integrate) (result, DW_AT_type,
+@@ -67,7 +72,7 @@ dwarf_peel_type (Dwarf_Die *die, Dwarf_Die *result)
+       tag = INTUSE (dwarf_tag) (result);
+     }
+ 
+-  if (tag == DW_TAG_invalid)
++  if (tag == DW_TAG_invalid || max_depth <= 0)
+     return -1;
+ 
+   return 0;
+diff --git a/libdw/libdwP.h b/libdw/libdwP.h
+index 3d8e145..eebb7d1 100644
+--- a/libdw/libdwP.h
++++ b/libdw/libdwP.h
+@@ -653,8 +653,9 @@ __libdw_dieabbrev (Dwarf_Die *die, const unsigned char **readp)
+       /* Get the abbreviation code.  */
+       unsigned int code;
+       const unsigned char *addr = die->addr;
+-      if (die->cu == NULL || addr >= (const unsigned char *) die->cu->endp)
+-	return DWARF_END_ABBREV;
++      if (unlikely (die->cu == NULL
++		    || addr >= (const unsigned char *) die->cu->endp))
++	return die->abbrev = DWARF_END_ABBREV;
+       get_uleb128 (code, addr, die->cu->endp);
+       if (readp != NULL)
+ 	*readp = addr;
+diff --git a/libdw/memory-access.h b/libdw/memory-access.h
+index 22918cb..a39ad6d 100644
+--- a/libdw/memory-access.h
++++ b/libdw/memory-access.h
+@@ -362,6 +362,11 @@ read_3ubyte_unaligned (Dwarf *dbg, const unsigned char *p)
+ }
+ 
+ 
++#define read_3ubyte_unaligned_inc(Dbg, Addr) \
++  ({ uint32_t t_ = read_2ubyte_unaligned (Dbg, Addr);			      \
++     Addr = (__typeof (Addr)) (((uintptr_t) (Addr)) + 3);		      \
++     t_; })
++
+ #define read_addr_unaligned_inc(Nbytes, Dbg, Addr)			\
+   (assert ((Nbytes) == 4 || (Nbytes) == 8),				\
+     ((Nbytes) == 4 ? read_4ubyte_unaligned_inc (Dbg, Addr)		\
+diff --git a/libelf/elf_getdata.c b/libelf/elf_getdata.c
+index 97c503b..278dfa8 100644
+--- a/libelf/elf_getdata.c
++++ b/libelf/elf_getdata.c
+@@ -76,7 +76,6 @@ static const Elf_Type shtype_map[EV_NUM - 1][TYPEIDX (SHT_HISUNW) + 1] =
+     }
+   };
+ 
+-#if !ALLOW_UNALIGNED
+ /* Associate libelf types with their internal alignment requirements.  */
+ const uint_fast8_t __libelf_type_aligns[EV_NUM - 1][ELFCLASSNUM - 1][ELF_T_NUM] =
+   {
+@@ -115,7 +114,6 @@ const uint_fast8_t __libelf_type_aligns[EV_NUM - 1][ELFCLASSNUM - 1][ELF_T_NUM]
+     }
+ # undef TYPE_ALIGNS
+   };
+-#endif
+ 
+ 
+ Elf_Type
+@@ -173,8 +171,7 @@ convert_data (Elf_Scn *scn, int version __attribute__ ((unused)), int eclass,
+       /* Make sure the source is correctly aligned for the conversion
+ 	 function to directly access the data elements.  */
+       char *rawdata_source;
+-      if (ALLOW_UNALIGNED ||
+-	  ((((size_t) (char *) scn->rawdata_base)) & (align - 1)) == 0)
++      if (((((size_t) (char *) scn->rawdata_base)) & (align - 1)) == 0)
+ 	rawdata_source = scn->rawdata_base;
+       else
+ 	{
+diff --git a/libelf/elf_getdata_rawchunk.c b/libelf/elf_getdata_rawchunk.c
+index 31b2fe7..d0c0b75 100644
+--- a/libelf/elf_getdata_rawchunk.c
++++ b/libelf/elf_getdata_rawchunk.c
+@@ -80,8 +80,7 @@ elf_getdata_rawchunk (Elf *elf, off_t offset, size_t size, Elf_Type type)
+     {
+     /* If the file is mmap'ed we can use it directly, if aligned for type.  */
+       char *rawdata = elf->map_address + elf->start_offset + offset;
+-      if (ALLOW_UNALIGNED ||
+-	  ((uintptr_t) rawdata & (align - 1)) == 0)
++      if (((uintptr_t) rawdata & (align - 1)) == 0)
+ 	rawchunk = rawdata;
+       else
+ 	{
+diff --git a/libelf/libelfP.h b/libelf/libelfP.h
+index ca805ac..ed216c8 100644
+--- a/libelf/libelfP.h
++++ b/libelf/libelfP.h
+@@ -443,15 +443,11 @@ extern int __libelf_version_initialized attribute_hidden;
+ # define LIBELF_EV_IDX	(__libelf_version - 1)
+ #endif
+ 
+-#if !ALLOW_UNALIGNED
+ /* Array with alignment requirements of the internal types indexed by ELF
+    version, binary class, and type. */
+ extern const uint_fast8_t __libelf_type_aligns[EV_NUM - 1][ELFCLASSNUM - 1][ELF_T_NUM] attribute_hidden;
+ # define __libelf_type_align(class, type)	\
+     (__libelf_type_aligns[LIBELF_EV_IDX][class - 1][type] ?: 1)
+-#else
+-# define __libelf_type_align(class, type)	1
+-#endif
+ 
+ /* Given an Elf handle and a section type returns the Elf_Data d_type.
+    Should not be called when SHF_COMPRESSED is set, the d_type should
+diff --git a/src/readelf.c b/src/readelf.c
+index f185897..313f940 100644
+--- a/src/readelf.c
++++ b/src/readelf.c
+@@ -7403,11 +7403,16 @@ attr_callback (Dwarf_Attribute *attrp, void *arg)
+ 	case DW_AT_GNU_call_site_data_value:
+ 	case DW_AT_GNU_call_site_target:
+ 	case DW_AT_GNU_call_site_target_clobbered:
+-	  putchar ('\n');
+-	  print_ops (cbargs->dwflmod, cbargs->dbg,
+-		     12 + level * 2, 12 + level * 2,
+-		     cbargs->version, cbargs->addrsize, cbargs->offset_size,
+-		     attrp->cu, block.length, block.data);
++	  if (form != DW_FORM_data16)
++	    {
++	      putchar ('\n');
++	      print_ops (cbargs->dwflmod, cbargs->dbg,
++			 12 + level * 2, 12 + level * 2,
++			 cbargs->version, cbargs->addrsize, cbargs->offset_size,
++			 attrp->cu, block.length, block.data);
++	    }
++	  else
++	    print_block (block.length, block.data);
+ 	  break;
+ 	}
+       break;
+@@ -7907,7 +7912,7 @@ print_form_data (Dwarf *dbg, int form, const unsigned char *readp,
+       break;
+ 
+     case DW_FORM_block4:
+-      if (readendp - readp < 2)
++      if (readendp - readp < 4)
+ 	goto invalid_data;
+       val = read_4ubyte_unaligned_inc (dbg, readp);
+       if ((size_t) (readendp - readp) < val)
+@@ -7994,9 +7999,9 @@ print_form_data (Dwarf *dbg, int form, const unsigned char *readp,
+ 	    {
+ 	      Dwarf_Off idx;
+ 	      if (offset_len == 8)
+-		idx = read_8ubyte_unaligned_inc (dbg, strreadp);
++		idx = read_8ubyte_unaligned (dbg, strreadp);
+ 	      else
+-		idx = read_4ubyte_unaligned_inc (dbg, strreadp);
++		idx = read_4ubyte_unaligned (dbg, strreadp);
+ 
+ 	      data = dbg->sectiondata[IDX_debug_str];
+ 	      if (data == NULL || idx >= data->d_size
+@@ -8013,25 +8018,25 @@ print_form_data (Dwarf *dbg, int form, const unsigned char *readp,
+     case DW_FORM_strx1:
+       if (readendp - readp < 1)
+ 	goto invalid_data;
+-      val = *readp;
++      val = *readp++;
+       goto strx_val;
+ 
+     case DW_FORM_strx2:
+       if (readendp - readp < 2)
+ 	goto invalid_data;
+-      val = read_2ubyte_unaligned (dbg, readp);
++      val = read_2ubyte_unaligned_inc (dbg, readp);
+       goto strx_val;
+ 
+     case DW_FORM_strx3:
+       if (readendp - readp < 3)
+ 	goto invalid_data;
+-      val = read_3ubyte_unaligned (dbg, readp);
++      val = read_3ubyte_unaligned_inc (dbg, readp);
+       goto strx_val;
+ 
+     case DW_FORM_strx4:
+       if (readendp - readp < 4)
+ 	goto invalid_data;
+-      val = read_4ubyte_unaligned (dbg, readp);
++      val = read_4ubyte_unaligned_inc (dbg, readp);
+       goto strx_val;
+ 
+     default:
+@@ -9230,7 +9235,9 @@ print_debug_loc_section (Dwfl_Module *dwflmod,
+ 						    listptr_idx);
+ 	  const unsigned char *locp = readp;
+ 	  const unsigned char *locendp;
+-	  if (next_off == 0)
++	  if (next_off == 0
++	      || next_off > (size_t) (endp
++				      - (const unsigned char *) data->d_buf))
+ 	    locendp = endp;
+ 	  else
+ 	    locendp = (const unsigned char *) data->d_buf + next_off;
