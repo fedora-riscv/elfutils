@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
-Version: 0.172
-%global baserelease 2
+Version: 0.173
+%global baserelease 1
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -21,7 +21,6 @@ Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 # Patches
 Patch1: elfutils-0.171-new-notes-hack.patch
-Patch2: elfutils-0.172-robustify.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -176,7 +175,6 @@ profiling) of processes.
 
 # Apply patches
 %patch1 -p1 -b .notes_hack
-%patch2 -p1 -b .robustify
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -317,6 +315,22 @@ fi
 %endif
 
 %changelog
+* Fri Jun 29 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.173-1
+- New upstream release
+  - More fixes for crashes and hangs found by afl-fuzz. In particular
+    various functions now detect and break infinite loops caused by bad
+    DIE tree cycles.
+  - readelf: Will now lookup the size and signedness of constant value
+    types to display them correctly (and not just how they were encoded).
+  - libdw: New function dwarf_next_lines to read CU-less .debug_line data.
+    dwarf_begin_elf now accepts ELF files containing just .debug_line
+    or .debug_frame sections (which can be read without needing a DIE
+    tree from the .debug_info section).
+    Removed dwarf_getscn_info, which was never implemented.
+  - backends: Handle BPF simple relocations.
+    The RISCV backends now handles ABI specific CFI and knows about
+    RISCV register types and names.
+
 * Wed Jun 20 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.172-2
 - Add elfutils-0.172-robustify.patch.
 
