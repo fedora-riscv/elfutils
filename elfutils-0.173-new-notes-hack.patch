@@ -1,21 +1,8 @@
 diff --git a/src/elflint.c b/src/elflint.c
-index df1b3a0..f4d82d9 100644
+index eec799b2..31092f2e 100644
 --- a/src/elflint.c
 +++ b/src/elflint.c
-@@ -4329,6 +4329,8 @@ section [%2d] '%s': unknown core file note type %" PRIu32
- 	  case NT_GNU_HWCAP:
- 	  case NT_GNU_BUILD_ID:
- 	  case NT_GNU_GOLD_VERSION:
-+	  case NT_GNU_PROPERTY_TYPE_0:
-+	  case 256:
- 	    break;
- 
- 	  case 0:
-diff --git a/src/elflint.c b/src/elflint.c
-index 0a26d97..1cbf570 100644
---- a/src/elflint.c
-+++ b/src/elflint.c
-@@ -3906,10 +3906,11 @@ section [%2zu] '%s': size not multiple of entry size\n"),
+@@ -3905,10 +3905,11 @@ section [%2zu] '%s': size not multiple of entry size\n"),
  	       cnt, section_name (ebl, cnt),
  	       (int) shdr->sh_type);
  
@@ -28,3 +15,19 @@ index 0a26d97..1cbf570 100644
        if (shdr->sh_flags & ~(GElf_Xword) ALL_SH_FLAGS)
  	{
  	  GElf_Xword sh_flags = shdr->sh_flags & ~(GElf_Xword) ALL_SH_FLAGS;
+@@ -4324,10 +4325,15 @@ section [%2d] '%s': unknown core file note type %" PRIu32
+       else
+ 	switch (nhdr.n_type)
+ 	  {
++#define NT_GNU_BUILD_ATTRIBUTE_OPEN     0x100
++#define NT_GNU_BUILD_ATTRIBUTE_FUNC     0x101
+ 	  case NT_GNU_ABI_TAG:
+ 	  case NT_GNU_HWCAP:
+ 	  case NT_GNU_BUILD_ID:
+ 	  case NT_GNU_GOLD_VERSION:
++	  case NT_GNU_PROPERTY_TYPE_0:
++	  case NT_GNU_BUILD_ATTRIBUTE_OPEN:
++	  case NT_GNU_BUILD_ATTRIBUTE_FUNC:
+ 	    break;
+ 
+ 	  case 0:

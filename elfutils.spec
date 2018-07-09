@@ -20,7 +20,7 @@ Release: %{baserelease}%{?dist}
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 # Patches
-Patch1: elfutils-0.171-new-notes-hack.patch
+Patch1: elfutils-0.173-new-notes-hack.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -315,6 +315,9 @@ fi
 %endif
 
 %changelog
+* Mon Jul  9 2018 Mark Wielaard <mjw@fedoraproject.org>
+- Update elfutils-0.173-new-notes-hack.patch for new annobin note.
+
 * Fri Jun 29 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.173-1
 - New upstream release
   - More fixes for crashes and hangs found by afl-fuzz. In particular
