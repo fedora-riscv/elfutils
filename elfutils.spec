@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.173
-%global baserelease 1
+%global baserelease 2
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -156,9 +156,24 @@ Group: Development/Tools
 License: GPLv2+ or LGPLv3+
 Provides: default-yama-scope
 BuildArch: noarch
-# For the sysctl_apply macro
-%{?systemd_requires}
+# For the sysctl_apply macro we need systemd as build requires.
+# We also need systemd-sysctl in post to apply the default kernel config.
+# But this creates a circular requirement (see below). And it would always
+# pull in systemd even in build containers that don't really need it.
+# Luckily systemd is normally always installed already. The only times it
+# might not is when we do an initial install (and the cyclic dependency
+# chain might be broken) or when installing into a container. In the first
+# case we'll reboot soon to apply the default kernel config. In the second
+# case we really require that the host has the correct kernel config so it
+# also is available inside the container. So if we have weak dependencies
+# use Recommends (sadly Recommends(post) doesn't exist). This works because
+# in all cases that really matter systemd will already be installed. #1599083
 BuildRequires: systemd >= 215
+%if 0%{?fedora} > 24 || 0%{?rhel} > 7
+Recommends: systemd
+%else
+Requires(post): systemd
+%endif
 
 %description default-yama-scope
 Yama sysctl setting to enable default attach scope settings
@@ -315,8 +330,9 @@ fi
 %endif
 
 %changelog
-* Mon Jul  9 2018 Mark Wielaard <mjw@fedoraproject.org>
+* Mon Jul  9 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.173-2
 - Update elfutils-0.173-new-notes-hack.patch for new annobin note.
+- Unbreak cyclic systemd dependency for buildroot container (#1599083)
 
 * Fri Jun 29 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.173-1
 - New upstream release
