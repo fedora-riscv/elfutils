@@ -250,7 +250,6 @@ fi
 %endif
 
 %files
-%defattr(-,root,root)
 %{!?_licensedir:%global license %%doc}
 %license COPYING COPYING-GPLV2 COPYING-LGPLV3
 %doc README TODO CONTRIBUTING
@@ -272,7 +271,6 @@ fi
 %{_bindir}/eu-elfcompress
 
 %files libs
-%defattr(-,root,root)
 %{!?_licensedir:%global license %%doc}
 %license COPYING-GPLV2 COPYING-LGPLV3
 %{_libdir}/libasm-%{version}.so
@@ -283,7 +281,6 @@ fi
 %{_libdir}/elfutils/lib*.so
 
 %files devel
-%defattr(-,root,root)
 %{_includedir}/dwarf.h
 %dir %{_includedir}/elfutils
 %{_includedir}/elfutils/elf-knowledge.h
@@ -300,19 +297,16 @@ fi
 %{_libdir}/pkgconfig/libdw.pc
 
 %files devel-static
-%defattr(-,root,root)
 %{_libdir}/libasm.a
 %{_libdir}/libdw.a
 
 %files -f %{name}.lang libelf
-%defattr(-,root,root)
 %{!?_licensedir:%global license %%doc}
 %license COPYING-GPLV2 COPYING-LGPLV3
 %{_libdir}/libelf-%{version}.so
 %{_libdir}/libelf.so.*
 
 %files libelf-devel
-%defattr(-,root,root)
 %{_includedir}/libelf.h
 %{_includedir}/gelf.h
 %{_includedir}/nlist.h
@@ -320,12 +314,10 @@ fi
 %{_libdir}/pkgconfig/libelf.pc
 
 %files libelf-devel-static
-%defattr(-,root,root)
 %{_libdir}/libelf.a
 
 %if %{provide_yama_scope}
 %files default-yama-scope
-%defattr(-,root,root)
 %{_sysctldir}/10-default-yama-scope.conf
 %endif
 
