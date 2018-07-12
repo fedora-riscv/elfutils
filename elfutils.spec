@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.173
-%global baserelease 2
+%global baserelease 3
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -322,6 +322,9 @@ fi
 %endif
 
 %changelog
+* Thu Jul 12 2018 Fedora Release Engineering <releng@fedoraproject.org> - 0.173-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
+
 * Mon Jul  9 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.173-2
 - Update elfutils-0.173-new-notes-hack.patch for new annobin note.
 - Unbreak cyclic systemd dependency for buildroot container (#1599083)
