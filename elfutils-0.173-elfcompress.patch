@@ -1,0 +1,136 @@
+commit 47499e57d9321f4e45f33a3c1ab12264510ee7a4
+Author: Mark Wielaard <mark@klomp.org>
+Date:   Sat Jul 21 16:10:25 2018 +0200
+
+    elfcompress: Swap fchmod and fchown calls on new file.
+    
+    Calling fchmod with a suid bit on a file might silently fail or the suid
+    bit might be slilently cleared by a call to fchown if already set. Swap
+    the calls so that the owner is set first and then set the suid bit.
+    
+    https://bugzilla.redhat.com/show_bug.cgi?id=1607044
+    
+    Signed-off-by: Mark Wielaard <mark@klomp.org>
+
+diff --git a/src/elfcompress.c b/src/elfcompress.c
+index bdb0e3b..1a0f984 100644
+--- a/src/elfcompress.c
++++ b/src/elfcompress.c
+@@ -1235,13 +1235,16 @@ process_file (const char *fname)
+   elf_end (elfnew);
+   elfnew = NULL;
+ 
+-  /* Try to match mode and owner.group of the original file.  */
+-  if (fchmod (fdnew, st.st_mode & ALLPERMS) != 0)
+-    if (verbose >= 0)
+-      error (0, errno, "Couldn't fchmod %s", fnew);
++  /* Try to match mode and owner.group of the original file.
++     Note to set suid bits we have to make sure the owner is setup
++     correctly first. Otherwise fchmod will drop them silently
++     or fchown may clear them.  */
+   if (fchown (fdnew, st.st_uid, st.st_gid) != 0)
+     if (verbose >= 0)
+       error (0, errno, "Couldn't fchown %s", fnew);
++  if (fchmod (fdnew, st.st_mode & ALLPERMS) != 0)
++    if (verbose >= 0)
++      error (0, errno, "Couldn't fchmod %s", fnew);
+ 
+   /* Finally replace the old file with the new file.  */
+   if (foutput == NULL)
+
+commit d676c839e783996409d7845ea236e0883a827cbb
+Author: Mark Wielaard <mark@klomp.org>
+Date:   Sat Jul 21 17:07:12 2018 +0200
+
+    elfcompress: Don't rewrite file if no section data needs to be updated.
+    
+    If the input and output file are the same and no section needs to
+    be updated we really don't need to rewrite the file. Check whether
+    any matching section is already compressed or (GNU) decompressed.
+    Skip the section if it doesn't need to be changed. If no section data
+    needs updating end with success without rewriting/updating file.
+    With --force the file will still always be updated/rewritten even if
+    no section data needs to be (de)compressed.
+    
+    Signed-off-by: Mark Wielaard <mark@klomp.org>
+
+diff --git a/src/elfcompress.c b/src/elfcompress.c
+index 1a0f984..ae4708c 100644
+--- a/src/elfcompress.c
++++ b/src/elfcompress.c
+@@ -1,5 +1,5 @@
+ /* Compress or decompress an ELF file.
+-   Copyright (C) 2015, 2016 Red Hat, Inc.
++   Copyright (C) 2015, 2016, 2018 Red Hat, Inc.
+    This file is part of elfutils.
+ 
+    This file is free software; you can redistribute it and/or modify
+@@ -286,6 +286,15 @@ process_file (const char *fname)
+     return (sections[ndx / WORD_BITS] & (1U << (ndx % WORD_BITS))) != 0;
+   }
+ 
++  /* How many sections are we going to change?  */
++  size_t get_sections (void)
++  {
++    size_t s = 0;
++    for (size_t i = 0; i < shnum / WORD_BITS + 1; i++)
++      s += __builtin_popcount (sections[i]);
++    return s;
++  }
++
+   int cleanup (int res)
+   {
+     elf_end (elf);
+@@ -422,6 +431,9 @@ process_file (const char *fname)
+      names change and whether there is a symbol table that might need
+      to be adjusted be if the section header name table is changed.
+ 
++     If nothing needs changing, and the input and output file are the
++     same, we are done.
++
+      Second a collection pass that creates the Elf sections and copies
+      the data.  This pass will compress/decompress section data when
+      needed.  And it will collect all data needed if we'll need to
+@@ -464,7 +476,26 @@ process_file (const char *fname)
+ 
+       if (section_name_matches (sname))
+ 	{
+-	  if (shdr->sh_type != SHT_NOBITS
++	  if (!force && type == T_DECOMPRESS
++	      && (shdr->sh_flags & SHF_COMPRESSED) == 0
++	      && strncmp (sname, ".zdebug", strlen (".zdebug")) != 0)
++	    {
++	      if (verbose > 0)
++		printf ("[%zd] %s already decompressed\n", ndx, sname);
++	    }
++	  else if (!force && type == T_COMPRESS_ZLIB
++		   && (shdr->sh_flags & SHF_COMPRESSED) != 0)
++	    {
++	      if (verbose > 0)
++		printf ("[%zd] %s already compressed\n", ndx, sname);
++	    }
++	  else if (!force && type == T_COMPRESS_GNU
++		   && strncmp (sname, ".zdebug", strlen (".zdebug")) == 0)
++	    {
++	      if (verbose > 0)
++		printf ("[%zd] %s already GNU compressed\n", ndx, sname);
++	    }
++	  else if (shdr->sh_type != SHT_NOBITS
+ 	      && (shdr->sh_flags & SHF_ALLOC) == 0)
+ 	    {
+ 	      set_section (ndx);
+@@ -518,6 +549,14 @@ process_file (const char *fname)
+ 	  }
+     }
+ 
++  if (foutput == NULL && get_sections () == 0)
++    {
++      if (verbose > 0)
++	printf ("Nothing to do.\n");
++      fnew = NULL;
++      return cleanup (0);
++    }
++
+   if (adjust_names)
+     {
+       names = dwelf_strtab_init (true);

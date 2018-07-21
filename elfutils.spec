@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.173
-%global baserelease 3
+%global baserelease 4
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -21,6 +21,7 @@ Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 # Patches
 Patch1: elfutils-0.173-new-notes-hack.patch
+Patch2: elfutils-0.173-elfcompress.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -190,6 +191,7 @@ profiling) of processes.
 
 # Apply patches
 %patch1 -p1 -b .notes_hack
+%patch2 -p1 -b .elfcompress
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -322,6 +324,9 @@ fi
 %endif
 
 %changelog
+* Sat Jul 21 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.173-4
+- Add elfutils-0.173-elfcompress.patch (#1607044)
+
 * Thu Jul 12 2018 Fedora Release Engineering <releng@fedoraproject.org> - 0.173-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
 
