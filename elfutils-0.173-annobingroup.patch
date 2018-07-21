@@ -1,0 +1,30 @@
+commit 73e83285fbeac648edb60a0c4767fad9d470cf0a
+Author: Mark Wielaard <mark@klomp.org>
+Date:   Sat Jul 21 23:40:11 2018 +0200
+
+    unstrip: Handle SHT_GROUP sections in ET_REL files.
+    
+    SHT_GROUP sections are put in both the stripped and debug file.
+    Handle correcting the symbol table/name entry of the group only once.
+    
+    The testfile was generated with the gcc annobin plugin.
+    
+    Signed-off-by: Mark Wielaard <mark@klomp.org>
+
+diff --git a/src/unstrip.c b/src/unstrip.c
+index 057efef..cb1f7dc 100644
+--- a/src/unstrip.c
++++ b/src/unstrip.c
+@@ -563,7 +563,11 @@ adjust_all_relocs (Elf *elf, Elf_Scn *symtab, const GElf_Shdr *symshdr,
+ 	GElf_Shdr shdr_mem;
+ 	GElf_Shdr *shdr = gelf_getshdr (scn, &shdr_mem);
+ 	ELF_CHECK (shdr != NULL, _("cannot get section header: %s"));
+-	if (shdr->sh_type != SHT_NOBITS && shdr->sh_link == new_sh_link)
++	/* Don't redo SHT_GROUP, groups are in both the stripped and debug,
++	   it will already have been done by adjust_relocs for the
++	   stripped_symtab.  */
++	if (shdr->sh_type != SHT_NOBITS && shdr->sh_type != SHT_GROUP
++	    && shdr->sh_link == new_sh_link)
+ 	  adjust_relocs (scn, scn, shdr, map, symshdr);
+       }
+ }
