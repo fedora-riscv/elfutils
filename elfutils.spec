@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.173
-%global baserelease 5
+%global baserelease 6
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -327,6 +327,9 @@ fi
 %endif
 
 %changelog
+* Tue Jul 24 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.173-6
+- Update elfutils-0.173-annobingroup.patch.
+
 * Sat Jul 21 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.173-5
 - Add BuildRequires gcc-c++ for demangle support.
 - Add elfutils-0.173-annobingroup.patch.
