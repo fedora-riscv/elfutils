@@ -33,7 +33,6 @@ BuildRequires: flex >= 2.5.4a
 BuildRequires: bzip2
 BuildRequires: gcc >= 4.4
 # For libstdc++ demangle support
-BuildRequires: libstdc++-devel
 BuildRequires: gcc-c++
 
 BuildRequires: zlib-devel >= 1.2.2.3
@@ -327,6 +326,9 @@ fi
 %endif
 
 %changelog
+* Tue Jul 24 2018 Mark Wielaard <mjw@fedoraproject.org>
+- Drop libstdc++-devel BuildRequires. gcc-c++ will pull it in.
+
 * Tue Jul 24 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.173-6
 - Update elfutils-0.173-annobingroup.patch.
 
