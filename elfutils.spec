@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.173
-%global baserelease 6
+%global baserelease 7
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -23,6 +23,7 @@ Source: %{?source_url}%{name}-%{version}.tar.bz2
 Patch1: elfutils-0.173-new-notes-hack.patch
 Patch2: elfutils-0.173-elfcompress.patch
 Patch3: elfutils-0.173-annobingroup.patch
+Patch4: elfutils-0.173-strip-alloc-nonalloc.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -194,6 +195,7 @@ profiling) of processes.
 %patch1 -p1 -b .notes_hack
 %patch2 -p1 -b .elfcompress
 %patch3 -p1 -b .annobingroup
+%patch4 -p1 -b .strip-alloc-nonalloc
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -326,6 +328,9 @@ fi
 %endif
 
 %changelog
+* Sun Jul 29 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.173-7
+- Add elfutils-0.173-strip-alloc-nonalloc.patch (#1609577)
+
 * Tue Jul 24 2018 Mark Wielaard <mjw@fedoraproject.org>
 - Drop libstdc++-devel BuildRequires. gcc-c++ will pull it in.
 
