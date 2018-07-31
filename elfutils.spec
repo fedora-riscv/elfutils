@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.173
-%global baserelease 7
+%global baserelease 8
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -328,6 +328,9 @@ fi
 %endif
 
 %changelog
+* Tue Jul 31 2018 Florian Weimer <fweimer@redhat.com> - 0.173-8
+- Rebuild with fixed binutils
+
 * Sun Jul 29 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.173-7
 - Add elfutils-0.173-strip-alloc-nonalloc.patch (#1609577)
 
