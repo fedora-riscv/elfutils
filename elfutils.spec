@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
-Version: 0.173
-%global baserelease 8
+Version: 0.174
+%global baserelease 1
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -21,9 +21,6 @@ Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 # Patches
 Patch1: elfutils-0.173-new-notes-hack.patch
-Patch2: elfutils-0.173-elfcompress.patch
-Patch3: elfutils-0.173-annobingroup.patch
-Patch4: elfutils-0.173-strip-alloc-nonalloc.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -193,9 +190,6 @@ profiling) of processes.
 
 # Apply patches
 %patch1 -p1 -b .notes_hack
-%patch2 -p1 -b .elfcompress
-%patch3 -p1 -b .annobingroup
-%patch4 -p1 -b .strip-alloc-nonalloc
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -328,6 +322,19 @@ fi
 %endif
 
 %changelog
+* Fri Sep 14 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.174-1
+- New upstream release
+  - libelf, libdw and all tools now handle extended shnum and shstrndx
+    correctly (#1608390).
+  - elfcompress: Don't rewrite input file if no section data needs
+    updating.  Try harder to keep same file mode bits (suid) on rewrite.
+  - strip: Handle mixed (out of order) allocated/non-allocated sections.
+  - unstrip: Handle SHT_GROUP sections.
+  - backends: RISCV and M68K now have backend implementations to
+    generate CFI based backtraces.
+  - Fixes CVE-2018-16062, CVE-2018-16402 and CVE-2018-16403
+    (#1623753, #1625051, #1625056).
+
 * Tue Jul 31 2018 Florian Weimer <fweimer@redhat.com> - 0.173-8
 - Rebuild with fixed binutils
 
