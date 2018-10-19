@@ -187,3 +187,40 @@ index e6f0947..03a0346 100644
  	  if (sec == NULL)
  	    {
  	      /* An additional unallocated section is fine if not SHT_NOBITS.
+
+commit eee4269e53154daaf0251371aacd91ec5db3eb30
+Author: Mark Wielaard <mark@klomp.org>
+Date:   Sat Oct 13 10:27:47 2018 +0200
+
+    unstrip: Renumber the group section indexes.
+    
+    When unstripping we might need to renumber the group section indexes.
+    Just like we do when stripping.
+    
+    Signed-off-by: Mark Wielaard <mark@klomp.org>
+
+diff --git a/src/unstrip.c b/src/unstrip.c
+index 03a0346..2cfd3b3 100644
+--- a/src/unstrip.c
++++ b/src/unstrip.c
+@@ -1708,6 +1708,20 @@ more sections in stripped file than debug file -- arguments reversed?"));
+ 	    if (shdr_mem.sh_type == SHT_DYNSYM)
+ 	      stripped_dynsym = sec;
+ 	  }
++
++	if (shdr_mem.sh_type == SHT_GROUP)
++	  {
++	    /* We must adjust all the section indices in the group.
++	       Skip the first word, which is the section group flag.
++	       Everything else is a section index.  */
++	    Elf32_Word *shndx = (Elf32_Word *) outdata->d_buf;
++	    for (size_t i = 1; i < shdr_mem.sh_size / sizeof (Elf32_Word); ++i)
++	      if (shndx[i]  == SHN_UNDEF || shndx[i] >= stripped_shnum)
++		error (EXIT_FAILURE, 0,
++		       _("group has invalid section index [%zd]"), i);
++	      else
++		shndx[i] = ndx_section[shndx[i] - 1];
++	  }
+       }
+ 
+   /* We may need to update the symbol table.  */
