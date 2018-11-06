@@ -23,6 +23,7 @@ Source: %{?source_url}%{name}-%{version}.tar.bz2
 Patch1: elfutils-0.173-new-notes-hack.patch
 Patch2: elfutils-0.174-strip-unstrip-group.patch
 Patch3: elfutils-0.174-libdwfl-sanity-check-core-reads.patch
+Patch4: elfutils-0.174-size-rec-ar.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -194,6 +195,7 @@ profiling) of processes.
 %patch1 -p1 -b .notes_hack
 %patch2 -p1 -b .strip_unstrip_group
 %patch3 -p1 -b .sanity_check_core_reads
+%patch4 -p1 -b .size_rec_ar
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -326,6 +328,10 @@ fi
 %endif
 
 %changelog
+* Tue Nov  6 2018 Mark Wielaard <mjw@fedoraproject.org>
+- Add elfutils-0.174-size-rec-ar.patch
+  CVE-2018-18520 (#1646478)
+
 * Fri Nov  2 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.174-3
 - Add elfutils-0.174-libdwfl-sanity-check-core-reads.patch
   CVE-2018-18310 (#1642605)
