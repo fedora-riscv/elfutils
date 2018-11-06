@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.174
-%global baserelease 3
+%global baserelease 4
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -24,6 +24,7 @@ Patch1: elfutils-0.173-new-notes-hack.patch
 Patch2: elfutils-0.174-strip-unstrip-group.patch
 Patch3: elfutils-0.174-libdwfl-sanity-check-core-reads.patch
 Patch4: elfutils-0.174-size-rec-ar.patch
+Patch5: elfutils-0.174-ar-sh_entsize-zero.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -196,6 +197,7 @@ profiling) of processes.
 %patch2 -p1 -b .strip_unstrip_group
 %patch3 -p1 -b .sanity_check_core_reads
 %patch4 -p1 -b .size_rec_ar
+%patch5 -p1 -b .ar_sh_entsize_zero
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -328,9 +330,11 @@ fi
 %endif
 
 %changelog
-* Tue Nov  6 2018 Mark Wielaard <mjw@fedoraproject.org>
+* Tue Nov  6 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.174-4
 - Add elfutils-0.174-size-rec-ar.patch
   CVE-2018-18520 (#1646478)
+- Add elfutils-0.174-ar-sh_entsize-zero.patch
+  CVE-2018-18521 (#1646483)
 
 * Fri Nov  2 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.174-3
 - Add elfutils-0.174-libdwfl-sanity-check-core-reads.patch
