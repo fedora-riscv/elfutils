@@ -26,6 +26,7 @@ Patch3: elfutils-0.174-libdwfl-sanity-check-core-reads.patch
 Patch4: elfutils-0.174-size-rec-ar.patch
 Patch5: elfutils-0.174-ar-sh_entsize-zero.patch
 Patch6: elfutils-0.174-x86_64_unwind.patch
+Patch7: elfutils-0.174-gnu-property-note.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -200,6 +201,7 @@ profiling) of processes.
 %patch4 -p1 -b .size_rec_ar
 %patch5 -p1 -b .ar_sh_entsize_zero
 %patch6 -p1 -b .x86_64_unwind
+%patch7 -p1 -b .gnu_prop_note
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -334,6 +336,7 @@ fi
 %changelog
 * Wed Nov 14 2018 Mark Wielaard <mjw@fedoraproject.org>
 - Add elfutils-0.174-x86_64_unwind.patch.
+- Add elfutils-0.174-gnu-property-note.patch.
 
 * Tue Nov  6 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.174-4
 - Add elfutils-0.174-size-rec-ar.patch

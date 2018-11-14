@@ -15,19 +15,3 @@ index eec799b2..31092f2e 100644
        if (shdr->sh_flags & ~(GElf_Xword) ALL_SH_FLAGS)
  	{
  	  GElf_Xword sh_flags = shdr->sh_flags & ~(GElf_Xword) ALL_SH_FLAGS;
-@@ -4324,10 +4325,15 @@ section [%2d] '%s': unknown core file note type %" PRIu32
-       else
- 	switch (nhdr.n_type)
- 	  {
-+#define NT_GNU_BUILD_ATTRIBUTE_OPEN     0x100
-+#define NT_GNU_BUILD_ATTRIBUTE_FUNC     0x101
- 	  case NT_GNU_ABI_TAG:
- 	  case NT_GNU_HWCAP:
- 	  case NT_GNU_BUILD_ID:
- 	  case NT_GNU_GOLD_VERSION:
-+	  case NT_GNU_PROPERTY_TYPE_0:
-+	  case NT_GNU_BUILD_ATTRIBUTE_OPEN:
-+	  case NT_GNU_BUILD_ATTRIBUTE_FUNC:
- 	    break;
- 
- 	  case 0:
