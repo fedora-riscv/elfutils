@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.174
-%global baserelease 4
+%global baserelease 5
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -28,6 +28,7 @@ Patch5: elfutils-0.174-ar-sh_entsize-zero.patch
 Patch6: elfutils-0.174-x86_64_unwind.patch
 Patch7: elfutils-0.174-gnu-property-note.patch
 Patch8: elfutils-0.174-version-note.patch
+Patch9: elfutils-0.174-gnu-attribute-note.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -204,6 +205,7 @@ profiling) of processes.
 %patch6 -p1 -b .x86_64_unwind
 %patch7 -p1 -b .gnu_prop_note
 %patch8 -p1 -b .version_note
+%patch9 -p1 -b .gnu_attr_note
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -336,10 +338,11 @@ fi
 %endif
 
 %changelog
-* Wed Nov 14 2018 Mark Wielaard <mjw@fedoraproject.org>
+* Wed Nov 14 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.174-5
 - Add elfutils-0.174-x86_64_unwind.patch.
 - Add elfutils-0.174-gnu-property-note.patch.
 - Add elfutils-0.174-version-note.patch.
+- Add elfutils-0.174-gnu-attribute-note.patch
 
 * Tue Nov  6 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.174-4
 - Add elfutils-0.174-size-rec-ar.patch
