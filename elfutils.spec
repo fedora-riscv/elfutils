@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
-Version: 0.174
-%global baserelease 5
+Version: 0.175
+%global baserelease 1
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -20,15 +20,6 @@ Release: %{baserelease}%{?dist}
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 # Patches
-Patch1: elfutils-0.173-new-notes-hack.patch
-Patch2: elfutils-0.174-strip-unstrip-group.patch
-Patch3: elfutils-0.174-libdwfl-sanity-check-core-reads.patch
-Patch4: elfutils-0.174-size-rec-ar.patch
-Patch5: elfutils-0.174-ar-sh_entsize-zero.patch
-Patch6: elfutils-0.174-x86_64_unwind.patch
-Patch7: elfutils-0.174-gnu-property-note.patch
-Patch8: elfutils-0.174-version-note.patch
-Patch9: elfutils-0.174-gnu-attribute-note.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -197,15 +188,6 @@ profiling) of processes.
 %setup -q
 
 # Apply patches
-%patch1 -p1 -b .notes_hack
-%patch2 -p1 -b .strip_unstrip_group
-%patch3 -p1 -b .sanity_check_core_reads
-%patch4 -p1 -b .size_rec_ar
-%patch5 -p1 -b .ar_sh_entsize_zero
-%patch6 -p1 -b .x86_64_unwind
-%patch7 -p1 -b .gnu_prop_note
-%patch8 -p1 -b .version_note
-%patch9 -p1 -b .gnu_attr_note
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -338,6 +320,17 @@ fi
 %endif
 
 %changelog
+* Fri Nov 16 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.175-1
+- New upstream release.
+  - readelf: Handle multiple .debug_macro sections.
+  - strip: Add strip --reloc-debug-sections-only option.
+    Handle relocations against GNU compressed sections.
+  - libdwelf: New function dwelf_elf_begin.
+  - libcpu: Recognize bpf jump variants BPF_JLT, BPF_JLE, BPF_JSLT
+    and BPF_JSLE.
+  - backends: RISCV handles ADD/SUB relocations.
+- Remove all patches.
+
 * Wed Nov 14 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.174-5
 - Add elfutils-0.174-x86_64_unwind.patch.
 - Add elfutils-0.174-gnu-property-note.patch.
