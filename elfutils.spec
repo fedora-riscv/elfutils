@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.175
-%global baserelease 1
+%global baserelease 2
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -20,6 +20,7 @@ Release: %{baserelease}%{?dist}
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 # Patches
+Patch1: elfutils-0.175-gnu-props-32.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -188,6 +189,7 @@ profiling) of processes.
 %setup -q
 
 # Apply patches
+%patch1 -p1 -b .gnu_prop_32
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -320,6 +322,9 @@ fi
 %endif
 
 %changelog
+* Mon Dec  3 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.175-2
+- Add elfutils-0.175-gnu-props-32.patch.
+
 * Fri Nov 16 2018 Mark Wielaard <mjw@fedoraproject.org> - 0.175-1
 - New upstream release.
   - readelf: Handle multiple .debug_macro sections.
