@@ -5,7 +5,6 @@ Version: 0.175
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
-Group: Development/Tools
 
 Release: %{baserelease}%{?dist}
 
@@ -58,7 +57,6 @@ elfcompress (to compress or decompress ELF sections).
 
 %package libs
 Summary: Libraries to handle compiled objects
-Group: Development/Tools
 License: GPLv2+ or LGPLv3+
 %if 0%{!?_isa:1}
 Provides: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -76,7 +74,6 @@ other programs using these libraries.
 
 %package devel
 Summary: Development libraries to handle compiled objects
-Group: Development/Tools
 License: GPLv2+ or LGPLv3+
 %if 0%{!?_isa:1}
 Provides: elfutils-devel%{depsuffix} = %{version}-%{release}
@@ -93,7 +90,6 @@ assembler interface.
 
 %package devel-static
 Summary: Static archives to handle compiled objects
-Group: Development/Tools
 License: GPLv2+ or LGPLv3+
 %if 0%{!?_isa:1}
 Provides: elfutils-devel-static%{depsuffix} = %{version}-%{release}
@@ -107,7 +103,6 @@ with the code to handle compiled objects.
 
 %package libelf
 Summary: Library to read and write ELF files
-Group: Development/Tools
 License: GPLv2+ or LGPLv3+
 %if 0%{!?_isa:1}
 Provides: elfutils-libelf%{depsuffix} = %{version}-%{release}
@@ -122,7 +117,6 @@ elfutils package use it also to generate new ELF files.
 
 %package libelf-devel
 Summary: Development support for libelf
-Group: Development/Tools
 License: GPLv2+ or LGPLv3+
 %if 0%{!?_isa:1}
 Provides: elfutils-libelf-devel%{depsuffix} = %{version}-%{release}
@@ -138,7 +132,6 @@ different sections of an ELF file.
 
 %package libelf-devel-static
 Summary: Static archive of libelf
-Group: Development/Tools
 License: GPLv2+ or LGPLv3+
 %if 0%{!?_isa:1}
 Provides: elfutils-libelf-devel-static%{depsuffix} = %{version}-%{release}
@@ -152,7 +145,6 @@ for libelf.
 %if %{provide_yama_scope}
 %package default-yama-scope
 Summary: Default yama attach scope sysctl setting
-Group: Development/Tools
 License: GPLv2+ or LGPLv3+
 Provides: default-yama-scope
 BuildArch: noarch
