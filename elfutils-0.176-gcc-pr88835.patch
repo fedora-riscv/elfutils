@@ -1,0 +1,28 @@
+Workaround for https://gcc.gnu.org/bugzilla/show_bug.cgi?id=88835
+
+diff --git a/src/readelf.c b/src/readelf.c
+index 33706bd..b55844c 100644
+--- a/src/readelf.c
++++ b/src/readelf.c
+@@ -10143,7 +10143,7 @@ print_debug_str_section (Dwfl_Module *dwflmod __attribute__ ((unused)),
+       ++digits;
+       tmp >>= 4;
+     }
+-  digits = MAX (4, digits);
++  digits = MIN (16, MAX (4, digits));
+ 
+   printf (gettext ("\nDWARF section [%2zu] '%s' at offset %#" PRIx64 ":\n"
+ 		   " %*s  String\n"),
+diff --git a/tests/backtrace.c b/tests/backtrace.c
+index 05e8ef8..d621fbf 100644
+--- a/tests/backtrace.c
++++ b/tests/backtrace.c
+@@ -185,7 +185,7 @@ frame_callback (Dwfl_Frame *state, void *frame_arg)
+     symname = dwfl_module_addrname (mod, pc_adjusted);
+ 
+   printf ("#%2d %#" PRIx64 "%4s\t%s\n", *framenop, (uint64_t) pc,
+-	  ! isactivation ? "- 1" : "", symname);
++	  ! isactivation ? "- 1" : "", symname ?: "<null>");
+   pid_t tid = dwfl_thread_tid (thread);
+   callback_verify (tid, *framenop, pc, symname, dwfl);
+   (*framenop)++;

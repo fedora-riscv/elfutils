@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
-Version: 0.175
-%global baserelease 3
+Version: 0.176
+%global baserelease 1
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -19,7 +19,7 @@ Release: %{baserelease}%{?dist}
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 # Patches
-Patch1: elfutils-0.175-gnu-props-32.patch
+Patch1: elfutils-0.176-gcc-pr88835.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -181,7 +181,7 @@ profiling) of processes.
 %setup -q
 
 # Apply patches
-%patch1 -p1 -b .gnu_prop_32
+%patch1 -p1 -b .gcc-pr88835
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -314,6 +314,12 @@ fi
 %endif
 
 %changelog
+* Fri Feb 15 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.176-1
+- New upstream release.
+  - backends: riscv improved core file and return value location support.
+  - Fixes CVE-2019-7146, CVE-2019-7148, CVE-2019-7149, CVE-2019-7150,
+          CVE-2019-7664, CVE-2019-7665.
+
 * Thu Jan 31 2019 Fedora Release Engineering <releng@fedoraproject.org> - 0.175-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
 
