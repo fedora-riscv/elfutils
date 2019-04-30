@@ -20,6 +20,7 @@ Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 # Patches
 Patch1: elfutils-0.176-gcc-pr88835.patch
+Patch2: elfutils-0.176-pt-gnu-prop.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -182,6 +183,7 @@ profiling) of processes.
 
 # Apply patches
 %patch1 -p1 -b .gcc-pr88835
+%patch2 -p1 -b .pt-gnu-prop
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -316,6 +318,7 @@ fi
 %changelog
 * Tue Apr 30 2019 Mark Wielaard <mjw@fedoraproject.org>
 - Update elfutils-0.176-gcc-pr88835.patch.
+- Add elfutils-0.176-pt-gnu-prop.patch
 
 * Fri Feb 15 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.176-1
 - New upstream release.
