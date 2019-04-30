@@ -314,6 +314,9 @@ fi
 %endif
 
 %changelog
+* Tue Apr 30 2019 Mark Wielaard <mjw@fedoraproject.org>
+- Update elfutils-0.176-gcc-pr88835.patch.
+
 * Fri Feb 15 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.176-1
 - New upstream release.
   - backends: riscv improved core file and return value location support.
