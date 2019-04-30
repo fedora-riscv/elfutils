@@ -1,0 +1,486 @@
+commit 28b5f578ae772bb2404c3847e4e22ad1c407af54
+Author: Mark Wielaard <mark@klomp.org>
+Date:   Tue Apr 30 13:00:17 2019 +0200
+
+    libelf: If xlate can only convert the ELF note header, just do that.
+    
+    When we started parsing new style ELF_T_NHDR8 notes we added extra
+    checks on alignment and padding. When those failed we would stop
+    converting and just return the rest of the ELF Note unconverted.
+    In the case were we just had enough data for just the ELF Note header
+    and the destionation and source weren't the same we would then
+    accidentially throw away the Note header conversion we just did.
+    
+    Fix that by indicating we did correctly convert just the header.
+    
+    Adds testcase that compares parsing ELF notes with gelf_getnote
+    and parsing the raw data by hand using elf32_xlatetom using just
+    the Note header and ignoring the (raw) note data.
+    
+    Signed-off-by: Mark Wielaard <mark@klomp.org>
+
+diff --git a/libelf/note_xlate.h b/libelf/note_xlate.h
+index bc9950f..7e2784b 100644
+--- a/libelf/note_xlate.h
++++ b/libelf/note_xlate.h
+@@ -47,13 +47,25 @@ elf_cvt_note (void *dest, const void *src, size_t len, int encode,
+       note_len += n->n_namesz;
+       note_len = nhdr8 ? NOTE_ALIGN8 (note_len) : NOTE_ALIGN4 (note_len);
+       if (note_len > len || note_len < sizeof *n)
+-	break;
++	{
++	  /* Header was translated, nothing else.  */
++	  len -= sizeof *n;
++	  src += sizeof *n;
++	  dest += sizeof *n;
++	  break;
++	}
+ 
+       /* data as a whole needs to be aligned.  */
+       note_len += n->n_descsz;
+       note_len = nhdr8 ? NOTE_ALIGN8 (note_len) : NOTE_ALIGN4 (note_len);
+       if (note_len > len || note_len < sizeof *n)
+-	break;
++	{
++	  /* Header was translated, nothing else.  */
++	  len -= sizeof *n;
++	  src += sizeof *n;
++	  dest += sizeof *n;
++	  break;
++	}
+ 
+       /* Copy or skip the note data.  */
+       size_t note_data_len = note_len - sizeof *n;
+diff --git a/tests/Makefile.am b/tests/Makefile.am
+index 1b0c7d3..498c1db 100644
+--- a/tests/Makefile.am
++++ b/tests/Makefile.am
+@@ -60,7 +60,7 @@ check_PROGRAMS = arextract arsymtest newfile saridx scnnames sectiondump \
+ 		  fillfile dwarf_default_lower_bound dwarf-die-addr-die \
+ 		  get-units-invalid get-units-split attr-integrate-skel \
+ 		  all-dwarf-ranges unit-info next_cfi \
+-		  elfcopy addsections
++		  elfcopy addsections xlate_notes
+ 
+ asm_TESTS = asm-tst1 asm-tst2 asm-tst3 asm-tst4 asm-tst5 \
+ 	    asm-tst6 asm-tst7 asm-tst8 asm-tst9
+@@ -159,7 +159,7 @@ TESTS = run-arextract.sh run-arsymtest.sh run-ar.sh newfile test-nlist \
+ 	run-next-cfi.sh run-next-cfi-self.sh \
+ 	run-copyadd-sections.sh run-copymany-sections.sh \
+ 	run-typeiter-many.sh run-strip-test-many.sh \
+-	run-strip-version.sh
++	run-strip-version.sh run-xlate-note.sh
+ 
+ if !BIARCH
+ export ELFUTILS_DISABLE_BIARCH = 1
+@@ -423,7 +423,8 @@ EXTRA_DIST = run-arextract.sh run-arsymtest.sh run-ar.sh \
+ 	     testfile-debug-rel-ppc64-g.o.bz2 \
+ 	     testfile-debug-rel-ppc64-z.o.bz2 \
+ 	     testfile-debug-rel-ppc64.o.bz2 \
+-	     run-strip-version.sh testfile-version.bz2
++	     run-strip-version.sh testfile-version.bz2 \
++	     run-xlate-note.sh
+ 
+ if USE_VALGRIND
+ valgrind_cmd='valgrind -q --leak-check=full --error-exitcode=1'
+@@ -593,6 +594,7 @@ unit_info_LDADD = $(libdw)
+ next_cfi_LDADD = $(libelf) $(libdw)
+ elfcopy_LDADD = $(libelf)
+ addsections_LDADD = $(libelf)
++xlate_notes_LDADD = $(libelf)
+ 
+ # We want to test the libelf header against the system elf.h header.
+ # Don't include any -I CPPFLAGS. Except when we install our own elf.h.
+diff --git a/tests/run-xlate-note.sh b/tests/run-xlate-note.sh
+new file mode 100755
+index 0000000..a907418
+--- /dev/null
++++ b/tests/run-xlate-note.sh
+@@ -0,0 +1,93 @@
++# Copyright (C) 2019 Red Hat, Inc.
++# This file is part of elfutils.
++#
++# This file is free software; you can redistribute it and/or modify
++# it under the terms of the GNU General Public License as published by
++# the Free Software Foundation; either version 3 of the License, or
++# (at your option) any later version.
++#
++# elfutils is distributed in the hope that it will be useful, but
++# WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++# GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with this program.  If not, see <http://www.gnu.org/licenses/>.
++
++. $srcdir/test-subr.sh
++
++testfiles testfileppc32
++testrun_compare ${abs_top_builddir}/tests/xlate_notes testfileppc32 << EOF
++Notes in section 2:
++type: 1,1, namesz: 4,4, descsz: 16,16
++Notes in section 3:
++type: 3,3, namesz: 4,4, descsz: 20,20
++EOF
++
++testfiles testfileppc64
++testrun_compare ${abs_top_builddir}/tests/xlate_notes testfileppc64 << EOF
++Notes in section 2:
++type: 1,1, namesz: 4,4, descsz: 16,16
++Notes in section 3:
++type: 3,3, namesz: 4,4, descsz: 20,20
++EOF
++
++testfiles testfiles390
++testrun_compare ${abs_top_builddir}/tests/xlate_notes testfiles390 << EOF
++Notes in section 2:
++type: 1,1, namesz: 4,4, descsz: 16,16
++Notes in section 3:
++type: 3,3, namesz: 4,4, descsz: 20,20
++EOF
++
++testfiles testfiles390x
++testrun_compare ${abs_top_builddir}/tests/xlate_notes testfiles390x << EOF
++Notes in section 2:
++type: 1,1, namesz: 4,4, descsz: 16,16
++Notes in section 3:
++type: 3,3, namesz: 4,4, descsz: 20,20
++EOF
++
++testfiles testfileaarch64
++testrun_compare ${abs_top_builddir}/tests/xlate_notes testfileaarch64 << EOF
++Notes in section 2:
++type: 1,1, namesz: 4,4, descsz: 16,16
++Notes in section 3:
++type: 3,3, namesz: 4,4, descsz: 20,20
++EOF
++
++testfiles testfilearm
++testrun_compare ${abs_top_builddir}/tests/xlate_notes testfilearm << EOF
++Notes in section 2:
++type: 1,1, namesz: 4,4, descsz: 16,16
++Notes in section 3:
++type: 3,3, namesz: 4,4, descsz: 20,20
++EOF
++
++testfiles testfile_gnu_props.32be.o
++testrun_compare ${abs_top_builddir}/tests/xlate_notes testfile_gnu_props.32be.o << EOF
++Notes in section 4:
++type: 5,5, namesz: 4,4, descsz: 12,12
++type: 5,5, namesz: 4,4, descsz: 8,8
++EOF
++
++testfiles testfile_gnu_props.32le.o
++testrun_compare ${abs_top_builddir}/tests/xlate_notes testfile_gnu_props.32le.o << EOF
++Notes in section 4:
++type: 5,5, namesz: 4,4, descsz: 12,12
++type: 5,5, namesz: 4,4, descsz: 8,8
++EOF
++
++testfiles testfile_gnu_props.64be.o
++testrun_compare ${abs_top_builddir}/tests/xlate_notes testfile_gnu_props.64be.o << EOF
++Notes in section 4:
++type: 5,5, namesz: 4,4, descsz: 16,16
++type: 5,5, namesz: 4,4, descsz: 8,8
++EOF
++
++testfiles testfile_gnu_props.64le.o
++testrun_compare ${abs_top_builddir}/tests/xlate_notes testfile_gnu_props.64le.o << EOF
++Notes in section 4:
++type: 5,5, namesz: 4,4, descsz: 16,16
++type: 5,5, namesz: 4,4, descsz: 8,8
++EOF
+diff --git a/tests/xlate_notes.c b/tests/xlate_notes.c
+new file mode 100644
+index 0000000..90a4ae2
+--- /dev/null
++++ b/tests/xlate_notes.c
+@@ -0,0 +1,157 @@
++/* Test program for extracting ELF Note headers and getting whole notes.
++   Copyright (C) 2019 Red Hat, Inc.
++   This file is part of elfutils.
++
++   This file is free software; you can redistribute it and/or modify
++   it under the terms of the GNU General Public License as published by
++   the Free Software Foundation; either version 3 of the License, or
++   (at your option) any later version.
++
++   elfutils is distributed in the hope that it will be useful, but
++   WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++   GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
++
++#ifdef HAVE_CONFIG_H
++# include <config.h>
++#endif
++
++#include <errno.h>
++#include <fcntl.h>
++#include <inttypes.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++
++#include ELFUTILS_HEADER(elf)
++#include <gelf.h>
++
++int
++main (int argc, char *argv[])
++{
++  if (argc != 2)
++    {
++      printf ("No ELF file given as argument\n");
++      exit (1);
++    }
++
++  const char *fname = argv[1];
++
++  // Initialize libelf.
++  elf_version (EV_CURRENT);
++
++  /* Read the ELF from disk now.  */
++  int fd = open (fname, O_RDONLY);
++  if (fd == -1)
++    {
++      printf ("cannot open '%s': %s\n", fname, strerror (errno));
++      exit (1);
++    }
++
++  Elf *elf = elf_begin (fd, ELF_C_READ, NULL);
++  if (elf == NULL)
++    {
++      printf ("cannot create ELF descriptor: %s\n", elf_errmsg (-1));
++      exit (1);
++    }
++
++  GElf_Ehdr ehdr;
++  if (gelf_getehdr (elf, &ehdr) == NULL)
++    {
++      printf ("cannot get Ehdr: %s\n", elf_errmsg (-1));
++      exit (1);
++    }
++
++  /* Search for all SHT_NOTE sections.  */
++  Elf_Scn *scn = NULL;
++  while ((scn = elf_nextscn (elf, scn)) != NULL)
++    {
++      /* Get the header.  */
++      GElf_Shdr shdr;
++      if (gelf_getshdr (scn, &shdr) == NULL)
++	{
++	  printf ("couldn't get shdr: %s\n", elf_errmsg (-1));
++	  exit (1);
++	}
++
++      if (shdr.sh_type == SHT_NOTE)
++	{
++	  printf ("Notes in section %zd:\n", elf_ndxscn (scn));
++
++	  Elf_Data *raw = elf_rawdata (scn, NULL);
++	  if (raw == NULL)
++	    {
++	      printf ("couldn't get raw data: %s\n", elf_errmsg (-1));
++	      exit (1);
++	    }
++
++	  Elf_Data *data = elf_getdata (scn, NULL);
++	  if (data == NULL)
++	    {
++	      printf ("couldn't get data: %s\n", elf_errmsg (-1));
++	      exit (1);
++	    }
++
++	  size_t off = 0;
++	  size_t next;
++	  GElf_Nhdr nhdr;
++	  size_t n_off;
++	  size_t d_off;
++	  while ((next = gelf_getnote (data, off, &nhdr, &n_off, &d_off)) > 0)
++	    {
++	      /* Now just get the note header "raw" (don't
++		 copy/translate the note data). This only handles
++		 traditional GNU ELF Notes, so we still use the next
++		 from gelf_getnote (padding is different for new style
++		 ELF_T_NHDR8 notes).  */
++	      Elf32_Nhdr nh;
++	      Elf_Data src =
++                {
++                  .d_version = EV_CURRENT, .d_type = ELF_T_NHDR,
++		  .d_size = sizeof nh
++                };
++	      Elf_Data dst = src;
++	      src.d_buf = raw->d_buf + off;
++	      dst.d_buf = &nh;
++
++	      if (elf32_xlatetom (&dst, &src, ehdr.e_ident[EI_DATA]) == NULL)
++		{
++		  printf ("couldn't xlate note: %s\n", elf_errmsg (-1));
++		  exit (1);
++		}
++
++	      printf ("type: %" PRId32 ",%" PRId32
++		      ", namesz: %" PRId32 ",%" PRId32
++		      ", descsz: %" PRId32 ",%" PRId32 "\n",
++		      nhdr.n_type, nh.n_type,
++		      nhdr.n_namesz, nh.n_namesz,
++		      nhdr.n_descsz, nh.n_descsz);
++
++	      if (nhdr.n_type != nh.n_type
++		  || nhdr.n_namesz != nh.n_namesz
++		  || nhdr.n_descsz != nh.n_descsz)
++		{
++		  printf ("Nhdrs not equal!\n");
++		  exit (1);
++		}
++
++	      off = next;
++	    }
++	}
++
++    }
++
++  if (elf_end (elf) != 0)
++    {
++      printf ("failure in elf_end: %s\n", elf_errmsg (-1));
++      exit (1);
++    }
++
++  close (fd);
++
++  return 0;
++}
+diff -ur elfutils-0.176.orig/tests/Makefile.in elfutils-0.176/tests/Makefile.in
+--- elfutils-0.176.orig/tests/Makefile.in	2019-04-30 22:42:49.534655124 +0200
++++ elfutils-0.176/tests/Makefile.in	2019-04-30 22:46:30.046656790 +0200
+@@ -131,8 +131,8 @@
+ 	get-units-invalid$(EXEEXT) get-units-split$(EXEEXT) \
+ 	attr-integrate-skel$(EXEEXT) all-dwarf-ranges$(EXEEXT) \
+ 	unit-info$(EXEEXT) next_cfi$(EXEEXT) elfcopy$(EXEEXT) \
+-	addsections$(EXEEXT) $(am__EXEEXT_1) $(am__EXEEXT_2) \
+-	$(am__EXEEXT_4)
++	addsections$(EXEEXT) xlate_notes$(EXEEXT) $(am__EXEEXT_1) \
++	$(am__EXEEXT_2) $(am__EXEEXT_4)
+ @BIARCH_TRUE@am__append_5 = backtrace-child-biarch
+ TESTS = run-arextract.sh run-arsymtest.sh run-ar.sh newfile$(EXEEXT) \
+ 	test-nlist$(EXEEXT) update1$(EXEEXT) update2$(EXEEXT) \
+@@ -211,8 +211,8 @@
+ 	run-unit-info.sh run-reloc-bpf.sh run-next-cfi.sh \
+ 	run-next-cfi-self.sh run-copyadd-sections.sh \
+ 	run-copymany-sections.sh run-typeiter-many.sh \
+-	run-strip-test-many.sh run-strip-version.sh $(am__EXEEXT_2) \
+-	$(am__append_8) $(am__EXEEXT_5)
++	run-strip-test-many.sh run-strip-version.sh run-xlate-note.sh \
++	$(am__EXEEXT_2) $(am__append_8) $(am__EXEEXT_5)
+ @STANDALONE_FALSE@am__append_6 = msg_tst system-elf-libelf-test
+ @STANDALONE_FALSE@am__append_7 = msg_tst system-elf-libelf-test
+ @LZMA_TRUE@am__append_8 = run-readelf-s.sh run-dwflsyms.sh
+@@ -606,6 +606,9 @@
+ vendorelf_SOURCES = vendorelf.c
+ vendorelf_OBJECTS = vendorelf.$(OBJEXT)
+ vendorelf_DEPENDENCIES = $(am__DEPENDENCIES_2)
++xlate_notes_SOURCES = xlate_notes.c
++xlate_notes_OBJECTS = xlate_notes.$(OBJEXT)
++xlate_notes_DEPENDENCIES = $(am__DEPENDENCIES_2)
+ zstrptr_SOURCES = zstrptr.c
+ zstrptr_OBJECTS = zstrptr.$(OBJEXT)
+ zstrptr_DEPENDENCIES = $(am__DEPENDENCIES_2)
+@@ -683,7 +686,7 @@
+ 	./$(DEPDIR)/update2.Po ./$(DEPDIR)/update3.Po \
+ 	./$(DEPDIR)/update4.Po ./$(DEPDIR)/varlocs.Po \
+ 	./$(DEPDIR)/vdsosyms.Po ./$(DEPDIR)/vendorelf.Po \
+-	./$(DEPDIR)/zstrptr.Po
++	./$(DEPDIR)/xlate_notes.Po ./$(DEPDIR)/zstrptr.Po
+ am__mv = mv -f
+ AM_V_lt = $(am__v_lt_@AM_V@)
+ am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+@@ -726,7 +729,8 @@
+ 	showptable.c strptr.c system-elf-libelf-test.c \
+ 	test-elf_cntl_gelf_getshdr.c test-flag-nobits.c test-nlist.c \
+ 	typeiter.c typeiter2.c unit-info.c update1.c update2.c \
+-	update3.c update4.c varlocs.c vdsosyms.c vendorelf.c zstrptr.c
++	update3.c update4.c varlocs.c vdsosyms.c vendorelf.c \
++	xlate_notes.c zstrptr.c
+ DIST_SOURCES = addrcfi.c addrscopes.c addsections.c aggregate_size.c \
+ 	all-dwarf-ranges.c alldts.c allfcts.c allregs.c arextract.c \
+ 	arls.c arsymtest.c asm-tst1.c asm-tst2.c asm-tst3.c asm-tst4.c \
+@@ -752,7 +756,8 @@
+ 	showptable.c strptr.c system-elf-libelf-test.c \
+ 	test-elf_cntl_gelf_getshdr.c test-flag-nobits.c test-nlist.c \
+ 	typeiter.c typeiter2.c unit-info.c update1.c update2.c \
+-	update3.c update4.c varlocs.c vdsosyms.c vendorelf.c zstrptr.c
++	update3.c update4.c varlocs.c vdsosyms.c vendorelf.c \
++	xlate_notes.c zstrptr.c
+ am__can_run_installinfo = \
+   case $$AM_UPDATE_INFO_DIR in \
+     n|no|NO) false;; \
+@@ -1405,7 +1410,8 @@
+ 	     testfile-debug-rel-ppc64-g.o.bz2 \
+ 	     testfile-debug-rel-ppc64-z.o.bz2 \
+ 	     testfile-debug-rel-ppc64.o.bz2 \
+-	     run-strip-version.sh testfile-version.bz2
++	     run-strip-version.sh testfile-version.bz2 \
++	     run-xlate-note.sh
+ 
+ @USE_VALGRIND_TRUE@valgrind_cmd = 'valgrind -q --leak-check=full --error-exitcode=1'
+ installed_TESTS_ENVIRONMENT = libdir=$(DESTDIR)$(libdir); \
+@@ -1559,6 +1565,7 @@
+ next_cfi_LDADD = $(libelf) $(libdw)
+ elfcopy_LDADD = $(libelf)
+ addsections_LDADD = $(libelf)
++xlate_notes_LDADD = $(libelf)
+ 
+ # We want to test the libelf header against the system elf.h header.
+ # Don't include any -I CPPFLAGS. Except when we install our own elf.h.
+@@ -2011,6 +2018,10 @@
+ 	@rm -f vendorelf$(EXEEXT)
+ 	$(AM_V_CCLD)$(LINK) $(vendorelf_OBJECTS) $(vendorelf_LDADD) $(LIBS)
+ 
++xlate_notes$(EXEEXT): $(xlate_notes_OBJECTS) $(xlate_notes_DEPENDENCIES) $(EXTRA_xlate_notes_DEPENDENCIES) 
++	@rm -f xlate_notes$(EXEEXT)
++	$(AM_V_CCLD)$(LINK) $(xlate_notes_OBJECTS) $(xlate_notes_LDADD) $(LIBS)
++
+ zstrptr$(EXEEXT): $(zstrptr_OBJECTS) $(zstrptr_DEPENDENCIES) $(EXTRA_zstrptr_DEPENDENCIES) 
+ 	@rm -f zstrptr$(EXEEXT)
+ 	$(AM_V_CCLD)$(LINK) $(zstrptr_OBJECTS) $(zstrptr_LDADD) $(LIBS)
+@@ -2124,6 +2135,7 @@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/varlocs.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vdsosyms.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vendorelf.Po@am__quote@ # am--include-marker
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xlate_notes.Po@am__quote@ # am--include-marker
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/zstrptr.Po@am__quote@ # am--include-marker
+ 
+ $(am__depfiles_remade):
+@@ -3732,6 +3744,13 @@
+ 	--log-file $$b.log --trs-file $$b.trs \
+ 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+ 	"$$tst" $(AM_TESTS_FD_REDIRECT)
++run-xlate-note.sh.log: run-xlate-note.sh
++	@p='run-xlate-note.sh'; \
++	b='run-xlate-note.sh'; \
++	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
++	--log-file $$b.log --trs-file $$b.trs \
++	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
++	"$$tst" $(AM_TESTS_FD_REDIRECT)
+ msg_tst.log: msg_tst$(EXEEXT)
+ 	@p='msg_tst$(EXEEXT)'; \
+ 	b='msg_tst'; \
+@@ -4027,6 +4046,7 @@
+ 	-rm -f ./$(DEPDIR)/varlocs.Po
+ 	-rm -f ./$(DEPDIR)/vdsosyms.Po
+ 	-rm -f ./$(DEPDIR)/vendorelf.Po
++	-rm -f ./$(DEPDIR)/xlate_notes.Po
+ 	-rm -f ./$(DEPDIR)/zstrptr.Po
+ 	-rm -f Makefile
+ distclean-am: clean-am distclean-compile distclean-generic \
+@@ -4176,6 +4196,7 @@
+ 	-rm -f ./$(DEPDIR)/varlocs.Po
+ 	-rm -f ./$(DEPDIR)/vdsosyms.Po
+ 	-rm -f ./$(DEPDIR)/vendorelf.Po
++	-rm -f ./$(DEPDIR)/xlate_notes.Po
+ 	-rm -f ./$(DEPDIR)/zstrptr.Po
+ 	-rm -f Makefile
+ maintainer-clean-am: distclean-am maintainer-clean-generic
