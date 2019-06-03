@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.176
-%global baserelease 2
+%global baserelease 3
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -22,6 +22,7 @@ Source: %{?source_url}%{name}-%{version}.tar.bz2
 Patch1: elfutils-0.176-gcc-pr88835.patch
 Patch2: elfutils-0.176-pt-gnu-prop.patch
 Patch3: elfutils-0.176-xlate-note.patch
+Patch4: elfutils-0.176-elf-update.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -186,6 +187,7 @@ profiling) of processes.
 %patch1 -p1 -b .gcc-pr88835
 %patch2 -p1 -b .pt-gnu-prop
 %patch3 -p1 -b .xlate-note
+%patch4 -p1 -b .elf-update
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -199,6 +201,7 @@ find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 # doesn't work without -Wformat (enabled by -Wall).
 RPM_OPT_FLAGS="${RPM_OPT_FLAGS/-Wall/}"
 RPM_OPT_FLAGS="${RPM_OPT_FLAGS} -Wformat"
+
 
 trap 'cat config.log' EXIT
 %configure CFLAGS="$RPM_OPT_FLAGS -fexceptions"
@@ -318,6 +321,9 @@ fi
 %endif
 
 %changelog
+* Mon Jun  3 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.176-3
+- Add elfutils-0.176-elf-update.patch
+
 * Tue Apr 30 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.176-2
 - Update elfutils-0.176-gcc-pr88835.patch.
 - Add elfutils-0.176-pt-gnu-prop.patch
