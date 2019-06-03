@@ -650,3 +650,15 @@ diff -ru elfutils-0.176.orig/tests/Makefile.in elfutils-0.176/tests/Makefile.in
  	-rm -f ./$(DEPDIR)/elfshphehdr.Po
  	-rm -f ./$(DEPDIR)/elfstrmerge.Po
  	-rm -f ./$(DEPDIR)/elfstrtab.Po
+diff --git a/tests/elfcopy.c b/tests/elfcopy.c
+index d457bad..4542222 100644
+--- a/tests/elfcopy.c
++++ b/tests/elfcopy.c
+@@ -225,6 +225,7 @@ copy_elf (const char *in, const char *out, bool use_mmap, bool reverse_offs)
+ 	      && shdr.sh_addralign == 1
+ 	      && last_shdr.sh_type != SHT_NOBITS
+ 	      && shdr.sh_type != SHT_NOBITS
++	      && last_shdr.sh_offset + last_shdr.sh_size == shdr.sh_offset
+ 	      && (phnum == 0
+ 		  || ((shdr.sh_flags & SHF_ALLOC) == 0
+ 		      && (last_shdr.sh_flags & SHF_ALLOC) == 0)))
