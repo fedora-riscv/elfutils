@@ -1,0 +1,26 @@
+commit f03ac75239e0981deaf4aa18f66f423bcc5ce051
+Author: Mark Wielaard <mark@klomp.org>
+Date:   Wed Mar 27 21:54:06 2019 +0100
+
+    strip: Files with symbols referring to non-existing sections are illformed
+    
+    The check added in commit 4540ea98c "strip: Fix check test for SHN_XINDEX
+    symbol" was not complete. The (extended) section index should also exist.
+    If it doesn't exist, mark the file as illformed.
+    
+    https://sourceware.org/bugzilla/show_bug.cgi?id=24385
+    
+    Signed-off-by: Mark Wielaard <mark@klomp.org>
+
+diff --git a/src/strip.c b/src/strip.c
+index a73009d9..4cd87506 100644
+--- a/src/strip.c
++++ b/src/strip.c
+@@ -1975,6 +1975,7 @@ handle_elf (int fd, Elf *elf, const char *prefix, const char *fname,
+ 				  && shndxdata->d_buf != NULL);
+ 		    size_t sidx = (sym->st_shndx != SHN_XINDEX
+ 				   ? sym->st_shndx : xshndx);
++		    elf_assert (sidx < shnum);
+ 		    sec = shdr_info[sidx].idx;
+ 
+ 		    if (sec != 0)

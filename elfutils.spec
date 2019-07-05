@@ -23,6 +23,7 @@ Patch1: elfutils-0.176-gcc-pr88835.patch
 Patch2: elfutils-0.176-pt-gnu-prop.patch
 Patch3: elfutils-0.176-xlate-note.patch
 Patch4: elfutils-0.176-elf-update.patch
+Patch5: elfutils-0.176-strip-symbols-illformed.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -188,6 +189,7 @@ profiling) of processes.
 %patch2 -p1 -b .pt-gnu-prop
 %patch3 -p1 -b .xlate-note
 %patch4 -p1 -b .elf-update
+%patch5 -p1 -b .strip-illformed
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -321,6 +323,9 @@ fi
 %endif
 
 %changelog
+* Fri Jul  5 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.176-4
+- Add elfutils-0.176-strip-symbols-illformed.patch
+
 * Mon Jun  3 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.176-3
 - Add elfutils-0.176-elf-update.patch
 
