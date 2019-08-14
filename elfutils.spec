@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
-Version: 0.176
-%global baserelease 5
+Version: 0.177
+%global baserelease 1
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
@@ -19,11 +19,7 @@ Release: %{baserelease}%{?dist}
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 
 # Patches
-Patch1: elfutils-0.176-gcc-pr88835.patch
-Patch2: elfutils-0.176-pt-gnu-prop.patch
-Patch3: elfutils-0.176-xlate-note.patch
-Patch4: elfutils-0.176-elf-update.patch
-Patch5: elfutils-0.176-strip-symbols-illformed.patch
+Patch1: elfutils-0.177-pt-gnu-prop.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -185,11 +181,7 @@ profiling) of processes.
 %setup -q
 
 # Apply patches
-%patch1 -p1 -b .gcc-pr88835
-%patch2 -p1 -b .pt-gnu-prop
-%patch3 -p1 -b .xlate-note
-%patch4 -p1 -b .elf-update
-%patch5 -p1 -b .strip-illformed
+%patch1 -p1 -b .pt-gnu-prop
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -270,6 +262,7 @@ fi
 %{_bindir}/eu-unstrip
 %{_bindir}/eu-make-debug-archive
 %{_bindir}/eu-elfcompress
+%{_bindir}/eu-elfclassify
 
 %files libs
 %{!?_licensedir:%global license %%doc}
@@ -323,6 +316,18 @@ fi
 %endif
 
 %changelog
+* Wed Aug 14 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.177-1
+- New upstream release.
+  - elfclassify: New tool to analyze ELF objects.
+  - readelf: Print DW_AT_data_member_location as decimal offset.
+             Decode DW_AT_discr_list block attributes.
+  - libdw: Add DW_AT_GNU_numerator, DW_AT_GNU_denominator and DW_AT_GNU_bias.
+  - libdwelf: Add dwelf_elf_e_machine_string.
+              dwelf_elf_begin now only returns NULL when there is an error
+              reading or decompressing a file. If the file is not an ELF file
+              an ELF handle of type ELF_K_NONE is returned.
+  - backends: Add support for C-SKY.
+
 * Wed Jul 24 2019 Fedora Release Engineering <releng@fedoraproject.org> - 0.176-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
 
