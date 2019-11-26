@@ -1,11 +1,11 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
-Version: 0.177
+Version: 0.178
 %global baserelease 1
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
-License: GPLv3+ and (GPLv2+ or LGPLv3+)
-
+License: GPLv3+ and (GPLv2+ or LGPLv3+) and GFDL
+Source: %{?source_url}%{name}-%{version}.tar.bz2
 Release: %{baserelease}%{?dist}
 
 %global provide_yama_scope	0
@@ -16,35 +16,44 @@ Release: %{baserelease}%{?dist}
 
 %global depsuffix %{?_isa}%{!?_isa:-%{_arch}}
 
-Source: %{?source_url}%{name}-%{version}.tar.bz2
-
 # Patches
-Patch1: elfutils-0.177-pt-gnu-prop.patch
+Patch1: elfutils-0.178-pt-gnu-prop.patch
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
+%if 0%{?rhel} >= 8 || 0%{?fedora} >= 20
+Recommends: elfutils-debuginfod-client
+%else
+Requires: elfutils-debuginfod-client
+%endif
 
-BuildRequires: gettext
-BuildRequires: bison >= 1.875
-BuildRequires: flex >= 2.5.4a
-BuildRequires: bzip2
-BuildRequires: gcc >= 4.4
+BuildRequires: gcc
 # For libstdc++ demangle support
 BuildRequires: gcc-c++
 
-BuildRequires: zlib-devel >= 1.2.2.3
+BuildRequires: gettext
+BuildRequires: bison
+BuildRequires: flex
+
+# Compression support
+BuildRequires: zlib-devel
 BuildRequires: bzip2-devel
 BuildRequires: xz-devel
 
+# For debuginfod
+BuildRequires: pkgconfig(libmicrohttpd) >= 0.9.33
+BuildRequires: pkgconfig(libcurl) >= 7.29.0
+BuildRequires: pkgconfig(sqlite3) >= 3.7.17
+BuildRequires: pkgconfig(libarchive) >= 3.1.2
+
+# For tests need to bunzip2 test files.
+BuildRequires: bzip2
+# For the run-debuginfod-find.sh test case in %check for /usr/sbin/ss
+BuildRequires: iproute
+BuildRequires: curl
+
 %global _gnu %{nil}
 %global _program_prefix eu-
-
-# The lib[64]/elfutils directory contains the private ebl backend
-# libraries. They must not be exposed as global provides. We don't
-# need to filter the requires since they are only loaded with dlopen.
-%if 0%{?fedora} >= 15 || 0%{?rhel} >= 7
-%global __provides_exclude ^libebl_.*\\.so.*$
-%endif
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -53,7 +62,6 @@ backtraces), nm (for listing symbols from object files), size
 strip (for discarding symbols), readelf (to see the raw ELF file
 structures), elflint (to check for well-formed ELF files) and
 elfcompress (to compress or decompress ELF sections).
-
 
 %package libs
 Summary: Libraries to handle compiled objects
@@ -65,12 +73,18 @@ Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 %if %{provide_yama_scope}
 Requires: default-yama-scope
 %endif
+%if 0%{?rhel} >= 8 || 0%{?fedora} >= 20
+Recommends: elfutils-debuginfod-client
+%else
+Requires: elfutils-debuginfod-client
+%endif
 
 %description libs
 The elfutils-libs package contains libraries which implement DWARF, ELF,
-and machine-specific ELF handling.  These libraries are used by the programs
-in the elfutils package.  The elfutils-devel package enables building
-other programs using these libraries.
+and machine-specific ELF handling and process introspection.  These
+libraries are used by the programs in the elfutils package.  The
+elfutils-devel package enables building other programs using these
+libraries.
 
 %package devel
 Summary: Development libraries to handle compiled objects
@@ -80,12 +94,16 @@ Provides: elfutils-devel%{depsuffix} = %{version}-%{release}
 %endif
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libelf-devel%{depsuffix} = %{version}-%{release}
+%if 0%{?rhel} >= 8 || 0%{?fedora} >= 20
+Recommends: elfutils-debuginfod-client-devel
+%else
+Requires: elfutils-debuginfod-client-devel
+%endif
 
 %description devel
 The elfutils-devel package contains the libraries to create
-applications for handling compiled objects.  libebl provides some
-higher-level ELF access functionality.  libdw provides access to
-the DWARF debugging information.  libasm provides a programmable
+applications for handling compiled objects.  libdw provides access
+to the DWARF debugging information.  libasm provides a programmable
 assembler interface.
 
 %package devel-static
@@ -177,6 +195,42 @@ interprocess services, communication and introspection
 profiling) of processes.
 %endif
 
+%package debuginfod-client
+Summary: Library and command line client for build-id HTTP ELF/DWARF server
+License: GPLv3+ and (GPLv2+ or LGPLv3+)
+
+%package debuginfod-client-devel
+Summary: Libraries and headers to build debuginfod client applications
+License: GPLv2+ or LGPLv3+
+
+%package debuginfod
+Summary: HTTP ELF/DWARF file server addressed by build-id
+License: GPLv3+
+BuildRequires: systemd
+Requires(post):   systemd
+Requires(preun):  systemd
+Requires(postun): systemd
+Requires(pre): shadow-utils
+# For /usr/bin/cpio2rpm
+Requires: rpm
+
+%description debuginfod-client
+The elfutils-debuginfod-client package contains shared libraries
+dynamically loaded from -ldw, which use a debuginfod service
+to look up debuginfo and associated data. Also includes a
+command-line frontend.
+
+%description debuginfod-client-devel
+The elfutils-debuginfod-client-devel package contains the libraries
+to create applications to use the debuginfod service.
+
+%description debuginfod
+The elfutils-debuginfod package contains the debuginfod binary
+and control files for a service that can provide ELF/DWARF
+files to remote clients, based on build-id identification.
+The ELF/DWARF file searching functions in libdwfl can query
+such servers to download those files on demand.
+
 %prep
 %setup -q
 
@@ -207,7 +261,6 @@ rm -rf ${RPM_BUILD_ROOT}
 make -s install DESTDIR=${RPM_BUILD_ROOT}
 
 chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/lib*.so*
-chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
 
 %find_lang %{name}
 
@@ -215,9 +268,14 @@ chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/elfutils/lib*.so*
 install -Dm0644 config/10-default-yama-scope.conf ${RPM_BUILD_ROOT}%{_sysctldir}/10-default-yama-scope.conf
 %endif
 
+install -Dm0644 config/debuginfod.service ${RPM_BUILD_ROOT}%{_unitdir}/debuginfod.service
+install -Dm0644 config/debuginfod.sysconfig ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig/debuginfod
+mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/cache/debuginfod
+touch ${RPM_BUILD_ROOT}%{_localstatedir}/cache/debuginfod/debuginfod.sqlite
+
 %check
 # Record some build root versions in build.log
-uname -r; rpm -q glibc
+uname -r; rpm -q binutils gcc glibc
 
 make -s %{?_smp_mflags} check || (cat tests/test-suite.log; false)
 
@@ -226,11 +284,14 @@ make -s %{?_smp_mflags} check || (cat tests/test-suite.log; false)
 %if 0%{?ldconfig_scriptlets:1}
 %ldconfig_scriptlets libs
 %ldconfig_scriptlets libelf
+%ldconfig_scriptlets debuginfod-client
 %else
 %post libs -p /sbin/ldconfig
 %postun libs -p /sbin/ldconfig
 %post libelf -p /sbin/ldconfig
 %postun libelf -p /sbin/ldconfig
+%post debuginfod-client -p /sbin/ldconfig
+%postun debuginfod-client -p /sbin/ldconfig
 %endif
 
 %if %{provide_yama_scope}
@@ -244,13 +305,16 @@ fi
 
 %files
 %{!?_licensedir:%global license %%doc}
-%license COPYING COPYING-GPLV2 COPYING-LGPLV3
+%license COPYING COPYING-GPLV2 COPYING-LGPLV3 doc/COPYING-GFDL
 %doc README TODO CONTRIBUTING
 %{_bindir}/eu-addr2line
 %{_bindir}/eu-ar
+%{_bindir}/eu-elfclassify
 %{_bindir}/eu-elfcmp
+%{_bindir}/eu-elfcompress
 %{_bindir}/eu-elflint
 %{_bindir}/eu-findtextrel
+%{_bindir}/eu-make-debug-archive
 %{_bindir}/eu-nm
 %{_bindir}/eu-objdump
 %{_bindir}/eu-ranlib
@@ -260,19 +324,15 @@ fi
 %{_bindir}/eu-strings
 %{_bindir}/eu-strip
 %{_bindir}/eu-unstrip
-%{_bindir}/eu-make-debug-archive
-%{_bindir}/eu-elfcompress
-%{_bindir}/eu-elfclassify
+%{_mandir}/man1/eu-*.1*
 
 %files libs
 %{!?_licensedir:%global license %%doc}
 %license COPYING-GPLV2 COPYING-LGPLV3
 %{_libdir}/libasm-%{version}.so
-%{_libdir}/libasm.so.*
 %{_libdir}/libdw-%{version}.so
+%{_libdir}/libasm.so.*
 %{_libdir}/libdw.so.*
-%dir %{_libdir}/elfutils
-%{_libdir}/elfutils/lib*.so
 
 %files devel
 %{_includedir}/dwarf.h
@@ -280,19 +340,17 @@ fi
 %{_includedir}/elfutils/elf-knowledge.h
 %{_includedir}/elfutils/known-dwarf.h
 %{_includedir}/elfutils/libasm.h
-%{_includedir}/elfutils/libebl.h
 %{_includedir}/elfutils/libdw.h
 %{_includedir}/elfutils/libdwfl.h
 %{_includedir}/elfutils/libdwelf.h
 %{_includedir}/elfutils/version.h
-%{_libdir}/libebl.a
 %{_libdir}/libasm.so
 %{_libdir}/libdw.so
 %{_libdir}/pkgconfig/libdw.pc
 
 %files devel-static
-%{_libdir}/libasm.a
 %{_libdir}/libdw.a
+%{_libdir}/libasm.a
 
 %files -f %{name}.lang libelf
 %{!?_licensedir:%global license %%doc}
@@ -306,6 +364,7 @@ fi
 %{_includedir}/nlist.h
 %{_libdir}/libelf.so
 %{_libdir}/pkgconfig/libelf.pc
+%{_mandir}/man3/elf_*.3*
 
 %files libelf-devel-static
 %{_libdir}/libelf.a
@@ -315,7 +374,60 @@ fi
 %{_sysctldir}/10-default-yama-scope.conf
 %endif
 
+%files debuginfod-client
+%defattr(-,root,root)
+%{_libdir}/libdebuginfod-%{version}.so
+%{_bindir}/debuginfod-find
+%{_mandir}/man1/debuginfod-find.1*
+
+%files debuginfod-client-devel
+%defattr(-,root,root)
+%{_libdir}/pkgconfig/libdebuginfod.pc
+%{_mandir}/man3/debuginfod_*.3*
+%{_includedir}/elfutils/debuginfod.h
+%{_libdir}/libdebuginfod.so*
+
+%files debuginfod
+%defattr(-,root,root)
+%{_bindir}/debuginfod
+%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/sysconfig/debuginfod
+%{_unitdir}/debuginfod.service
+%{_sysconfdir}/sysconfig/debuginfod
+%{_mandir}/man8/debuginfod.8*
+
+%dir %attr(0700,debuginfod,debuginfod) %{_localstatedir}/cache/debuginfod
+%verify(not md5 size mtime) %attr(0600,debuginfod,debuginfod) %{_localstatedir}/cache/debuginfod/debuginfod.sqlite
+
+%pre debuginfod
+getent group debuginfod >/dev/null || groupadd -r debuginfod
+getent passwd debuginfod >/dev/null || \
+    useradd -r -g debuginfod -d /var/cache/debuginfod -s /sbin/nologin \
+            -c "elfutils debuginfo server" debuginfod
+exit 0
+
+%post debuginfod
+%systemd_post debuginfod.service
+
+%postun debuginfod
+%systemd_postun_with_restart debuginfod.service
+
 %changelog
+* Tue Nov 26 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.178-1
+- New upstream release.
+  - debuginfod: New server, client tool and library to index and fetch
+                ELF/DWARF files addressed by build-id through HTTP.
+  - doc: There are now some manual pages for functions and tools.
+  - backends: The libebl libraries are no longer dynamically loaded
+              through dlopen, but are now compiled into libdw.so directly.
+  - readelf: -n, --notes now takes an optional "SECTION" argument.
+             -p and -x now also handle section numbers.
+             New option --dyn-sym to show just the dynamic symbol table.
+  - libcpu: Add RISC-V disassembler.
+  - libdw: Abbrevs and DIEs can now be read concurrently by multiple
+           threads through the same Dwarf handle.
+  - libdwfl: Will try to use debuginfod when installed as fallback to
+             retrieve ELF and DWARF debug data files by build-id.
+
 * Wed Aug 14 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.177-1
 - New upstream release.
   - elfclassify: New tool to analyze ELF objects.
