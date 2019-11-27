@@ -1,7 +1,7 @@
 Name: elfutils
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.178
-%global baserelease 1
+%global baserelease 2
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+) and GFDL
@@ -377,6 +377,7 @@ fi
 %files debuginfod-client
 %defattr(-,root,root)
 %{_libdir}/libdebuginfod-%{version}.so
+%{_libdir}/libdebuginfod.so.*
 %{_bindir}/debuginfod-find
 %{_mandir}/man1/debuginfod-find.1*
 
@@ -385,7 +386,7 @@ fi
 %{_libdir}/pkgconfig/libdebuginfod.pc
 %{_mandir}/man3/debuginfod_*.3*
 %{_includedir}/elfutils/debuginfod.h
-%{_libdir}/libdebuginfod.so*
+%{_libdir}/libdebuginfod.so
 
 %files debuginfod
 %defattr(-,root,root)
@@ -412,6 +413,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Wed Nov 26 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.178-2
+- Fix libdebuginfod file list for debuginfo-client[-devel].
+
 * Tue Nov 26 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.178-1
 - New upstream release.
   - debuginfod: New server, client tool and library to index and fetch
