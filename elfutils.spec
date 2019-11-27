@@ -413,7 +413,7 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
-* Wed Nov 26 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.178-2
+* Wed Nov 27 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.178-2
 - Fix libdebuginfod file list for debuginfo-client[-devel].
 
 * Tue Nov 26 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.178-1
