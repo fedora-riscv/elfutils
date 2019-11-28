@@ -1,30 +1,19 @@
 Name: elfutils
-Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 Version: 0.178
-%global baserelease 2
+%global baserelease 3
+Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+) and GFDL
 Source: %{?source_url}%{name}-%{version}.tar.bz2
-Release: %{baserelease}%{?dist}
-
-%global provide_yama_scope	0
-
-%if 0%{?fedora} >= 22 || 0%{?rhel} >= 7
-%global provide_yama_scope	1
-%endif
-
-%global depsuffix %{?_isa}%{!?_isa:-%{_arch}}
-
-# Patches
-Patch1: elfutils-0.178-pt-gnu-prop.patch
+Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
 %if 0%{?rhel} >= 8 || 0%{?fedora} >= 20
-Recommends: elfutils-debuginfod-client
+Recommends: elfutils-debuginfod-client%{depsuffix} = %{version}-%{release}
 %else
-Requires: elfutils-debuginfod-client
+Requires: elfutils-debuginfod-client%{depsuffix} = %{version}-%{release}
 %endif
 
 BuildRequires: gcc
@@ -55,6 +44,17 @@ BuildRequires: curl
 %global _gnu %{nil}
 %global _program_prefix eu-
 
+%global provide_yama_scope	0
+
+%if 0%{?fedora} >= 22 || 0%{?rhel} >= 7
+%global provide_yama_scope	1
+%endif
+
+%global depsuffix %{?_isa}%{!?_isa:-%{_arch}}
+
+# Patches
+Patch1: elfutils-0.178-pt-gnu-prop.patch
+
 %description
 Elfutils is a collection of utilities, including stack (to show
 backtraces), nm (for listing symbols from object files), size
@@ -74,9 +74,9 @@ Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: default-yama-scope
 %endif
 %if 0%{?rhel} >= 8 || 0%{?fedora} >= 20
-Recommends: elfutils-debuginfod-client
+Recommends: elfutils-debuginfod-client%{depsuffix} = %{version}-%{release}
 %else
-Requires: elfutils-debuginfod-client
+Requires: elfutils-debuginfod-client%{depsuffix} = %{version}-%{release}
 %endif
 
 %description libs
@@ -95,9 +95,9 @@ Provides: elfutils-devel%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libelf-devel%{depsuffix} = %{version}-%{release}
 %if 0%{?rhel} >= 8 || 0%{?fedora} >= 20
-Recommends: elfutils-debuginfod-client-devel
+Recommends: elfutils-debuginfod-client-devel%{depsuffix} = %{version}-%{release}
 %else
-Requires: elfutils-debuginfod-client-devel
+Requires: elfutils-debuginfod-client-devel%{depsuffix} = %{version}-%{release}
 %endif
 
 %description devel
@@ -198,14 +198,24 @@ profiling) of processes.
 %package debuginfod-client
 Summary: Library and command line client for build-id HTTP ELF/DWARF server
 License: GPLv3+ and (GPLv2+ or LGPLv3+)
+%if 0%{!?_isa:1}
+Provides: elfutils-debuginfod-client%{depsuffix} = %{version}-%{release}
+%endif
 
 %package debuginfod-client-devel
 Summary: Libraries and headers to build debuginfod client applications
 License: GPLv2+ or LGPLv3+
+%if 0%{!?_isa:1}
+Provides: elfutils-debuginfod-client-devel%{depsuffix} = %{version}-%{release}
+%endif
+Requires: elfutils-debuginfod-client%{depsuffix} = %{version}-%{release}
 
 %package debuginfod
 Summary: HTTP ELF/DWARF file server addressed by build-id
 License: GPLv3+
+Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
+Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
+Requires: elfutils-debuginfod-client%{depsuffix} = %{version}-%{release}
 BuildRequires: systemd
 Requires(post):   systemd
 Requires(preun):  systemd
@@ -413,6 +423,11 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Thu Nov 28 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.178-3
+- Add elfutils-debuginfod-client Provides and Requires with depsuffix
+  to get multilib dependencies correct. Add %{version}-%{release} to
+  keep subpackages in sync.
+
 * Wed Nov 27 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.178-2
 - Fix libdebuginfod file list for debuginfo-client[-devel].
 
