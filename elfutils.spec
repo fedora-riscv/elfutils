@@ -1,12 +1,15 @@
 Name: elfutils
 Version: 0.178
-%global baserelease 3
+%global baserelease 4
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+) and GFDL
 Source: %{?source_url}%{name}-%{version}.tar.bz2
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
+
+# Needed for isa specific Provides and Requires.
+%global depsuffix %{?_isa}%{!?_isa:-%{_arch}}
 
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
@@ -49,8 +52,6 @@ BuildRequires: curl
 %if 0%{?fedora} >= 22 || 0%{?rhel} >= 7
 %global provide_yama_scope	1
 %endif
-
-%global depsuffix %{?_isa}%{!?_isa:-%{_arch}}
 
 # Patches
 Patch1: elfutils-0.178-pt-gnu-prop.patch
@@ -423,9 +424,12 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Thu Nov 28 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.178-4
+- Define %%{depsuffix} before use.
+
 * Thu Nov 28 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.178-3
 - Add elfutils-debuginfod-client Provides and Requires with depsuffix
-  to get multilib dependencies correct. Add %{version}-%{release} to
+  to get multilib dependencies correct. Add %%{version}-%%{release} to
   keep subpackages in sync.
 
 * Wed Nov 27 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.178-2
