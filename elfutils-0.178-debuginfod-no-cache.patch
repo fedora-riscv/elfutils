@@ -1,0 +1,67 @@
+commit d8bad02afc7b7f30402b4e0e458df874a6d600da
+Author: Mark Wielaard <mark@klomp.org>
+Date:   Mon Dec 9 19:38:19 2019 +0100
+
+    debuginfod: Check the DEBUGINFOD_URLS environment variable early in client.
+    
+    If the debuginfod-client isn't configured we should do as little
+    as possible. Simply return early with ENOSYS if no servers are
+    configured. This means we won't check
+    
+    This does change the behavior of the debuginfod_find calls slightly.
+    Previously we would setup and check the cache if the given build-id
+    was valid. Which might have provided a result if an earlier client
+    had run with the same cache and valid server URLs which knew about
+    that particular build-id. Now we don't return any cached results
+    unless at least one server is configured.
+    
+    This prevents selinux errors when the library is used in a confined
+    setup.
+    
+    Signed-off-by: Mark Wielaard <mark@klomp.org>
+
+diff --git a/debuginfod/debuginfod-client.c b/debuginfod/debuginfod-client.c
+index 302ea2dc..ab7b4e13 100644
+--- a/debuginfod/debuginfod-client.c
++++ b/debuginfod/debuginfod-client.c
+@@ -301,6 +301,16 @@ debuginfod_query_server (debuginfod_client *c,
+   char target_cache_tmppath[PATH_MAX*5];
+   char suffix[PATH_MAX*2];
+   char build_id_bytes[MAX_BUILD_ID_BYTES * 2 + 1];
++  int rc;
++
++  /* Is there any server we can query?  If not, don't do any work,
++     just return with ENOSYS.  Don't even access the cache.  */
++  urls_envvar = getenv(server_urls_envvar);
++  if (urls_envvar == NULL || urls_envvar[0] == '\0')
++    {
++      rc = -ENOSYS;
++      goto out;
++    }
+ 
+   /* Copy lowercase hex representation of build_id into buf.  */
+   if ((build_id_len >= MAX_BUILD_ID_BYTES) ||
+@@ -373,7 +383,7 @@ debuginfod_query_server (debuginfod_client *c,
+   /* XXX combine these */
+   snprintf(interval_path, sizeof(interval_path), "%s/%s", cache_path, cache_clean_interval_filename);
+   snprintf(maxage_path, sizeof(maxage_path), "%s/%s", cache_path, cache_max_unused_age_filename);
+-  int rc = debuginfod_init_cache(cache_path, interval_path, maxage_path);
++  rc = debuginfod_init_cache(cache_path, interval_path, maxage_path);
+   if (rc != 0)
+     goto out;
+   rc = debuginfod_clean_cache(c, cache_path, interval_path, maxage_path);
+@@ -390,14 +400,6 @@ debuginfod_query_server (debuginfod_client *c,
+       return fd;
+     }
+ 
+-
+-  urls_envvar = getenv(server_urls_envvar);
+-  if (urls_envvar == NULL || urls_envvar[0] == '\0')
+-    {
+-      rc = -ENOSYS;
+-      goto out;
+-    }
+-
+   if (getenv(server_timeout_envvar))
+     server_timeout = atoi (getenv(server_timeout_envvar));
+ 
