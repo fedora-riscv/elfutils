@@ -56,6 +56,7 @@ BuildRequires: curl
 # Patches
 Patch1: elfutils-0.178-pt-gnu-prop.patch
 Patch2: elfutils-0.178-debuginfod-no-cache.patch
+Patch3: elfutils-0.178-curl-code-gcc-10.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -249,6 +250,7 @@ such servers to download those files on demand.
 # Apply patches
 %patch1 -p1 -b .pt-gnu-prop
 %patch2 -p1 -b .debuginfod-client-cache
+%patch3 -p1 -b .curl-gcc-10
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -426,6 +428,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Wed Dec 11 2019 Mark Wielaard <mjw@fedoraproject.org>
+- Add elfutils-0.178-curl-code-gcc-10.patch
+
 * Mon Dec  9 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.178-5
 - Add elfutils-0.178-debuginfod-no-cache.patch.
 
