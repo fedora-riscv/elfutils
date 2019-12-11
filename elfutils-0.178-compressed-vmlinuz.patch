@@ -1,0 +1,62 @@
+commit 4a90cb11140a6bb3712228861a32e4035013ad85
+Author: Mark Wielaard <mark@klomp.org>
+Date:   Thu Dec 5 15:03:54 2019 +0100
+
+    libdwfl: Find and handle compressed vmlinuz image.
+    
+    Both the dwfl_linux_kernel_find_elf callback and the
+    dwfl_linux_kernel_report_offline reporting function only handled
+    vmlinix images possibly compressed with .gz, .bz2 or .xz extension.
+    They did not find or handle the much more common vmlinuz compressed
+    images.
+    
+    It is not completely clear why we didn't up to now. Support for
+    compressed ELF files was added in 2009 and the code was updated to
+    to try to find the .gz, .bz2 or .xz extension variants in 2011.
+    But not the vmlinuz named variant.
+    
+    Reported-by: Aaron Merey <amerey@redhat.com>
+    Tested-by: Frank Ch. Eigler <fche@redhat.com>
+    Signed-off-by: Mark Wielaard <mark@klomp.org>
+
+diff --git a/libdwfl/linux-kernel-modules.c b/libdwfl/linux-kernel-modules.c
+index d46ab5aa..48fb1ff0 100644
+--- a/libdwfl/linux-kernel-modules.c
++++ b/libdwfl/linux-kernel-modules.c
+@@ -174,6 +174,8 @@ kernel_release (void)
+ static int
+ find_kernel_elf (Dwfl *dwfl, const char *release, char **fname)
+ {
++  /* First try to find an uncompressed vmlinux image.  Possibly
++     including debuginfo.  */
+   if ((release[0] == '/'
+        ? asprintf (fname, "%s/vmlinux", release)
+        : asprintf (fname, "/boot/vmlinux-%s", release)) < 0)
+@@ -188,6 +190,27 @@ find_kernel_elf (Dwfl *dwfl, const char *release, char **fname)
+       fd = try_kernel_name (dwfl, fname, true);
+     }
+ 
++  /* There might be a compressed vmlinuz image.  Probably without
++     debuginfo, but try to find it under the debug path also, just in
++     case.  */
++  if (fd < 0)
++    {
++      free (*fname);
++      if ((release[0] == '/'
++           ? asprintf (fname, "%s/vmlinuz", release)
++           : asprintf (fname, "/boot/vmlinuz-%s", release)) < 0)
++        return -1;
++
++      fd = try_kernel_name (dwfl, fname, true);
++      if (fd < 0 && release[0] != '/')
++	{
++	  free (*fname);
++	  if (asprintf (fname, MODULEDIRFMT "/vmlinuz", release) < 0)
++	    return -1;
++	  fd = try_kernel_name (dwfl, fname, true);
++	}
++    }
++
+   return fd;
+ }
+ 
