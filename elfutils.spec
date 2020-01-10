@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.178
-%global baserelease 6
+%global baserelease 7
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -59,6 +59,7 @@ Patch2: elfutils-0.178-debuginfod-no-cache.patch
 Patch3: elfutils-0.178-curl-code-gcc-10.patch
 Patch4: elfutils-0.178-compressed-vmlinuz.patch
 Patch5: elfutils-0.178-debuginfod-timeoutprogress.patch
+Patch6: elfutils-0.178-libasm-ebl.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -255,6 +256,7 @@ such servers to download those files on demand.
 %patch3 -p1 -b .curl-gcc-10
 %patch4 -p1 -b .vmlinuz
 %patch5 -p1 -b .debuginfod-timeout-progress
+%patch6 -p1 -b .libasm-ebl
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -432,8 +434,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
-* Fri Jan 10 2019 Mark Wielaard <mjw@fedoraproject.org>
+* Fri Jan 10 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.178-7
 - Add elfutils-0.178-debuginfod-timeoutprogress.patch
+- Add elfutils-0.178-libasm-ebl.patch
 
 * Wed Dec 11 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.178-6
 - Add elfutils-0.178-curl-code-gcc-10.patch

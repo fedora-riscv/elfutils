@@ -1,0 +1,146 @@
+commit 985550a5b24009e9cb9e511f6d320f3ac1b6bf99
+Author: Mark Wielaard <mark@klomp.org>
+Date:   Wed Jan 8 15:04:50 2020 +0100
+
+    libasm.h: Don't include libebl.h. Define an opaque Ebl handle.
+    
+    Using libasm isn't really usable without a way to create an Ebl handle.
+    But we don't support libebl.h (and libebl itself). Just define the
+    Ebl handle as an opaque struct. Code that uses it needs to figure out
+    how to instantiate one itself (they cannot in any supportable way...)
+    
+    Signed-off-by: Mark Wielaard <mark@klomp.org>
+
+diff --git a/libasm/libasm.h b/libasm/libasm.h
+index 5c61224..a45c9fa 100644
+--- a/libasm/libasm.h
++++ b/libasm/libasm.h
+@@ -32,7 +32,7 @@
+ #include <stdbool.h>
+ #include <stdint.h>
+ 
+-#include <libebl.h>
++typedef struct ebl Ebl;
+ 
+ 
+ /* Opaque type for the assembler context descriptor.  */
+diff --git a/libasm/libasmP.h b/libasm/libasmP.h
+index 54460cf..a4703fc 100644
+--- a/libasm/libasmP.h
++++ b/libasm/libasmP.h
+@@ -31,6 +31,7 @@
+ 
+ #include <stdio.h>
+ 
++#include "libebl.h"
+ #include <libasm.h>
+ 
+ #include "libdwelf.h"
+diff --git a/tests/asm-tst1.c b/tests/asm-tst1.c
+index 9afc676..cdf2a92 100644
+--- a/tests/asm-tst1.c
++++ b/tests/asm-tst1.c
+@@ -20,6 +20,7 @@
+ #endif
+ 
+ #include <fcntl.h>
++#include ELFUTILS_HEADER(ebl)
+ #include ELFUTILS_HEADER(asm)
+ #include <libelf.h>
+ #include <stdio.h>
+diff --git a/tests/asm-tst2.c b/tests/asm-tst2.c
+index 2556d0c..9e88b70 100644
+--- a/tests/asm-tst2.c
++++ b/tests/asm-tst2.c
+@@ -20,6 +20,7 @@
+ #endif
+ 
+ #include <fcntl.h>
++#include ELFUTILS_HEADER(ebl)
+ #include ELFUTILS_HEADER(asm)
+ #include <libelf.h>
+ #include <stdio.h>
+diff --git a/tests/asm-tst3.c b/tests/asm-tst3.c
+index e52cfbe..39c1d90 100644
+--- a/tests/asm-tst3.c
++++ b/tests/asm-tst3.c
+@@ -20,6 +20,7 @@
+ #endif
+ 
+ #include <fcntl.h>
++#include ELFUTILS_HEADER(ebl)
+ #include ELFUTILS_HEADER(asm)
+ #include <libelf.h>
+ #include <stdio.h>
+diff --git a/tests/asm-tst4.c b/tests/asm-tst4.c
+index 52e9e20..5114938 100644
+--- a/tests/asm-tst4.c
++++ b/tests/asm-tst4.c
+@@ -20,6 +20,7 @@
+ #endif
+ 
+ #include <fcntl.h>
++#include ELFUTILS_HEADER(ebl)
+ #include ELFUTILS_HEADER(asm)
+ #include <libelf.h>
+ #include <stdio.h>
+diff --git a/tests/asm-tst5.c b/tests/asm-tst5.c
+index 5a29b01..dcb852f 100644
+--- a/tests/asm-tst5.c
++++ b/tests/asm-tst5.c
+@@ -20,6 +20,7 @@
+ #endif
+ 
+ #include <fcntl.h>
++#include ELFUTILS_HEADER(ebl)
+ #include ELFUTILS_HEADER(asm)
+ #include <libelf.h>
+ #include <stdio.h>
+diff --git a/tests/asm-tst6.c b/tests/asm-tst6.c
+index bd9b362..829cd90 100644
+--- a/tests/asm-tst6.c
++++ b/tests/asm-tst6.c
+@@ -19,6 +19,7 @@
+ # include <config.h>
+ #endif
+ 
++#include ELFUTILS_HEADER(ebl)
+ #include ELFUTILS_HEADER(asm)
+ #include <libelf.h>
+ #include <stdio.h>
+diff --git a/tests/asm-tst7.c b/tests/asm-tst7.c
+index 00cb2bf..9017976 100644
+--- a/tests/asm-tst7.c
++++ b/tests/asm-tst7.c
+@@ -21,6 +21,7 @@
+ 
+ #include <fcntl.h>
+ #include <inttypes.h>
++#include ELFUTILS_HEADER(ebl)
+ #include ELFUTILS_HEADER(asm)
+ #include <libelf.h>
+ #include <stdio.h>
+diff --git a/tests/asm-tst8.c b/tests/asm-tst8.c
+index 4fb0d99..a65509f 100644
+--- a/tests/asm-tst8.c
++++ b/tests/asm-tst8.c
+@@ -21,6 +21,7 @@
+ 
+ #include <fcntl.h>
+ #include <inttypes.h>
++#include ELFUTILS_HEADER(ebl)
+ #include ELFUTILS_HEADER(asm)
+ #include <libelf.h>
+ #include <stdio.h>
+diff --git a/tests/asm-tst9.c b/tests/asm-tst9.c
+index b6d0e43..681e872 100644
+--- a/tests/asm-tst9.c
++++ b/tests/asm-tst9.c
+@@ -21,6 +21,7 @@
+ 
+ #include <fcntl.h>
+ #include <inttypes.h>
++#include ELFUTILS_HEADER(ebl)
+ #include ELFUTILS_HEADER(asm)
+ #include <libelf.h>
+ #include <stdio.h>
