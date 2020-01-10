@@ -58,6 +58,7 @@ Patch1: elfutils-0.178-pt-gnu-prop.patch
 Patch2: elfutils-0.178-debuginfod-no-cache.patch
 Patch3: elfutils-0.178-curl-code-gcc-10.patch
 Patch4: elfutils-0.178-compressed-vmlinuz.patch
+Patch5: elfutils-0.178-debuginfod-timeoutprogress.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -253,6 +254,7 @@ such servers to download those files on demand.
 %patch2 -p1 -b .debuginfod-client-cache
 %patch3 -p1 -b .curl-gcc-10
 %patch4 -p1 -b .vmlinuz
+%patch5 -p1 -b .debuginfod-timeout-progress
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -430,6 +432,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Fri Jan 10 2019 Mark Wielaard <mjw@fedoraproject.org>
+- Add elfutils-0.178-debuginfod-timeoutprogress.patch
+
 * Wed Dec 11 2019 Mark Wielaard <mjw@fedoraproject.org> - 0.178-6
 - Add elfutils-0.178-curl-code-gcc-10.patch
 - Add elfutils-0.178-compressed-vmlinuz.patch
