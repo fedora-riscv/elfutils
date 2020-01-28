@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.178
-%global baserelease 8
+%global baserelease 9
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -436,6 +436,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Tue Jan 28 2020 Fedora Release Engineering <releng@fedoraproject.org> - 0.178-9
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
+
 
 * Fri Jan 24 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.178-8
 - Add elfutils-0.178-gcc10-null-dereference.patch
