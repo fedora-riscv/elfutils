@@ -1,6 +1,6 @@
 Name: elfutils
-Version: 0.178
-%global baserelease 9
+Version: 0.179
+%global baserelease 1
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -42,6 +42,7 @@ BuildRequires: pkgconfig(libarchive) >= 3.1.2
 BuildRequires: bzip2
 # For the run-debuginfod-find.sh test case in %check for /usr/sbin/ss
 BuildRequires: iproute
+BuildRequires: bsdtar
 BuildRequires: curl
 
 %global _gnu %{nil}
@@ -54,13 +55,6 @@ BuildRequires: curl
 %endif
 
 # Patches
-Patch1: elfutils-0.178-pt-gnu-prop.patch
-Patch2: elfutils-0.178-debuginfod-no-cache.patch
-Patch3: elfutils-0.178-curl-code-gcc-10.patch
-Patch4: elfutils-0.178-compressed-vmlinuz.patch
-Patch5: elfutils-0.178-debuginfod-timeoutprogress.patch
-Patch6: elfutils-0.178-libasm-ebl.patch
-Patch7: elfutils-0.178-gcc10-null-dereference.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -228,8 +222,8 @@ Requires(post):   systemd
 Requires(preun):  systemd
 Requires(postun): systemd
 Requires(pre): shadow-utils
-# For /usr/bin/cpio2rpm
-Requires: rpm
+# To extract .deb files with a bsdtar (= libarchive) subshell
+Requires: bsdtar
 
 %description debuginfod-client
 The elfutils-debuginfod-client package contains shared libraries
@@ -252,13 +246,6 @@ such servers to download those files on demand.
 %setup -q
 
 # Apply patches
-%patch1 -p1 -b .pt-gnu-prop
-%patch2 -p1 -b .debuginfod-client-cache
-%patch3 -p1 -b .curl-gcc-10
-%patch4 -p1 -b .vmlinuz
-%patch5 -p1 -b .debuginfod-timeout-progress
-%patch6 -p1 -b .libasm-ebl
-%patch7 -p1 -b .null-deref-10
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -436,9 +423,52 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Mon Mar 30 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.179-1
+- New upstream release.
+  debuginfod-client:
+  - When DEBUGINFOD_PROGRESS is set and the program doesn't
+    install its own debuginfod_progressfn_t show download
+    progress on stderr.
+  - DEBUGINFOD_TIMEOUT is now defined as seconds to get at
+    least 100K, defaults to 90 seconds.
+  - Default to $XDG_CACHE_HOME/debuginfod_client.
+  - New functions debuginfod_set_user_data,
+    debuginfod_get_user_data, debuginfod_get_url and
+    debuginfod_add_http_header.
+  - Support for file:// URLs.
+
+  debuginfod:
+  - Performance improvements through highly parallelized scanning
+    and archive content caching.
+  - Uses libarchive directly for reading rpm archives.
+  - Support for indexing .deb/.ddeb archives through dpkg-deb
+    or bsdtar.
+  - Generic archive support through -Z EXT[=CMD]. Which can be
+    used for example for arch-linux pacman files by using
+    -Z '.tar.zst=zstdcat'.
+  - Better logging using User-Agent and X-Forwarded-For headers.
+  - More prometheus metrics.
+  - Support for eliding dots or extraneous slashes in path names.
+
+  debuginfod-find:
+  - Accept /path/names in place of buildid hex.
+
+  libelf:
+  - Handle PN_XNUM in elf_getphdrnum before shdr 0 is cached
+  - Ensure zlib resource cleanup on failure.
+
+  libdwfl:
+  - dwfl_linux_kernel_find_elf and dwfl_linux_kernel_report_offline
+    now find and handle a compressed vmlinuz image.
+
+  readelf, elflint:
+  - Handle PT_GNU_PROPERTY.
+
+  translations:
+  - Updated Ukrainian translation.
+
 * Tue Jan 28 2020 Fedora Release Engineering <releng@fedoraproject.org> - 0.178-9
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
-
 
 * Fri Jan 24 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.178-8
 - Add elfutils-0.178-gcc10-null-dereference.patch
