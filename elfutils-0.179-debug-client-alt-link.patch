@@ -1,0 +1,60 @@
+From b1d2404cc6ca0d9ce786e229a87c24db49163cfe Mon Sep 17 00:00:00 2001
+From: Mark Wielaard <mark@klomp.org>
+Date: Thu, 30 Apr 2020 23:57:26 +0200
+Subject: [PATCH] libdwfl: Handle debugaltlink in dwfl_standard_find_debuginfo.
+
+When we fall back to the debuginfod client then we need to do the
+same trick we do for local lookups in dwfl_build_id_find_debuginfo.
+If the debug file (dw) is already set, then we must be looking for
+the altfile. But we cannot use the actual file/path name given as
+hint. We'll have to lookup the alt file "build-id". Because the
+debuginfod client only handles build-ids.
+
+Previously we would use the build-id of the main file which meant
+the debuginfod client would give us another copy of the debug file,
+which would then be set as its own altfile. This caused lots of
+confusion...
+
+Signed-off-by: Mark Wielaard <mark@klomp.org>
+---
+ libdwfl/ChangeLog        |  5 +++++
+ libdwfl/find-debuginfo.c | 23 +++++++++++++++++++++--
+ 2 files changed, 26 insertions(+), 2 deletions(-)
+
+diff --git a/libdwfl/find-debuginfo.c b/libdwfl/find-debuginfo.c
+index 2dd11c48..4cfd0b8b 100644
+--- a/libdwfl/find-debuginfo.c
++++ b/libdwfl/find-debuginfo.c
+@@ -398,8 +398,27 @@ dwfl_standard_find_debuginfo (Dwfl_Module *mod,
+       free (canon);
+     }
+ 
+-  if (fd < 0 && bits_len > 0)
+-    fd = __libdwfl_debuginfod_find_debuginfo (mod->dwfl, bits, bits_len);
++  /* Still nothing? Try if we can use the debuginfod client.
++     But note that we might be looking for the alt file.
++     We use the same trick as dwfl_build_id_find_debuginfo.
++     If the debug file (dw) is already set, then we must be
++     looking for the altfile. But we cannot use the actual
++     file/path name given as hint. We'll have to lookup the
++     alt file "build-id". Because the debuginfod client only
++     handles build-ids.  */
++  if (fd < 0)
++    {
++      if (mod->dw != NULL)
++	{
++	  const char *altname;
++	  bits_len = INTUSE(dwelf_dwarf_gnu_debugaltlink) (mod->dw, &altname,
++							   (const void **)
++							   &bits);
++	}
++
++      if (bits_len > 0)
++	fd = __libdwfl_debuginfod_find_debuginfo (mod->dwfl, bits, bits_len);
++    }
+ 
+   return fd;
+ }
+-- 
+2.18.2
+

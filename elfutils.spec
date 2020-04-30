@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.179
-%global baserelease 1
+%global baserelease 2
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -55,6 +55,7 @@ BuildRequires: curl
 %endif
 
 # Patches
+Patch1: elfutils-0.179-debug-client-alt-link.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -246,6 +247,7 @@ such servers to download those files on demand.
 %setup -q
 
 # Apply patches
+%patch1 -p1 -b .debug-client-alt
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -423,6 +425,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Thu Apr 30 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.179-2
+- Add elfutils-0.179-debug-client-alt-link.patch
+
 * Mon Mar 30 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.179-1
 - New upstream release.
   debuginfod-client:
