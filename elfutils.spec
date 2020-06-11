@@ -1,5 +1,5 @@
 Name: elfutils
-Version: 0.179
+Version: 0.180
 %global baserelease 2
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
@@ -55,7 +55,6 @@ BuildRequires: curl
 %endif
 
 # Patches
-Patch1: elfutils-0.179-debug-client-alt-link.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -247,7 +246,6 @@ such servers to download those files on demand.
 %setup -q
 
 # Apply patches
-%patch1 -p1 -b .debug-client-alt
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -425,6 +423,15 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Thu Jun 11 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.180-1
+- New upstream release.
+  elflint: Allow SHF_EXCLUDE as generic section flag when --gnu is given.
+  libdw, readelf: Handle GCC LTO .gnu.debuglto_ prefix.
+  libdw: Use correct CU to resolve file names in dwarf_decl_file.
+  libdwfl: Handle debugaltlink in dwfl_standard_find_debuginfo.
+  size: Also obey radix printing for bsd format.
+  nm: Explicitly print weak 'V' or 'T' and common 'C' symbols.
+
 * Thu Apr 30 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.179-2
 - Add elfutils-0.179-debug-client-alt-link.patch
 
