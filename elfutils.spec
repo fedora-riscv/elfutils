@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.180
-%global baserelease 2
+%global baserelease 3
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -252,6 +252,14 @@ such servers to download those files on demand.
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
+# This package uses top level ASM constructs which are incompatible with LTO.
+# Top level ASMs are often used to implement symbol versioning.  gcc-10
+# introduces a new mechanism for symbol versioning which works with LTO.
+# Converting packages to use that mechanism instead of toplevel ASMs is
+# recommended.
+# Disable LTO
+%define _lto_cflags %{nil}
+
 # Remove -Wall from default flags.  The makefiles enable enough warnings
 # themselves, and they use -Werror.  Appending -Wall defeats the cases where
 # the makefiles disable some specific warnings for specific code.
@@ -423,6 +431,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Wed Jul  1 2020 Jeff Law <law@redhat.com> - 0.180-2
+- Disable LTO
+
 * Thu Jun 11 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.180-1
 - New upstream release.
   elflint: Allow SHF_EXCLUDE as generic section flag when --gnu is given.
