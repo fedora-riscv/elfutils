@@ -55,6 +55,7 @@ BuildRequires: curl
 %endif
 
 # Patches
+Patch1: elfutils-0.180-mhd-result.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -246,6 +247,7 @@ such servers to download those files on demand.
 %setup -q
 
 # Apply patches
+%patch1 -p1 -b .mhd_result
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -431,6 +433,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Fri Jul  3 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.180-3
+- Add elfutils-0.180-mhd-result.patch
+
 * Wed Jul  1 2020 Jeff Law <law@redhat.com> - 0.180-2
 - Disable LTO
 
