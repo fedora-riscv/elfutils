@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.180
-%global baserelease 3
+%global baserelease 4
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -274,11 +274,11 @@ RPM_OPT_FLAGS="${RPM_OPT_FLAGS} -Wformat"
 trap 'cat config.log' EXIT
 %configure CFLAGS="$RPM_OPT_FLAGS -fexceptions"
 trap '' EXIT
-make -s %{?_smp_mflags}
+%make_build -s
 
 %install
 rm -rf ${RPM_BUILD_ROOT}
-make -s install DESTDIR=${RPM_BUILD_ROOT}
+%make_install -s
 
 chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/lib*.so*
 
@@ -297,7 +297,7 @@ touch ${RPM_BUILD_ROOT}%{_localstatedir}/cache/debuginfod/debuginfod.sqlite
 # Record some build root versions in build.log
 uname -r; rpm -q binutils gcc glibc
 
-make -s %{?_smp_mflags} check || (cat tests/test-suite.log; false)
+%make_build -s check || (cat tests/test-suite.log; false)
 
 # Only the latest Fedora and EPEL have these scriptlets,
 # older Fedora and plain RHEL don't.
@@ -433,6 +433,10 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Mon Jul 13 2020 Tom Stellard <tstellar@redhat.com> - 0.180-4
+- Use make macros
+- https://fedoraproject.org/wiki/Changes/UseMakeBuildInstallMacro
+
 * Fri Jul  3 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.180-3
 - Add elfutils-0.180-mhd-result.patch
 
