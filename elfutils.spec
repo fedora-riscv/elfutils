@@ -40,7 +40,7 @@ BuildRequires: pkgconfig(libarchive) >= 3.1.2
 
 # For tests need to bunzip2 test files.
 BuildRequires: bzip2
-# For the run-debuginfod-find.sh test case in %check for /usr/sbin/ss
+# For the run-debuginfod-find.sh test case in %%check for /usr/sbin/ss
 BuildRequires: iproute
 BuildRequires: bsdtar
 BuildRequires: curl
