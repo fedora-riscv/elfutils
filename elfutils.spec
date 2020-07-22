@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.180
-%global baserelease 4
+%global baserelease 5
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -101,25 +101,13 @@ Recommends: elfutils-debuginfod-client-devel%{depsuffix} = %{version}-%{release}
 %else
 Requires: elfutils-debuginfod-client-devel%{depsuffix} = %{version}-%{release}
 %endif
+Obsoletes: elfutils-devel-static%{depsuffix} < 0.180-5
 
 %description devel
 The elfutils-devel package contains the libraries to create
 applications for handling compiled objects.  libdw provides access
 to the DWARF debugging information.  libasm provides a programmable
 assembler interface.
-
-%package devel-static
-Summary: Static archives to handle compiled objects
-License: GPLv2+ or LGPLv3+
-%if 0%{!?_isa:1}
-Provides: elfutils-devel-static%{depsuffix} = %{version}-%{release}
-%endif
-Requires: elfutils-devel%{depsuffix} = %{version}-%{release}
-Requires: elfutils-libelf-devel-static%{depsuffix} = %{version}-%{release}
-
-%description devel-static
-The elfutils-devel-static package contains the static archives
-with the code to handle compiled objects.
 
 %package libelf
 Summary: Library to read and write ELF files
@@ -143,24 +131,13 @@ Provides: elfutils-libelf-devel%{depsuffix} = %{version}-%{release}
 %endif
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Obsoletes: libelf-devel <= 0.8.2-2
+Obsoletes: elfutils-libelf-devel-static%{depsuffix} < 0.180-5
 
 %description libelf-devel
 The elfutils-libelf-devel package contains the libraries to create
 applications for handling compiled objects.  libelf allows you to
 access the internals of the ELF object file format, so you can see the
 different sections of an ELF file.
-
-%package libelf-devel-static
-Summary: Static archive of libelf
-License: GPLv2+ or LGPLv3+
-%if 0%{!?_isa:1}
-Provides: elfutils-libelf-devel-static%{depsuffix} = %{version}-%{release}
-%endif
-Requires: elfutils-libelf-devel%{depsuffix} = %{version}-%{release}
-
-%description libelf-devel-static
-The elfutils-libelf-static package contains the static archive
-for libelf.
 
 %if %{provide_yama_scope}
 %package default-yama-scope
@@ -281,6 +258,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %make_install -s
 
 chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/lib*.so*
+# We don't want the static libraries
+rm ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/lib{elf,dw,asm}.a
+
 
 %find_lang %{name}
 
@@ -368,10 +348,6 @@ fi
 %{_libdir}/libdw.so
 %{_libdir}/pkgconfig/libdw.pc
 
-%files devel-static
-%{_libdir}/libdw.a
-%{_libdir}/libasm.a
-
 %files -f %{name}.lang libelf
 %{!?_licensedir:%global license %%doc}
 %license COPYING-GPLV2 COPYING-LGPLV3
@@ -385,9 +361,6 @@ fi
 %{_libdir}/libelf.so
 %{_libdir}/pkgconfig/libelf.pc
 %{_mandir}/man3/elf_*.3*
-
-%files libelf-devel-static
-%{_libdir}/libelf.a
 
 %if %{provide_yama_scope}
 %files default-yama-scope
@@ -433,6 +406,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Wed Jul 22 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.180-5
+- Remove elfutils-libelf-devel-static and elfutils-devel-static subpackages.
+
 * Mon Jul 13 2020 Tom Stellard <tstellar@redhat.com> - 0.180-4
 - Use make macros
 - https://fedoraproject.org/wiki/Changes/UseMakeBuildInstallMacro
