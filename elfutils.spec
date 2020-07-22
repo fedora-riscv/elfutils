@@ -413,7 +413,6 @@ fi
 %{_bindir}/debuginfod
 %config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/sysconfig/debuginfod
 %{_unitdir}/debuginfod.service
-%{_sysconfdir}/sysconfig/debuginfod
 %{_mandir}/man8/debuginfod.8*
 
 %dir %attr(0700,debuginfod,debuginfod) %{_localstatedir}/cache/debuginfod
@@ -433,6 +432,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Wed Jul 22 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.180-5
+- Remove duplicate listing of sysconfig/debuginfod (config) file.
+
 * Mon Jul 13 2020 Tom Stellard <tstellar@redhat.com> - 0.180-4
 - Use make macros
 - https://fedoraproject.org/wiki/Changes/UseMakeBuildInstallMacro
