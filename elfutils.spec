@@ -101,7 +101,7 @@ Recommends: elfutils-debuginfod-client-devel%{depsuffix} = %{version}-%{release}
 %else
 Requires: elfutils-debuginfod-client-devel%{depsuffix} = %{version}-%{release}
 %endif
-Obsoletes: elfutils-devel-static%{depsuffix} < 0.180-5
+Obsoletes: elfutils-devel-static < 0.180-5
 
 %description devel
 The elfutils-devel package contains the libraries to create
@@ -131,7 +131,7 @@ Provides: elfutils-libelf-devel%{depsuffix} = %{version}-%{release}
 %endif
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Obsoletes: libelf-devel <= 0.8.2-2
-Obsoletes: elfutils-libelf-devel-static%{depsuffix} < 0.180-5
+Obsoletes: elfutils-libelf-devel-static < 0.180-5
 
 %description libelf-devel
 The elfutils-libelf-devel package contains the libraries to create
