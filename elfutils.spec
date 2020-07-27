@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.180
-%global baserelease 5
+%global baserelease 6
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -405,6 +405,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Mon Jul 27 2020 Fedora Release Engineering <releng@fedoraproject.org> - 0.180-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
+
 * Wed Jul 22 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.180-5
 - Remove elfutils-libelf-devel-static and elfutils-devel-static subpackages.
 - Remove duplicate listing of sysconfig/debuginfod (config) file.
