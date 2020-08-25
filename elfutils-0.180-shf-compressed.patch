@@ -1,0 +1,68 @@
+commit 55c5c9a568ed707bcea1388bf3a525212d8cf4b8
+Author: Mark Wielaard <mark@klomp.org>
+Date:   Wed Aug 19 23:41:24 2020 +0200
+
+    libelf: Fixup SHF_COMPRESSED sh_addralign in elf_update if necessary.
+    
+    In elf_getdata.c we have the following to compensate for possibly
+    bad sh_addralign values of compressed sections:
+    
+          /* Compressed data has a header, but then compressed data.
+             Make sure to set the alignment of the header explicitly,
+             don't trust the file alignment for the section, it is
+             often wrong.  */
+          if ((flags & SHF_COMPRESSED) != 0)
+            {
+              entsize = 1;
+              align = __libelf_type_align (elf->class, ELF_T_CHDR);
+            }
+    
+    Which makes sure the d_data alignment is correct for the Chdr struct
+    at the start of the compressed section.
+    
+    But this means that if a user just reads such a compressed section
+    without changing it, and then tries to write it out again using
+    elf_update they get an error message about d_align and sh_addralign
+    being out of sync.
+    
+    We already correct obviously incorrect sh_entsize fields.
+    Do the same for the sh_addralign field of a SHF_COMPRESSED section.
+    
+    Signed-off-by: Mark Wielaard <mark@klomp.org>
+
+diff --git a/libelf/ChangeLog b/libelf/ChangeLog
+index 8f6d2d2d..77044c1c 100644
+--- a/libelf/ChangeLog
++++ b/libelf/ChangeLog
+@@ -1,3 +1,8 @@
++2020-08-19  Mark Wielaard  <mark@klomp.org>
++
++	* elf32_updatenull.c (updatenull_wrlock): Fixup the sh_addralign
++	of an SHF_COMPRESSED section if necessary.
++
+ 2020-06-04  Mark Wielaard  <mark@klomp.org>
+ 
+ 	* elf.h: Update from glibc.
+diff --git a/libelf/elf32_updatenull.c b/libelf/elf32_updatenull.c
+index 5f3cdbf6..d0d4d1eb 100644
+--- a/libelf/elf32_updatenull.c
++++ b/libelf/elf32_updatenull.c
+@@ -267,6 +267,18 @@ __elfw2(LIBELFBITS,updatenull_wrlock) (Elf *elf, int *change_bop, size_t shnum)
+ 	      update_if_changed (shdr->sh_entsize, sh_entsize,
+ 				 scn->shdr_flags);
+ 
++	      /* Likewise for the alignment of a compressed section.
++	         For a SHF_COMPRESSED section set the correct
++	         sh_addralign value, which must match the d_align of
++	         the data (see __libelf_set_rawdata in elf_getdata.c).  */
++	      if ((shdr->sh_flags & SHF_COMPRESSED) != 0)
++		{
++		  sh_align = __libelf_type_align (ELFW(ELFCLASS,LIBELFBITS),
++						  ELF_T_CHDR);
++		  update_if_changed (shdr->sh_addralign, sh_align,
++				     scn->shdr_flags);
++		}
++
+ 	      if (scn->data_read == 0
+ 		  && __libelf_set_rawdata_wrlock (scn) != 0)
+ 		/* Something went wrong.  The error value is already set.  */
