@@ -1,6 +1,6 @@
 Name: elfutils
-Version: 0.180
-%global baserelease 7
+Version: 0.181
+%global baserelease 1
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -55,8 +55,6 @@ BuildRequires: curl
 %endif
 
 # Patches
-Patch1: elfutils-0.180-mhd-result.patch
-Patch2: elfutils-0.180-shf-compressed.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -225,8 +223,6 @@ such servers to download those files on demand.
 %setup -q
 
 # Apply patches
-%patch1 -p1 -b .mhd_result
-%patch2 -p1 -b .shf_compressed
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -407,6 +403,20 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Tue Sep  8 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.181-1
+- Upgrade to upstream 0.181
+  - libelf: elf_update now compensates (fixes up) a bad sh_addralign
+    for SHF_COMPRESSED sections.
+  - libdebuginfod: configure now takes --enable-libdebuginfod=dummy or
+    --disable-libdebuginfod for bootstrapping.
+    DEBUGINFOD_URLS now accepts "scheme-free" urls
+    (guessing at what the user meant, either http:// or file://)
+  - readelf, elflint: Handle aarch64 bti, pac bits in dynamic table and
+    gnu property notes.
+  - libdw, readelf: Recognize DW_CFA_AARCH64_negate_ra_state. Allows
+    unwinding on arm64 for code that is compiled for PAC
+    (Pointer Authentication Code) as long as it isn't enabled.
+
 * Tue Aug 25 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.180-7
 - Add elfutils-0.180-shf-compressed.patch
 
