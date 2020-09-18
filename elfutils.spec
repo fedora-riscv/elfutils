@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.181
-%global baserelease 1
+%global baserelease 2
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -31,6 +31,7 @@ BuildRequires: flex
 BuildRequires: zlib-devel
 BuildRequires: bzip2-devel
 BuildRequires: xz-devel
+BuildRequires: libzstd-devel
 
 # For debuginfod
 BuildRequires: pkgconfig(libmicrohttpd) >= 0.9.33
@@ -40,10 +41,14 @@ BuildRequires: pkgconfig(libarchive) >= 3.1.2
 
 # For tests need to bunzip2 test files.
 BuildRequires: bzip2
+BuildRequires: zstd
 # For the run-debuginfod-find.sh test case in %%check for /usr/sbin/ss
 BuildRequires: iproute
 BuildRequires: bsdtar
 BuildRequires: curl
+
+BuildRequires: automake
+BuildRequires: autoconf
 
 %global _gnu %{nil}
 %global _program_prefix eu-
@@ -55,6 +60,7 @@ BuildRequires: curl
 %endif
 
 # Patches
+Patch1: elfutils-0.181-zstd.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -246,6 +252,9 @@ such servers to download those files on demand.
 %setup -q
 
 # Apply patches
+%patch1 -p1 -b .zstd
+
+autoreconf -f -v -i
 
 # In case the above patches added any new test scripts, make sure they
 # are executable.
@@ -430,6 +439,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Fri Sep 18 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.181-2
+- Add ZSTD support elfutils-0.181-zstd.patch.
+
 * Tue Sep  8 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.181-1
 - Upgrade to upstream 0.181
   - libelf: elf_update now compensates (fixes up) a bad sh_addralign

@@ -1,0 +1,348 @@
+commit c5b0a640f0f7d2a195b822bcd88bb379476dbb97
+Author: Mark Wielaard <mark@klomp.org>
+Date:   Fri Sep 18 12:49:29 2020 +0200
+
+    zstd support
+
+diff --git a/config/elfutils.spec.in b/config/elfutils.spec.in
+index 95f63f5a..37af1b07 100644
+--- a/config/elfutils.spec.in
++++ b/config/elfutils.spec.in
+@@ -24,6 +24,7 @@ BuildRequires: flex
+ BuildRequires: zlib-devel
+ BuildRequires: bzip2-devel
+ BuildRequires: xz-devel
++BuildRequires: libzstd-devel
+ 
+ # For debuginfod
+ BuildRequires: pkgconfig(libmicrohttpd) >= 0.9.33
+@@ -33,6 +34,7 @@ BuildRequires: pkgconfig(libarchive) >= 3.1.2
+ 
+ # For tests need to bunzip2 test files.
+ BuildRequires: bzip2
++BuildRequires: zstd
+ # For the run-debuginfod-find.sh test case in %check for /usr/sbin/ss
+ BuildRequires: iproute
+ BuildRequires: bsdtar
+diff --git a/config/libdw.pc.in b/config/libdw.pc.in
+index 3fc283db..2e83a432 100644
+--- a/config/libdw.pc.in
++++ b/config/libdw.pc.in
+@@ -17,6 +17,6 @@ Requires: libelf = @VERSION@
+ 
+ # We support various compressed ELF images, but don't export any of the
+ # data structures or functions.  zlib (gz) is always required, bzip2 (bz2)
+-# and lzma (xz) are optional.  But bzip2 doesn't have a pkg-config file.
+-Requires.private: zlib @LIBLZMA@
++# lzma (xz) and zstd () are optional. But bzip2 doesn't have a pkg-config file.
++Requires.private: zlib @LIBLZMA@ @LIBZSTD@
+ Libs.private: @BZ2_LIB@
+diff --git a/configure.ac b/configure.ac
+index bf833872..1b794df3 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -397,8 +397,8 @@ eu_ZIPLIB(zlib,ZLIB,z,gzdirect,gzip)
+ AS_IF([test "x$with_zlib" = xno], [AC_MSG_ERROR([zlib not found but is required])])
+ LIBS="$save_LIBS"
+ 
+-dnl Test for bzlib and xz/lzma, gives BZLIB/LZMALIB .am
+-dnl conditional and config.h USE_BZLIB/USE_LZMALIB #define.
++dnl Test for bzlib and xz/lzma/zstd, gives BZLIB/LZMALIB/ZSTD .am
++dnl conditional and config.h USE_BZLIB/USE_LZMALIB/USE_ZSTD #define.
+ save_LIBS="$LIBS"
+ LIBS=
+ eu_ZIPLIB(bzlib,BZLIB,bz2,BZ2_bzdopen,bzip2)
+@@ -408,6 +408,9 @@ AC_SUBST([BZ2_LIB])
+ eu_ZIPLIB(lzma,LZMA,lzma,lzma_auto_decoder,[LZMA (xz)])
+ AS_IF([test "x$with_lzma" = xyes], [LIBLZMA="liblzma"], [LIBLZMA=""])
+ AC_SUBST([LIBLZMA])
++eu_ZIPLIB(zstd,ZSTD,zstd,ZSTD_decompress,[ZSTD (zst)])
++AS_IF([test "x$with_zstd" = xyes], [LIBZSTD="libzstd"], [LIBLZSTD=""])
++AC_SUBST([LIBZSTD])
+ zip_LIBS="$LIBS"
+ LIBS="$save_LIBS"
+ AC_SUBST([zip_LIBS])
+@@ -677,6 +680,10 @@ if test "$HAVE_BUNZIP2" = "no"; then
+   AC_MSG_WARN([No bunzip2, needed to run make check])
+ fi
+ 
++# For tests that need to use zstd compression
++AC_CHECK_PROG(HAVE_ZSTD, zstd, yes, no)
++AM_CONDITIONAL([HAVE_ZSTD],[test "x$HAVE_ZSTD" = "xyes"])
++
+ # Look for libcurl for libdebuginfod minimum version as per rhel7.
+ AC_ARG_ENABLE([libdebuginfod],AC_HELP_STRING([--enable-libdebuginfod], [Build debuginfod client library (can be =dummy)]))
+ AS_IF([test "x$enable_libdebuginfod" != "xno"], [
+@@ -742,6 +749,7 @@ AC_MSG_NOTICE([
+     gzip support                       : ${with_zlib}
+     bzip2 support                      : ${with_bzlib}
+     lzma/xz support                    : ${with_lzma}
++    zstd support                       : ${with_zstd}
+     libstdc++ demangle support         : ${enable_demangler}
+     File textrel check                 : ${enable_textrelcheck}
+     Symbol versioning                  : ${enable_symbol_versioning}
+@@ -759,6 +767,7 @@ AC_MSG_NOTICE([
+ 
+   EXTRA TEST FEATURES (used with make check)
+     have bunzip2 installed (required)  : ${HAVE_BUNZIP2}
++    have zstd installed                : ${HAVE_ZSTD}
+     debug branch prediction            : ${use_debugpred}
+     gprof support                      : ${use_gprof}
+     gcov support                       : ${use_gcov}
+diff --git a/libdwfl/Makefile.am b/libdwfl/Makefile.am
+index 1de05492..a0013e41 100644
+--- a/libdwfl/Makefile.am
++++ b/libdwfl/Makefile.am
+@@ -78,6 +78,9 @@ endif
+ if LZMA
+ libdwfl_a_SOURCES += lzma.c
+ endif
++if ZSTD
++libdwfl_a_SOURCES += zstd.c
++endif
+ if LIBDEBUGINFOD
+ libdwfl_a_SOURCES += debuginfod-client.c
+ endif
+diff --git a/libdwfl/gzip.c b/libdwfl/gzip.c
+index e9988cc2..ba8ecfba 100644
+--- a/libdwfl/gzip.c
++++ b/libdwfl/gzip.c
+@@ -48,6 +48,12 @@
+ # define inflateInit(z)	lzma_auto_decoder (z, 1 << 30, 0)
+ # define do_inflate(z)	lzma_code (z, LZMA_RUN)
+ # define inflateEnd(z)	lzma_end (z)
++#elif defined ZSTD
++# define USE_INFLATE	1
++# include <zstd.h>
++# define unzip		__libdw_unzstd
++# define DWFL_E_ZLIB	DWFL_E_ZSTD
++# define MAGIC		"\x28\xb5\x2f\xfd"
+ #elif defined BZLIB
+ # define USE_INFLATE	1
+ # include <bzlib.h>
+@@ -119,6 +125,7 @@ fail (struct unzip_state *state, Dwfl_Error failure)
+   return failure;
+ }
+ 
++#ifndef ZSTD
+ static inline Dwfl_Error
+ zlib_fail (struct unzip_state *state, int result)
+ {
+@@ -132,6 +139,7 @@ zlib_fail (struct unzip_state *state, int result)
+       return fail (state, DWFL_E_ZLIB);
+     }
+ }
++#endif
+ 
+ #if !USE_INFLATE
+ static Dwfl_Error
+@@ -197,7 +205,7 @@ unzip (int fd, off_t start_offset,
+ 
+ 	  ssize_t n = pread_retry (fd, state.input_buffer, READ_SIZE, start_offset);
+ 	  if (unlikely (n < 0))
+-	    return zlib_fail (&state, Z (ERRNO));
++	    return fail (&state, DWFL_E_ERRNO);
+ 
+ 	  state.input_pos = n;
+ 	  mapped = state.input_buffer;
+@@ -223,7 +231,74 @@ unzip (int fd, off_t start_offset,
+     /* Not a compressed file.  */
+     return DWFL_E_BADELF;
+ 
+-#if USE_INFLATE
++#ifdef ZSTD
++  /* special case for libzstd since it is slightly different from the
++     API provided by bzlib and liblzma.  */
++
++  void *next_in = mapped;
++  size_t avail_in = state.mapped_size;
++  void *next_out = NULL;
++  size_t avail_out = 0;
++  size_t total_out = 0;
++
++  size_t result;
++  ZSTD_DCtx *dctx = ZSTD_createDCtx();
++  if (dctx == NULL)
++    return fail (&state, DWFL_E_NOMEM);
++
++  do
++    {
++      if (avail_in == 0 && state.input_buffer != NULL)
++	{
++	  ssize_t n = pread_retry (fd, state.input_buffer, READ_SIZE,
++				   start_offset + state.input_pos);
++	  if (unlikely (n < 0))
++	    {
++	      ZSTD_freeDCtx (dctx);
++	      return fail (&state, DWFL_E_ERRNO);
++	    }
++	  next_in = state.input_buffer;
++	  avail_in = n;
++	  state.input_pos += n;
++	}
++      if (avail_out == 0)
++	{
++	  ptrdiff_t pos = (void *) next_out - state.buffer;
++	  if (!bigger_buffer (&state, avail_in))
++	    {
++	      ZSTD_freeDCtx (dctx);
++	      return fail (&state, DWFL_E_NOMEM);
++	    }
++	  next_out = state.buffer + pos;
++	  avail_out = state.size - pos;
++	}
++
++      ZSTD_inBuffer input = { next_in, avail_in, 0 };
++      ZSTD_outBuffer output = { next_out, avail_out, 0 };
++      result = ZSTD_decompressStream (dctx, &output, &input);
++
++      if (! ZSTD_isError (result))
++	{
++	  total_out += output.pos;
++	  next_out += output.pos;
++	  avail_out -= output.pos;
++	  next_in += input.pos;
++	  avail_in -= input.pos;
++	}
++
++      if (result == 0)
++	break;
++    }
++  while (avail_in > 0 && ! ZSTD_isError (result));
++
++  ZSTD_freeDCtx (dctx);
++
++  if (ZSTD_isError (result))
++    return fail (&state, DWFL_E_ZSTD);
++
++  smaller_buffer (&state, total_out);
++
++#elif USE_INFLATE
+ 
+   /* This style actually only works with bzlib and liblzma.
+      The stupid zlib interface has nothing to grok the
+diff --git a/libdwfl/libdwflP.h b/libdwfl/libdwflP.h
+index ad6779ad..4c6fcb28 100644
+--- a/libdwfl/libdwflP.h
++++ b/libdwfl/libdwflP.h
+@@ -61,6 +61,7 @@ typedef struct Dwfl_Process Dwfl_Process;
+   DWFL_ERROR (ZLIB, N_("gzip decompression failed"))			      \
+   DWFL_ERROR (BZLIB, N_("bzip2 decompression failed"))			      \
+   DWFL_ERROR (LZMA, N_("LZMA decompression failed"))			      \
++  DWFL_ERROR (ZSTD, N_("zstd decompression failed"))			      \
+   DWFL_ERROR (UNKNOWN_MACHINE, N_("no support library found for machine"))    \
+   DWFL_ERROR (NOREL, N_("Callbacks missing for ET_REL file"))		      \
+   DWFL_ERROR (BADRELTYPE, N_("Unsupported relocation type"))		      \
+@@ -612,6 +613,10 @@ extern Dwfl_Error __libdw_unlzma (int fd, off_t start_offset,
+ 				  void *mapped, size_t mapped_size,
+ 				  void **whole, size_t *whole_size)
+   internal_function;
++extern Dwfl_Error __libdw_unzstd (int fd, off_t start_offset,
++				  void *mapped, size_t mapped_size,
++				  void **whole, size_t *whole_size)
++  internal_function;
+ 
+ /* Skip the image header before a file image: updates *START_OFFSET.  */
+ extern Dwfl_Error __libdw_image_header (int fd, off_t *start_offset,
+diff --git a/libdwfl/open.c b/libdwfl/open.c
+index 35fc5283..77bd2bd9 100644
+--- a/libdwfl/open.c
++++ b/libdwfl/open.c
+@@ -44,6 +44,10 @@
+ # define __libdw_unlzma(...)	DWFL_E_BADELF
+ #endif
+ 
++#if !USE_ZSTD
++# define __libdw_unzstd(...)	DWFL_E_BADELF
++#endif
++
+ /* Consumes and replaces *ELF only on success.  */
+ static Dwfl_Error
+ decompress (int fd __attribute__ ((unused)), Elf **elf)
+@@ -64,6 +68,8 @@ decompress (int fd __attribute__ ((unused)), Elf **elf)
+     error = __libdw_bunzip2 (fd, offset, mapped, mapped_size, &buffer, &size);
+   if (error == DWFL_E_BADELF)
+     error = __libdw_unlzma (fd, offset, mapped, mapped_size, &buffer, &size);
++  if (error == DWFL_E_BADELF)
++    error = __libdw_unzstd (fd, offset, mapped, mapped_size, &buffer, &size);
+ 
+   if (error == DWFL_E_NOERROR)
+     {
+diff --git a/libdwfl/zstd.c b/libdwfl/zstd.c
+new file mode 100644
+index 00000000..dc4d5238
+--- /dev/null
++++ b/libdwfl/zstd.c
+@@ -0,0 +1,4 @@
++/* libzstd is pretty close to zlib and bzlib.  */
++
++#define ZSTD
++#include "gzip.c"
+diff --git a/tests/Makefile.am b/tests/Makefile.am
+index 4629ce64..9d0707da 100644
+--- a/tests/Makefile.am
++++ b/tests/Makefile.am
+@@ -204,6 +204,10 @@ if LZMA
+ TESTS += run-readelf-s.sh run-dwflsyms.sh
+ endif
+ 
++if HAVE_ZSTD
++TESTS += run-readelf-compressed-zstd.sh
++endif
++
+ if HAVE_LIBASM
+ check_PROGRAMS += $(asm_TESTS)
+ TESTS += $(asm_TESTS) run-disasm-bpf.sh
+@@ -256,6 +260,7 @@ EXTRA_DIST = run-arextract.sh run-arsymtest.sh run-ar.sh \
+ 	     run-nm-syms.sh testfilesyms32.bz2 testfilesyms64.bz2 \
+ 	     run-nm-self.sh run-readelf-self.sh run-readelf-info-plus.sh \
+ 	     run-readelf-compressed.sh \
++	     run-readelf-compressed-zstd.sh \
+ 	     run-readelf-const-values.sh testfile-const-values.debug.bz2 \
+ 	     run-addrcfi.sh run-dwarfcfi.sh \
+ 	     testfile11-debugframe.bz2 testfile12-debugframe.bz2 \
+diff --git a/tests/run-readelf-compressed-zstd.sh b/tests/run-readelf-compressed-zstd.sh
+new file mode 100755
+index 00000000..96208092
+--- /dev/null
++++ b/tests/run-readelf-compressed-zstd.sh
+@@ -0,0 +1,39 @@
++#! /bin/sh
++# Copyright (C) 2018 Red Hat, Inc.
++# This file is part of elfutils.
++#
++# This file is free software; you can redistribute it and/or modify
++# it under the terms of the GNU General Public License as published by
++# the Free Software Foundation; either version 3 of the License, or
++# (at your option) any later version.
++#
++# elfutils is distributed in the hope that it will be useful, but
++# WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++# GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with this program.  If not, see <http://www.gnu.org/licenses/>.
++
++. $srcdir/test-subr.sh
++
++if ! grep -q -F '#define USE_ZSTD' ${abs_top_builddir}/config.h; then
++  echo "elfutils built without zstd support"
++  exit 77
++fi
++
++# See run-strip-reloc.sh
++testfiles hello_i386.ko
++
++tempfiles hello_i386.ko.zst readelf.out.1 readelf.out.2
++
++testrun ${abs_top_builddir}/src/readelf -a hello_i386.ko > readelf.out.1
++zstd hello_i386.ko
++testrun ${abs_top_builddir}/src/readelf -a hello_i386.ko.zst > readelf.out.2
++
++diff -u readelf.out.1 readelf.out.2
++if [ $? != 0 ]; then
++  exit 1;
++fi
++
++exit 0
