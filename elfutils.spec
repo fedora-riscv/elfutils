@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.181
-%global baserelease 2
+%global baserelease 3
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -61,6 +61,7 @@ BuildRequires: autoconf
 
 # Patches
 Patch1: elfutils-0.181-zstd.patch
+Patch2: elfutils-0.181-array-param.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -253,6 +254,7 @@ such servers to download those files on demand.
 
 # Apply patches
 %patch1 -p1 -b .zstd
+%patch2 -p1 -b .array_param
 
 autoreconf -f -v -i
 
@@ -439,6 +441,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Mon Oct 19 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.181-3
+- Add elfutils-0.181-array-param.patch.
+
 * Fri Sep 18 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.181-2
 - Add ZSTD support elfutils-0.181-zstd.patch.
 
