@@ -1,0 +1,472 @@
+commit 09b034419ef16cf39abcd7a2df9d0fe704176d13
+Author: Mark Wielaard <mark@klomp.org>
+Date:   Sat Oct 17 21:22:22 2020 +0200
+
+    libebl: Remove unused ebl_syscall_abi.
+    
+    GCC11 -Warray-parameter warned about ebl_syscall_abi being inconsistently
+    declared (once with a pointer to int, once with an array of 6 int elements).
+    Since ebl_syscall_abi isn't actually used and was only implemented for
+    3 backends without any tests just remove it.
+    
+    Signed-off-by: Mark Wielaard <mark@klomp.org>
+
+diff --git a/backends/Makefile.am b/backends/Makefile.am
+index f4052125..3849f457 100644
+--- a/backends/Makefile.am
++++ b/backends/Makefile.am
+@@ -40,13 +40,13 @@ modules = i386 sh x86_64 ia64 alpha arm aarch64 sparc ppc ppc64 s390 \
+ 	  tilegx m68k bpf riscv csky
+ 
+ i386_SRCS = i386_init.c i386_symbol.c i386_corenote.c i386_cfi.c \
+-	    i386_retval.c i386_regs.c i386_auxv.c i386_syscall.c \
++	    i386_retval.c i386_regs.c i386_auxv.c \
+ 	    i386_initreg.c i386_unwind.c
+ 
+ sh_SRCS = sh_init.c sh_symbol.c sh_corenote.c sh_regs.c sh_retval.c
+ 
+ x86_64_SRCS = x86_64_init.c x86_64_symbol.c x86_64_corenote.c x86_64_cfi.c \
+-	      x86_64_retval.c x86_64_regs.c x86_64_syscall.c x86_64_initreg.c \
++	      x86_64_retval.c x86_64_regs.c x86_64_initreg.c \
+ 	      x86_64_unwind.c x32_corenote.c
+ 
+ 
+@@ -67,7 +67,7 @@ sparc_SRCS = sparc_init.c sparc_symbol.c sparc_regs.c sparc_retval.c \
+              sparc_cfi.c sparc_initreg.c
+ 
+ ppc_SRCS = ppc_init.c ppc_symbol.c ppc_retval.c ppc_regs.c \
+-	   ppc_corenote.c ppc_auxv.c ppc_attrs.c ppc_syscall.c \
++	   ppc_corenote.c ppc_auxv.c ppc_attrs.c \
+ 	   ppc_cfi.c ppc_initreg.c
+ 
+ ppc64_SRCS = ppc64_init.c ppc64_symbol.c ppc64_retval.c ppc64_corenote.c \
+diff --git a/backends/i386_init.c b/backends/i386_init.c
+index 3f6b9ed1..579e5fad 100644
+--- a/backends/i386_init.c
++++ b/backends/i386_init.c
+@@ -52,7 +52,6 @@ i386_init (Elf *elf __attribute__ ((unused)),
+   HOOK (eh, debugscn_p);
+   HOOK (eh, return_value_location);
+   HOOK (eh, register_info);
+-  HOOK (eh, syscall_abi);
+   HOOK (eh, auxv_info);
+   HOOK (eh, disasm);
+   HOOK (eh, abi_cfi);
+diff --git a/backends/i386_syscall.c b/backends/i386_syscall.c
+deleted file mode 100644
+index 535dcd86..00000000
+--- a/backends/i386_syscall.c
++++ /dev/null
+@@ -1,50 +0,0 @@
+-/* Linux/i386 system call ABI in DWARF register numbers.
+-   Copyright (C) 2008 Red Hat, Inc.
+-   This file is part of elfutils.
+-
+-   This file is free software; you can redistribute it and/or modify
+-   it under the terms of either
+-
+-     * the GNU Lesser General Public License as published by the Free
+-       Software Foundation; either version 3 of the License, or (at
+-       your option) any later version
+-
+-   or
+-
+-     * the GNU General Public License as published by the Free
+-       Software Foundation; either version 2 of the License, or (at
+-       your option) any later version
+-
+-   or both in parallel, as here.
+-
+-   elfutils is distributed in the hope that it will be useful, but
+-   WITHOUT ANY WARRANTY; without even the implied warranty of
+-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-   General Public License for more details.
+-
+-   You should have received copies of the GNU General Public License and
+-   the GNU Lesser General Public License along with this program.  If
+-   not, see <http://www.gnu.org/licenses/>.  */
+-
+-#ifdef HAVE_CONFIG_H
+-# include <config.h>
+-#endif
+-
+-#define BACKEND i386_
+-#include "libebl_CPU.h"
+-
+-int
+-i386_syscall_abi (Ebl *ebl __attribute__ ((unused)),
+-		  int *sp, int *pc, int *callno, int args[6])
+-{
+-  *sp = 4;			/* %esp */
+-  *pc = 8;			/* %eip */
+-  *callno = 0;			/* %eax */
+-  args[0] = 3;			/* %ebx */
+-  args[1] = 1;			/* %ecx */
+-  args[2] = 2;			/* %edx */
+-  args[3] = 6;			/* %esi */
+-  args[4] = 7;			/* %edi */
+-  args[5] = 5;			/* %ebp */
+-  return 0;
+-}
+diff --git a/backends/ppc64_init.c b/backends/ppc64_init.c
+index f509aef6..ffc9842c 100644
+--- a/backends/ppc64_init.c
++++ b/backends/ppc64_init.c
+@@ -58,7 +58,6 @@ ppc64_init (Elf *elf __attribute__ ((unused)),
+   HOOK (eh, bss_plt_p);
+   HOOK (eh, return_value_location);
+   HOOK (eh, register_info);
+-  HOOK (eh, syscall_abi);
+   HOOK (eh, core_note);
+   HOOK (eh, auxv_info);
+   HOOK (eh, check_object_attribute);
+diff --git a/backends/ppc_init.c b/backends/ppc_init.c
+index ac440ab2..08468f8f 100644
+--- a/backends/ppc_init.c
++++ b/backends/ppc_init.c
+@@ -54,7 +54,6 @@ ppc_init (Elf *elf __attribute__ ((unused)),
+   HOOK (eh, bss_plt_p);
+   HOOK (eh, return_value_location);
+   HOOK (eh, register_info);
+-  HOOK (eh, syscall_abi);
+   HOOK (eh, core_note);
+   HOOK (eh, auxv_info);
+   HOOK (eh, check_object_attribute);
+diff --git a/backends/ppc_syscall.c b/backends/ppc_syscall.c
+deleted file mode 100644
+index b1b9c52b..00000000
+--- a/backends/ppc_syscall.c
++++ /dev/null
+@@ -1,53 +0,0 @@
+-/* Linux/PPC system call ABI in DWARF register numbers.
+-   Copyright (C) 2008 Red Hat, Inc.
+-   This file is part of elfutils.
+-
+-   This file is free software; you can redistribute it and/or modify
+-   it under the terms of either
+-
+-     * the GNU Lesser General Public License as published by the Free
+-       Software Foundation; either version 3 of the License, or (at
+-       your option) any later version
+-
+-   or
+-
+-     * the GNU General Public License as published by the Free
+-       Software Foundation; either version 2 of the License, or (at
+-       your option) any later version
+-
+-   or both in parallel, as here.
+-
+-   elfutils is distributed in the hope that it will be useful, but
+-   WITHOUT ANY WARRANTY; without even the implied warranty of
+-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-   General Public License for more details.
+-
+-   You should have received copies of the GNU General Public License and
+-   the GNU Lesser General Public License along with this program.  If
+-   not, see <http://www.gnu.org/licenses/>.  */
+-
+-#ifdef HAVE_CONFIG_H
+-# include <config.h>
+-#endif
+-
+-#define BACKEND ppc_
+-#include "libebl_CPU.h"
+-
+-int
+-ppc_syscall_abi (Ebl *ebl __attribute__ ((unused)),
+-		 int *sp, int *pc, int *callno, int args[6])
+-{
+-  *sp = 1;
+-  *pc = -1;
+-  *callno = 0;
+-  args[0] = 3;
+-  args[1] = 4;
+-  args[2] = 5;
+-  args[3] = 6;
+-  args[4] = 7;
+-  args[5] = 8;
+-  return 0;
+-}
+-
+-__typeof (ppc_syscall_abi)
+-ppc64_syscall_abi __attribute__ ((alias ("ppc_syscall_abi")));
+diff --git a/backends/x86_64_init.c b/backends/x86_64_init.c
+index 44c1ad28..8db9b643 100644
+--- a/backends/x86_64_init.c
++++ b/backends/x86_64_init.c
+@@ -56,7 +56,6 @@ x86_64_init (Elf *elf __attribute__ ((unused)),
+     HOOK (eh, core_note);
+   HOOK (eh, return_value_location);
+   HOOK (eh, register_info);
+-  HOOK (eh, syscall_abi);
+   HOOK (eh, auxv_info);
+   HOOK (eh, disasm);
+   HOOK (eh, abi_cfi);
+diff --git a/backends/x86_64_syscall.c b/backends/x86_64_syscall.c
+deleted file mode 100644
+index 0deb8bad..00000000
+--- a/backends/x86_64_syscall.c
++++ /dev/null
+@@ -1,50 +0,0 @@
+-/* Linux/x86-64 system call ABI in DWARF register numbers.
+-   Copyright (C) 2008 Red Hat, Inc.
+-   This file is part of elfutils.
+-
+-   This file is free software; you can redistribute it and/or modify
+-   it under the terms of either
+-
+-     * the GNU Lesser General Public License as published by the Free
+-       Software Foundation; either version 3 of the License, or (at
+-       your option) any later version
+-
+-   or
+-
+-     * the GNU General Public License as published by the Free
+-       Software Foundation; either version 2 of the License, or (at
+-       your option) any later version
+-
+-   or both in parallel, as here.
+-
+-   elfutils is distributed in the hope that it will be useful, but
+-   WITHOUT ANY WARRANTY; without even the implied warranty of
+-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-   General Public License for more details.
+-
+-   You should have received copies of the GNU General Public License and
+-   the GNU Lesser General Public License along with this program.  If
+-   not, see <http://www.gnu.org/licenses/>.  */
+-
+-#ifdef HAVE_CONFIG_H
+-# include <config.h>
+-#endif
+-
+-#define BACKEND x86_64_
+-#include "libebl_CPU.h"
+-
+-int
+-x86_64_syscall_abi (Ebl *ebl __attribute__ ((unused)),
+-		    int *sp, int *pc, int *callno, int args[6])
+-{
+-  *sp = 7;			/* %rsp */
+-  *pc = 16;			/* %rip */
+-  *callno = 0;			/* %rax */
+-  args[0] = 5;			/* %rdi */
+-  args[1] = 4;			/* %rsi */
+-  args[2] = 1;			/* %rdx */
+-  args[3] = 10;			/* %r10 */
+-  args[4] = 8;			/* %r8 */
+-  args[5] = 9;			/* %r9 */
+-  return 0;
+-}
+diff --git a/libebl/Makefile.am b/libebl/Makefile.am
+index d0d475b8..d84e7ee2 100644
+--- a/libebl/Makefile.am
++++ b/libebl/Makefile.am
+@@ -51,7 +51,7 @@ libebl_a_SOURCES = eblopenbackend.c eblclosebackend.c eblreloctypename.c \
+ 		   eblbsspltp.c eblretval.c eblreginfo.c eblnonerelocp.c \
+ 		   eblrelativerelocp.c eblsysvhashentrysize.c eblauxvinfo.c \
+ 		   eblcheckobjattr.c ebl_check_special_section.c \
+-		   ebl_syscall_abi.c eblabicfi.c eblstother.c eblinitreg.c \
++		   eblabicfi.c eblstother.c eblinitreg.c \
+ 		   ebldwarftoregno.c eblnormalizepc.c eblunwind.c \
+ 		   eblresolvesym.c eblcheckreloctargettype.c \
+ 		   ebl_data_marker_symbol.c
+diff --git a/libebl/ebl-hooks.h b/libebl/ebl-hooks.h
+index 1e7960b8..1214bb84 100644
+--- a/libebl/ebl-hooks.h
++++ b/libebl/ebl-hooks.h
+@@ -142,10 +142,6 @@ ssize_t EBLHOOK(register_info) (Ebl *ebl,
+ 				const char **prefix, const char **setname,
+ 				int *bits, int *type);
+ 
+-/* Return system call ABI registers.  */
+-int EBLHOOK(syscall_abi) (Ebl *ebl, int *sp, int *pc,
+-			  int *callno, int args[6]);
+-
+ /* Disassembler function.  */
+ int EBLHOOK(disasm) (Ebl *ebl, const uint8_t **startp, const uint8_t *end,
+ 		     GElf_Addr addr, const char *fmt, DisasmOutputCB_t outcb,
+diff --git a/libebl/ebl_syscall_abi.c b/libebl/ebl_syscall_abi.c
+deleted file mode 100644
+index a25369d2..00000000
+--- a/libebl/ebl_syscall_abi.c
++++ /dev/null
+@@ -1,40 +0,0 @@
+-/* Return system call ABI mapped to DWARF register numbers.
+-   Copyright (C) 2008 Red Hat, Inc.
+-   This file is part of elfutils.
+-
+-   This file is free software; you can redistribute it and/or modify
+-   it under the terms of either
+-
+-     * the GNU Lesser General Public License as published by the Free
+-       Software Foundation; either version 3 of the License, or (at
+-       your option) any later version
+-
+-   or
+-
+-     * the GNU General Public License as published by the Free
+-       Software Foundation; either version 2 of the License, or (at
+-       your option) any later version
+-
+-   or both in parallel, as here.
+-
+-   elfutils is distributed in the hope that it will be useful, but
+-   WITHOUT ANY WARRANTY; without even the implied warranty of
+-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-   General Public License for more details.
+-
+-   You should have received copies of the GNU General Public License and
+-   the GNU Lesser General Public License along with this program.  If
+-   not, see <http://www.gnu.org/licenses/>.  */
+-
+-#ifdef HAVE_CONFIG_H
+-# include <config.h>
+-#endif
+-
+-#include <libeblP.h>
+-
+-
+-int
+-ebl_syscall_abi (Ebl *ebl, int *sp, int *pc, int *callno, int *args)
+-{
+-  return ebl != NULL ? ebl->syscall_abi (ebl, sp, pc, callno, args) : -1;
+-}
+diff --git a/libebl/eblopenbackend.c b/libebl/eblopenbackend.c
+index b3b6fc01..90a83f26 100644
+--- a/libebl/eblopenbackend.c
++++ b/libebl/eblopenbackend.c
+@@ -214,8 +214,6 @@ static ssize_t default_register_info (Ebl *ebl,
+ 				      const char **prefix,
+ 				      const char **setname,
+ 				      int *bits, int *type);
+-static int default_syscall_abi (Ebl *ebl, int *sp, int *pc,
+-				int *callno, int args[6]);
+ static bool default_check_object_attribute (Ebl *ebl, const char *vendor,
+ 					    int tag, uint64_t value,
+ 					    const char **tag_name,
+@@ -259,7 +257,6 @@ fill_defaults (Ebl *result)
+   result->bss_plt_p = default_bss_plt_p;
+   result->return_value_location = default_return_value_location;
+   result->register_info = default_register_info;
+-  result->syscall_abi = default_syscall_abi;
+   result->check_object_attribute = default_check_object_attribute;
+   result->check_reloc_target_type = default_check_reloc_target_type;
+   result->disasm = NULL;
+@@ -690,20 +687,6 @@ default_register_info (Ebl *ebl __attribute__ ((unused)),
+   return snprintf (name, namelen, "reg%d", regno);
+ }
+ 
+-static int
+-default_syscall_abi (Ebl *ebl __attribute__ ((unused)),
+-		     int *sp, int *pc, int *callno, int args[6])
+-{
+-  *sp = *pc = *callno = -1;
+-  args[0] = -1;
+-  args[1] = -1;
+-  args[2] = -1;
+-  args[3] = -1;
+-  args[4] = -1;
+-  args[5] = -1;
+-  return -1;
+-}
+-
+ static bool
+ default_check_object_attribute (Ebl *ebl __attribute__ ((unused)),
+ 				const char *vendor  __attribute__ ((unused)),
+diff --git a/libebl/libebl.h b/libebl/libebl.h
+index 23c0e950..731001d3 100644
+--- a/libebl/libebl.h
++++ b/libebl/libebl.h
+@@ -241,14 +241,6 @@ extern ssize_t ebl_register_info (Ebl *ebl,
+ 				  const char **prefix, const char **setname,
+ 				  int *bits, int *type);
+ 
+-/* Fill in the DWARF register numbers for the registers used in system calls.
+-   The SP and PC are what kernel reports call the user stack pointer and PC.
+-   The CALLNO and ARGS are the system call number and incoming arguments.
+-   Each of these is filled with the DWARF register number corresponding,
+-   or -1 if there is none.  Returns zero when the information is available.  */
+-extern int ebl_syscall_abi (Ebl *ebl, int *sp, int *pc,
+-			    int *callno, int args[6]);
+-
+ /* Supply the ABI-specified state of DWARF CFI before CIE initial programs.
+ 
+    The DWARF 3.0 spec says that the default initial states of all registers
+commit 4b2edc1161e6786b09b65da3a62ef24078324d4c
+Author: Mark Wielaard <mark@klomp.org>
+Date:   Mon Oct 19 10:17:59 2020 +0200
+
+    libdw: dwarf_frame_register takes an array of at least 3 Dwarf_Ops
+    
+    GCC11 will warn about a mismatch in the declaration of dwarf_frame_register:
+    
+    dwarf_frame_register.c:37:61: error: argument 3 of type ‘Dwarf_Op *’
+      declared as a pointer [-Werror=array-parameter=]
+       37 | dwarf_frame_register (Dwarf_Frame *fs, int regno, Dwarf_Op *ops_mem,
+          |                                                   ~~~~~~~~~~^~~~~~~
+    libdw.h:1068:43: note: previously declared as an array ‘Dwarf_Op[3]’
+     1068 |                                  Dwarf_Op ops_mem[3],
+          |                                  ~~~~~~~~~^~~~~~~~~~
+    
+    When fixing that it will show an actual bug in the addrcfi testcase:
+    
+    addrcfi.c:98:16: error: ‘dwarf_frame_register’ accessing 96 bytes in a
+      region of size 64 [-Werror=stringop-overflow=]
+       98 |   int result = dwarf_frame_register (stuff->frame, regno, ops_mem, &ops, &nops);
+          |                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    addrcfi.c:98:16: note: referencing argument 3 of type ‘Dwarf_Op *’
+     1069 | extern int dwarf_frame_register (Dwarf_Frame *frame, int regno,
+          |            ^~~~~~~~~~~~~~~~~~~~
+    
+    Fix the declaration, fix the bug and add an extra comment to the description
+    in libdw.h.
+    
+    Signed-off-by: Mark Wielaard <mark@klomp.org>
+
+diff --git a/libdw/dwarf_frame_register.c b/libdw/dwarf_frame_register.c
+index d0159fb8..bcf3fa03 100644
+--- a/libdw/dwarf_frame_register.c
++++ b/libdw/dwarf_frame_register.c
+@@ -34,7 +34,7 @@
+ #include <dwarf.h>
+ 
+ int
+-dwarf_frame_register (Dwarf_Frame *fs, int regno, Dwarf_Op *ops_mem,
++dwarf_frame_register (Dwarf_Frame *fs, int regno, Dwarf_Op ops_mem[3],
+ 		      Dwarf_Op **ops, size_t *nops)
+ {
+   /* Maybe there was a previous error.  */
+diff --git a/libdw/libdw.h b/libdw/libdw.h
+index 1a4e15a1..ad4fa6ea 100644
+--- a/libdw/libdw.h
++++ b/libdw/libdw.h
+@@ -1061,9 +1061,11 @@ extern int dwarf_frame_cfa (Dwarf_Frame *frame, Dwarf_Op **ops, size_t *nops)
+    caller's REGNO is "same_value", i.e. this frame did not change it;
+    ask the caller frame where to find it.
+ 
+-   For common simple expressions *OPS is OPS_MEM.  For arbitrary DWARF
+-   expressions in the CFI, *OPS is an internal pointer that can be used as
+-   long as the Dwarf_CFI used to create FRAME remains alive.  */
++   For common simple expressions *OPS is OPS_MEM (which is a caller
++   owned array for for at least 3 Dwarf_Ops).  For arbitrary DWARF
++   expressions in the CFI, *OPS is an internal pointer that can be
++   used as long as the Dwarf_CFI used to create FRAME remains
++   alive.  */
+ extern int dwarf_frame_register (Dwarf_Frame *frame, int regno,
+ 				 Dwarf_Op ops_mem[3],
+ 				 Dwarf_Op **ops, size_t *nops)
+diff --git a/tests/addrcfi.c b/tests/addrcfi.c
+index 589b8513..2b7d7bd0 100644
+--- a/tests/addrcfi.c
++++ b/tests/addrcfi.c
+@@ -92,7 +92,7 @@ print_register (void *arg,
+ 
+   printf ("\t%s reg%u (%s%s): ", setname, regno, prefix, regname);
+ 
+-  Dwarf_Op ops_mem[2];
++  Dwarf_Op ops_mem[3];
+   Dwarf_Op *ops;
+   size_t nops;
+   int result = dwarf_frame_register (stuff->frame, regno, ops_mem, &ops, &nops);
