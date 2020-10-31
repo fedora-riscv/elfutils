@@ -1,6 +1,6 @@
 Name: elfutils
-Version: 0.181
-%global baserelease 3
+Version: 0.182
+%global baserelease 1
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -60,8 +60,6 @@ BuildRequires: autoconf
 %endif
 
 # Patches
-Patch1: elfutils-0.181-zstd.patch
-Patch2: elfutils-0.181-array-param.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -253,8 +251,6 @@ such servers to download those files on demand.
 %setup -q
 
 # Apply patches
-%patch1 -p1 -b .zstd
-%patch2 -p1 -b .array_param
 
 autoreconf -f -v -i
 
@@ -290,6 +286,10 @@ rm -rf ${RPM_BUILD_ROOT}
 %make_install -s
 
 chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/lib*.so*
+
+# We don't have standard DEBUGINFOD_URLS yet.
+rm ${RPM_BUILD_ROOT}%{_sysconfdir}/profile.d/debuginfod.sh
+rm ${RPM_BUILD_ROOT}%{_sysconfdir}/profile.d/debuginfod.csh
 
 %find_lang %{name}
 
@@ -420,12 +420,13 @@ fi
 %files debuginfod
 %defattr(-,root,root)
 %{_bindir}/debuginfod
-%config(noreplace) %verify(not md5 size mtime) %{_sysconfdir}/sysconfig/debuginfod
+%config(noreplace) %{_sysconfdir}/sysconfig/debuginfod
 %{_unitdir}/debuginfod.service
+%{_sysconfdir}/sysconfig/debuginfod
 %{_mandir}/man8/debuginfod.8*
 
 %dir %attr(0700,debuginfod,debuginfod) %{_localstatedir}/cache/debuginfod
-%verify(not md5 size mtime) %attr(0600,debuginfod,debuginfod) %{_localstatedir}/cache/debuginfod/debuginfod.sqlite
+%ghost %attr(0600,debuginfod,debuginfod) %{_localstatedir}/cache/debuginfod/debuginfod.sqlite
 
 %pre debuginfod
 getent group debuginfod >/dev/null || groupadd -r debuginfod
@@ -441,6 +442,16 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Sat Oct 31 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.182-1
+- Upgrade to upstream 0.182
+  - backends: Support for tilegx has been removed.
+  - config: New /etc/profile.d files to provide default $DEBUGINFOD_URLS.
+  - debuginfod: More efficient package traversal, tolerate various
+    errors during scanning, grooming progress is more visible and
+    interruptible, more prometheus metrics.
+  - debuginfod-client: Now supports compressed (kernel) ELF images.
+  - libdwfl: Add ZSTD compression support.
+
 * Mon Oct 19 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.181-3
 - Add elfutils-0.181-array-param.patch.
 
