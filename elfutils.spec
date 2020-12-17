@@ -200,6 +200,7 @@ Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-debuginfod-client%{depsuffix} = %{version}-%{release}
 BuildRequires: systemd
+BuildRequires: make
 Requires(post):   systemd
 Requires(preun):  systemd
 Requires(postun): systemd
