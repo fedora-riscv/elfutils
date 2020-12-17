@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.182
-%global baserelease 1
+%global baserelease 2
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -60,6 +60,7 @@ BuildRequires: autoconf
 %endif
 
 # Patches
+Patch1: elfutils-0.182-s390-pid_memory_read.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -229,6 +230,7 @@ such servers to download those files on demand.
 %setup -q
 
 # Apply patches
+%patch1 -p1
 
 autoreconf -f -v -i
 
@@ -415,6 +417,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Thu Dec 17 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.182-2
+- Add elfutils-0.182-s390-pid_memory_read.patch
+
 * Sat Oct 31 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.182-1
 - Upgrade to upstream 0.182
   - backends: Support for tilegx has been removed.
