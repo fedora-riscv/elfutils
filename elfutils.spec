@@ -262,7 +262,6 @@ trap '' EXIT
 %make_build -s
 
 %install
-rm -rf ${RPM_BUILD_ROOT}
 %make_install -s
 
 chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/lib*.so*
@@ -315,7 +314,6 @@ fi
 %endif
 
 %files
-%{!?_licensedir:%global license %%doc}
 %license COPYING COPYING-GPLV2 COPYING-LGPLV3 doc/COPYING-GFDL
 %doc README TODO CONTRIBUTING
 %{_bindir}/eu-addr2line
@@ -338,7 +336,6 @@ fi
 %{_mandir}/man1/eu-*.1*
 
 %files libs
-%{!?_licensedir:%global license %%doc}
 %license COPYING-GPLV2 COPYING-LGPLV3
 %{_libdir}/libasm-%{version}.so
 %{_libdir}/libdw-%{version}.so
@@ -360,7 +357,6 @@ fi
 %{_libdir}/pkgconfig/libdw.pc
 
 %files -f %{name}.lang libelf
-%{!?_licensedir:%global license %%doc}
 %license COPYING-GPLV2 COPYING-LGPLV3
 %{_libdir}/libelf-%{version}.so
 %{_libdir}/libelf.so.*
@@ -379,21 +375,18 @@ fi
 %endif
 
 %files debuginfod-client
-%defattr(-,root,root)
 %{_libdir}/libdebuginfod-%{version}.so
 %{_libdir}/libdebuginfod.so.*
 %{_bindir}/debuginfod-find
 %{_mandir}/man1/debuginfod-find.1*
 
 %files debuginfod-client-devel
-%defattr(-,root,root)
 %{_libdir}/pkgconfig/libdebuginfod.pc
 %{_mandir}/man3/debuginfod_*.3*
 %{_includedir}/elfutils/debuginfod.h
 %{_libdir}/libdebuginfod.so
 
 %files debuginfod
-%defattr(-,root,root)
 %{_bindir}/debuginfod
 %config(noreplace) %{_sysconfdir}/sysconfig/debuginfod
 %{_unitdir}/debuginfod.service
