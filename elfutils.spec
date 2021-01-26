@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.182
-%global baserelease 2
+%global baserelease 3
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -410,6 +410,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Tue Jan 26 2021 Fedora Release Engineering <releng@fedoraproject.org> - 0.182-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
+
 * Thu Dec 17 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.182-2
 - Add elfutils-0.182-s390-pid_memory_read.patch
 
