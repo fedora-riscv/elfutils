@@ -1,6 +1,6 @@
 Name: elfutils
-Version: 0.182
-%global baserelease 2
+Version: 0.183
+%global baserelease 1
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -49,6 +49,7 @@ BuildRequires: curl
 
 BuildRequires: automake
 BuildRequires: autoconf
+BuildRequires: gettext-devel
 
 %global _gnu %{nil}
 %global _program_prefix eu-
@@ -60,7 +61,6 @@ BuildRequires: autoconf
 %endif
 
 # Patches
-Patch1: elfutils-0.182-s390-pid_memory_read.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -253,7 +253,6 @@ such servers to download those files on demand.
 %setup -q
 
 # Apply patches
-%patch1 -p1
 
 autoreconf -f -v -i
 
@@ -438,6 +437,19 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Mon Feb  8 2021 Mark Wielaard <mjw@fedoraproject.org> - 0.183-1
+- Upgrade to upstream 0.183
+  - debuginfod: New thread-busy metric and more detailed error metrics.
+    New --fdcache-mintmp and tracking of filesystem freespace.
+  - debuginfod-client: DEBUGINFOD_SONAME macro added to debuginfod.h can
+    be used to dlopen the libdebuginfod.so library.
+    New function debuginfod_set_verbose_fd and DEBUGINFOD_VERBOSE
+    environment variable.
+  - config: profile.sh and profile.csh won't export DEBUGINFOD_URLS
+    unless configured --enable-debuginfod-urls[=URLS]
+  - elflint, readelf: Recognize SHF_GNU_RETAIN.
+    Handle SHT_X86_64_UNWIND as valid relocation target type.
+
 * Thu Dec 17 2020 Mark Wielaard <mjw@fedoraproject.org> - 0.182-2
 - Add elfutils-0.182-s390-pid_memory_read.patch
 
