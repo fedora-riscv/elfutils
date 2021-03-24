@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.183
-%global baserelease 2
+%global baserelease 3
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -409,6 +409,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Mon Apr 19 2021 Mark Wielaard <mjw@fedoraproject.org> - 0.183-3
+- Introduce CI gating setup
+
 * Tue Mar 02 2021 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 0.183-2
 - Rebuilt for updated systemd-rpm-macros
   See https://pagure.io/fesco/issue/2583.
