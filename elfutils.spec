@@ -1,6 +1,6 @@
 Name: elfutils
-Version: 0.183
-%global baserelease 3
+Version: 0.184
+%global baserelease 1
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -409,6 +409,21 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Mon May 10 2021 Mark Wielaard <mjw@fedoraproject.org> - 0.184-1
+- Upgrade to upstream 0.184
+  - debuginfod: Use libarchive's bsdtar as the .deb-family file unpacker.
+  - debuginfod-client: Client caches negative results. If a query for a
+                       file failed with 404, an empty 000 permission
+                       file is created in the cache. This will prevent
+                       requesting the same file for the next 10 minutes.
+                       Client objects now carry long-lived curl handles
+                       for outgoing connections.  This makes it more
+                       efficient for multiple sequential queries, because
+                       the TCP connections and/or TLS state info are kept
+                       around awhile, avoiding O(100ms) setup latencies.
+  - libdw: handle DW_FORM_indirect when reading attributes
+  - translations: Update Polish translation.
+
 * Mon Apr 19 2021 Mark Wielaard <mjw@fedoraproject.org> - 0.183-3
 - Introduce CI gating setup
 
