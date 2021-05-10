@@ -46,6 +46,7 @@ BuildRequires: zstd
 BuildRequires: iproute
 BuildRequires: bsdtar
 BuildRequires: curl
+BuildRequires: procps
 
 BuildRequires: automake
 BuildRequires: autoconf
