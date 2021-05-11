@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.184
-%global baserelease 1
+%global baserelease 2
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -257,7 +257,7 @@ RPM_OPT_FLAGS="${RPM_OPT_FLAGS} -Wformat"
 
 
 trap 'cat config.log' EXIT
-%configure CFLAGS="$RPM_OPT_FLAGS -fexceptions"
+%configure CFLAGS="$RPM_OPT_FLAGS -fexceptions" --enable-debuginfod-urls=https://debuginfod.fedoraproject.org/
 trap '' EXIT
 %make_build -s
 
@@ -410,6 +410,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Tue May 11 2021 Frank Ch. Eigler <fche@redhat.com> - 0.184-2
+- Activate debuginfod client by default (1956952) to the fedora server.
+
 * Mon May 10 2021 Mark Wielaard <mjw@fedoraproject.org> - 0.184-1
 - Upgrade to upstream 0.184
   - debuginfod: Use libarchive's bsdtar as the .deb-family file unpacker.
