@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.184
-%global baserelease 3
+%global baserelease 4
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -375,6 +375,7 @@ fi
 %{_libdir}/libdebuginfod.so.*
 %{_bindir}/debuginfod-find
 %{_mandir}/man1/debuginfod-find.1*
+%config(noreplace) %{_sysconfdir}/profile.d/*
 
 %files debuginfod-client-devel
 %{_libdir}/pkgconfig/libdebuginfod.pc
@@ -406,6 +407,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Wed May 12 2021 Frank Ch. Eigler <fche@redhat.com> - 0.184-4
+- Ship new profile.d files. (1956952)
+
 * Wed May 12 2021 Frank Ch. Eigler <fche@redhat.com> - 0.184-3
 - Don't nuke the new profile.d files. (1956952)
 
