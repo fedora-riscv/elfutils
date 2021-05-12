@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.184
-%global baserelease 2
+%global baserelease 3
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -268,10 +268,6 @@ chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/lib*.so*
 # We don't want the static libraries
 rm ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/lib{elf,dw,asm}.a
 
-# We don't have standard DEBUGINFOD_URLS yet.
-rm ${RPM_BUILD_ROOT}%{_sysconfdir}/profile.d/debuginfod.sh
-rm ${RPM_BUILD_ROOT}%{_sysconfdir}/profile.d/debuginfod.csh
-
 %find_lang %{name}
 
 %if %{provide_yama_scope}
@@ -285,7 +281,7 @@ touch ${RPM_BUILD_ROOT}%{_localstatedir}/cache/debuginfod/debuginfod.sqlite
 
 %check
 # Record some build root versions in build.log
-uname -r; rpm -q binutils gcc glibc
+uname -r; rpm -q binutils gcc glibc || true
 
 %make_build -s check || (cat tests/test-suite.log; false)
 
@@ -410,6 +406,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Wed May 12 2021 Frank Ch. Eigler <fche@redhat.com> - 0.184-3
+- Don't nuke the new profile.d files. (1956952)
+
 * Tue May 11 2021 Frank Ch. Eigler <fche@redhat.com> - 0.184-2
 - Activate debuginfod client by default (1956952) to the fedora server.
 
