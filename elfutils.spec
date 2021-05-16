@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.184
-%global baserelease 4
+%global baserelease 5
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -62,6 +62,7 @@ BuildRequires: gettext-devel
 %endif
 
 # Patches
+Patch1: elfutils-0.184-pr27859.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -231,6 +232,7 @@ such servers to download those files on demand.
 %setup -q
 
 # Apply patches
+%patch1 -p1
 
 autoreconf -f -v -i
 
@@ -407,6 +409,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Sun May 16 2021 Frank Ch. Eigler <fche@redhat.com> - 0.184-5
+- Fix 404-latch problem on reused debuginfod_client. (PR27859)
+
 * Wed May 12 2021 Frank Ch. Eigler <fche@redhat.com> - 0.184-4
 - Ship new profile.d files. (1956952)
 

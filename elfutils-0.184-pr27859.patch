@@ -1,0 +1,297 @@
+commit 1cfd294392762d2707f65ed3c5339cc364f47f1e (HEAD -> rawhide)
+Author: Frank Ch. Eigler <fche@redhat.com>
+Date:   Fri May 14 18:37:30 2021 -0400
+
+    PR27859: correct 404-latch bug in debuginfod client reuse
+    
+    PR27701 implemented curl handle reuse in debuginfod_client objects,
+    but with an unexpected bug.  Server responses returning an error
+    "latched" because the curl_easy handles for error cases weren't all
+    systematically removed from the curl multi handle.  This prevented
+    their proper re-addition the next time.
+    
+    This version of the code simplfies matters by making only the curl
+    curl_multi handle long-lived.  This turns out to be enough, because it
+    can maintain a pool of long-lived http/https connections and related
+    data, and lend them out to short-lived curl_easy handles.  This mode
+    handles errors or hung downloads even better, because the easy handles
+    don't undergo complex state transitions between reuse.
+    
+    A new test case confirms this correction via the federating debuginfod
+    instance (cleaning caches between subtests to make sure http* is being
+    used and reused).
+    
+    Signed-off-by: Frank Ch. Eigler <fche@redhat.com>
+
+diff --git a/debuginfod/ChangeLog b/debuginfod/ChangeLog
+index 97f598f6287f..18e2361ffc5e 100644
+--- a/debuginfod/ChangeLog
++++ b/debuginfod/ChangeLog
+@@ -1,3 +1,11 @@
++2021-05-14  Frank Ch. Eigler <fche@redhat.com>
++
++	PR27859
++	* debuginfod-client.c (debuginfod_client): Retain only
++	long-lived multi handle from PR27701 work.
++	(debuginfo_begin,debuginfod_end): ctor/dtor for surviving field only.
++	(debuginfod_query_server): Rework to reuse multi handle only.
++
+ 2021-05-04  Alice Zhang <alizhang@redhat.com>
+ 
+ 	* debuginfod-client.c (cache_miss_default_s): New static time_t,
+diff --git a/debuginfod/debuginfod-client.c b/debuginfod/debuginfod-client.c
+index 4fa047f5efdb..432d0cfef0ca 100644
+--- a/debuginfod/debuginfod-client.c
++++ b/debuginfod/debuginfod-client.c
+@@ -119,9 +119,8 @@ struct debuginfod_client
+   /* File descriptor to output any verbose messages if > 0.  */
+   int verbose_fd;
+ 
+-  /* Count DEBUGINFOD_URLS elements and corresponding curl handles. */
+-  int num_urls;
+-  CURL **server_handles;
++  /* Maintain a long-lived curl multi-handle, which keeps a
++     connection/tls/dns cache to recently seen servers. */
+   CURLM *server_mhandle;
+   
+   /* Can contain all other context, like cache_path, server_urls,
+@@ -541,12 +540,6 @@ debuginfod_query_server (debuginfod_client *c,
+ 
+   /* Is there any server we can query?  If not, don't do any work,
+      just return with ENOSYS.  Don't even access the cache.  */
+-  if (c->num_urls == 0)
+-    {
+-      rc = -ENOSYS;
+-      goto out;
+-    }
+-  
+   urls_envvar = getenv(DEBUGINFOD_URLS_ENV_VAR);
+   if (vfd >= 0)
+     dprintf (vfd, "server urls \"%s\"\n",
+@@ -770,13 +763,20 @@ debuginfod_query_server (debuginfod_client *c,
+       goto out0;
+     }
+ 
++  /* Count number of URLs.  */
++  int num_urls = 0;
++  for (int i = 0; server_urls[i] != '\0'; i++)
++    if (server_urls[i] != url_delim_char
++        && (i == 0 || server_urls[i - 1] == url_delim_char))
++      num_urls++;
++  
+   CURLM *curlm = c->server_mhandle;
+   assert (curlm != NULL);
+   
+   /* Tracks which handle should write to fd. Set to the first
+      handle that is ready to write the target file to the cache.  */
+   CURL *target_handle = NULL;
+-  struct handle_data *data = malloc(sizeof(struct handle_data) * c->num_urls);
++  struct handle_data *data = malloc(sizeof(struct handle_data) * num_urls);
+   if (data == NULL)
+     {
+       rc = -ENOMEM;
+@@ -786,7 +786,7 @@ debuginfod_query_server (debuginfod_client *c,
+   /* thereafter, goto out1 on error.  */
+ 
+   /* Initialize handle_data with default values. */
+-  for (int i = 0; i < c->num_urls; i++)
++  for (int i = 0; i < num_urls; i++)
+     {
+       data[i].handle = NULL;
+       data[i].fd = -1;
+@@ -797,23 +797,20 @@ debuginfod_query_server (debuginfod_client *c,
+   char *server_url = strtok_r(server_urls, url_delim, &strtok_saveptr);
+ 
+   /* Initialize each handle.  */
+-  for (int i = 0; i < c->num_urls && server_url != NULL; i++)
++  for (int i = 0; i < num_urls && server_url != NULL; i++)
+     {
+       if (vfd >= 0)
+ 	dprintf (vfd, "init server %d %s\n", i, server_url);
+ 
+       data[i].fd = fd;
+       data[i].target_handle = &target_handle;
+-      data[i].handle = c->server_handles[i];
+-      assert (data[i].handle != NULL);
+-      curl_easy_reset(data[i].handle); // esp. previously sent http headers
+-      data[i].client = c;
+-
++      data[i].handle = curl_easy_init();
+       if (data[i].handle == NULL)
+         {
+           rc = -ENETUNREACH;
+           goto out1;
+         }
++      data[i].client = c;
+ 
+       /* Build handle url. Tolerate both  http://foo:999  and
+          http://foo:999/  forms */
+@@ -869,7 +866,7 @@ debuginfod_query_server (debuginfod_client *c,
+ 
+   /* Query servers in parallel.  */
+   if (vfd >= 0)
+-    dprintf (vfd, "query %d urls in parallel\n", c->num_urls);
++    dprintf (vfd, "query %d urls in parallel\n", num_urls);
+   int still_running;
+   long loops = 0;
+   int committed_to = -1;
+@@ -882,7 +879,7 @@ debuginfod_query_server (debuginfod_client *c,
+       /* If the target file has been found, abort the other queries.  */
+       if (target_handle != NULL)
+ 	{
+-	  for (int i = 0; i < c->num_urls; i++)
++	  for (int i = 0; i < num_urls; i++)
+ 	    if (data[i].handle != target_handle)
+ 	      curl_multi_remove_handle(curlm, data[i].handle);
+ 	    else
+@@ -979,7 +976,7 @@ debuginfod_query_server (debuginfod_client *c,
+ 		       curl_easy_strerror (msg->data.result));
+ 	      if (pnl)
+ 		c->default_progressfn_printed_p = 0;
+-	      for (int i = 0; i < c->num_urls; i++)
++	      for (int i = 0; i < num_urls; i++)
+ 		if (msg->easy_handle == data[i].handle)
+ 		  {
+ 		    if (strlen (data[i].errbuf) > 0)
+@@ -1111,8 +1108,13 @@ debuginfod_query_server (debuginfod_client *c,
+       /* Perhaps we need not give up right away; could retry or something ... */
+     }
+ 
+-  curl_multi_remove_handle(curlm, verified_handle);
+-  assert (verified_handle == target_handle);
++  /* remove all handles from multi */
++  for (int i = 0; i < num_urls; i++)
++    {
++      curl_multi_remove_handle(curlm, data[i].handle); /* ok to repeat */
++      curl_easy_cleanup (data[i].handle);
++    }
++
+   free (data);
+   free (server_urls);
+ 
+@@ -1126,6 +1128,13 @@ debuginfod_query_server (debuginfod_client *c,
+ 
+ /* error exits */
+  out1:
++  /* remove all handles from multi */
++  for (int i = 0; i < num_urls; i++)
++    {
++      curl_multi_remove_handle(curlm, data[i].handle); /* ok to repeat */
++      curl_easy_cleanup (data[i].handle);
++    }
++
+   unlink (target_cache_tmppath);
+   close (fd); /* before the rmdir, otherwise it'll fail */
+   (void) rmdir (target_cache_dir); /* nop if not empty */
+@@ -1174,7 +1183,6 @@ debuginfod_begin (void)
+ {
+   debuginfod_client *client;
+   size_t size = sizeof (struct debuginfod_client);
+-  const char* server_urls = NULL;
+   client = (debuginfod_client *) calloc (1, size);
+ 
+   if (client != NULL)
+@@ -1187,45 +1195,15 @@ debuginfod_begin (void)
+ 	client->verbose_fd = -1;
+     }
+ 
+-  /* Count the DEBUGINFOD_URLS and create the long-lived curl handles. */
+-  client->num_urls = 0;
+-  server_urls = getenv (DEBUGINFOD_URLS_ENV_VAR);
+-  if (server_urls != NULL)
+-    for (int i = 0; server_urls[i] != '\0'; i++)
+-      if (server_urls[i] != url_delim_char
+-          && (i == 0 || server_urls[i - 1] == url_delim_char))
+-        client->num_urls++;
+-
+-  client->server_handles = calloc (client->num_urls, sizeof(CURL *));
+-  if (client->server_handles == NULL)
+-    goto out1;
+-
+-  // allocate N curl easy handles
+-  for (int i=0; i<client->num_urls; i++)
+-    {
+-      client->server_handles[i] = curl_easy_init ();
+-      if (client->server_handles[i] == NULL)
+-        {
+-          for (i--; i >= 0; i--)
+-            curl_easy_cleanup (client->server_handles[i]);
+-          goto out2;
+-        }
+-    }
+-
+   // allocate 1 curl multi handle
+   client->server_mhandle = curl_multi_init ();
+   if (client->server_mhandle == NULL)
+-    goto out3;
++    goto out1;
++
++  // extra future initialization
+   
+   goto out;
+ 
+- out3:
+-  for (int i=0; i<client->num_urls; i++)
+-    curl_easy_cleanup (client->server_handles[i]);
+-  
+- out2:
+-  free (client->server_handles);
+-  
+  out1:
+   free (client);
+   client = NULL;
+@@ -1259,10 +1237,6 @@ debuginfod_end (debuginfod_client *client)
+   if (client == NULL)
+     return;
+ 
+-  // assume that all the easy handles have already been removed from the multi handle
+-  for (int i=0; i<client->num_urls; i++)
+-    curl_easy_cleanup (client->server_handles[i]);
+-  free (client->server_handles);
+   curl_multi_cleanup (client->server_mhandle);
+   curl_slist_free_all (client->headers);
+   free (client->url);
+diff --git a/tests/ChangeLog b/tests/ChangeLog
+index 35fb2b2cc2f8..d6691b7702bc 100644
+--- a/tests/ChangeLog
++++ b/tests/ChangeLog
+@@ -1,3 +1,9 @@
++2021-05-14  Frank Ch. Eigler <fche@redhat.com>
++
++	PR27859
++	* run-debuginfod-find.sh: Test absence of 404-latch bug in client
++	curl handle reuse.
++
+ 2021-05-04  Alice Zhang  <alizhang@redhat.com>
+ 
+ 	* run-debuginfod-find.sh: Added tests for negative cache files.
+diff --git a/tests/run-debuginfod-find.sh b/tests/run-debuginfod-find.sh
+index 64b8290a119e..9183cccb7201 100755
+--- a/tests/run-debuginfod-find.sh
++++ b/tests/run-debuginfod-find.sh
+@@ -559,12 +559,24 @@ curl -s http://127.0.0.1:$PORT1/metrics | grep 'scanned_bytes_total'
+ 
+ # And generate a few errors into the second debuginfod's logs, for analysis just below
+ curl -s http://127.0.0.1:$PORT2/badapi > /dev/null || true
+-curl -s http://127.0.0.1:$PORT2/buildid/deadbeef/debuginfo > /dev/null || true
++curl -s http://127.0.0.1:$PORT2/buildid/deadbeef/debuginfo > /dev/null || true  
++# NB: this error is used to seed the 404 failure for the survive-404 tests
+ 
+ # Confirm bad artifact types are rejected without leaving trace
+ curl -s http://127.0.0.1:$PORT2/buildid/deadbeef/badtype > /dev/null || true
+ (curl -s http://127.0.0.1:$PORT2/metrics | grep 'badtype') && false
+ 
++# Confirm that reused curl connections survive 404 errors.
++# The rm's force an uncached fetch
++rm -f $DEBUGINFOD_CACHE_PATH/$BUILDID/debuginfo .client_cache*/$BUILDID/debuginfo
++testrun ${abs_top_builddir}/debuginfod/debuginfod-find debuginfo $BUILDID
++rm -f $DEBUGINFOD_CACHE_PATH/$BUILDID/debuginfo .client_cache*/$BUILDID/debuginfo
++testrun ${abs_top_builddir}/debuginfod/debuginfod-find debuginfo $BUILDID
++testrun ${abs_top_builddir}/debuginfod/debuginfod-find debuginfo $BUILDID
++testrun ${abs_top_builddir}/debuginfod/debuginfod-find debuginfo $BUILDID
++rm -f $DEBUGINFOD_CACHE_PATH/$BUILDID/debuginfo .client_cache*/$BUILDID/debuginfo
++testrun ${abs_top_builddir}/debuginfod/debuginfod-find debuginfo $BUILDID
++
+ # Confirm that some debuginfod client pools are being used
+ curl -s http://127.0.0.1:$PORT2/metrics | grep 'dc_pool_op.*reuse'
+ 
