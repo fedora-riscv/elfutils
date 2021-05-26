@@ -1,6 +1,6 @@
 Name: elfutils
-Version: 0.184
-%global baserelease 5
+Version: 0.185
+%global baserelease 1
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -62,7 +62,6 @@ BuildRequires: gettext-devel
 %endif
 
 # Patches
-Patch1: elfutils-0.184-pr27859.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -232,7 +231,6 @@ such servers to download those files on demand.
 %setup -q
 
 # Apply patches
-%patch1 -p1
 
 autoreconf -f -v -i
 
@@ -409,6 +407,14 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Wed May 26 2021 Mark Wielaard <mjw@fedoraproject.org> - 0.185-1
+- Upgrade to upstream 0.185
+  - debuginfod-client: Simplify curl handle reuse so downloads which
+                       return an error are retried.
+  - elfcompress: Always exit with code 0 when the operation succeeds
+                 (even when nothing was done). On error the exit code
+                 is now always 1.
+
 * Sun May 16 2021 Frank Ch. Eigler <fche@redhat.com> - 0.184-5
 - Fix 404-latch problem on reused debuginfod_client. (PR27859)
 
