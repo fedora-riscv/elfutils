@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.185
-%global baserelease 1
+%global baserelease 2
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -257,7 +257,7 @@ RPM_OPT_FLAGS="${RPM_OPT_FLAGS} -Wformat"
 
 
 trap 'cat config.log' EXIT
-%configure CFLAGS="$RPM_OPT_FLAGS -fexceptions" --enable-debuginfod-urls=https://debuginfod.fedoraproject.org/
+%configure CFLAGS="$RPM_OPT_FLAGS -fexceptions"
 trap '' EXIT
 %make_build -s
 
@@ -267,6 +267,10 @@ trap '' EXIT
 chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/lib*.so*
 # We don't want the static libraries
 rm ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/lib{elf,dw,asm}.a
+
+# We don't have standard DEBUGINFOD_URLS yet.
+rm ${RPM_BUILD_ROOT}%{_sysconfdir}/profile.d/debuginfod.sh
+rm ${RPM_BUILD_ROOT}%{_sysconfdir}/profile.d/debuginfod.csh
 
 %find_lang %{name}
 
@@ -375,7 +379,6 @@ fi
 %{_libdir}/libdebuginfod.so.*
 %{_bindir}/debuginfod-find
 %{_mandir}/man1/debuginfod-find.1*
-%config(noreplace) %{_sysconfdir}/profile.d/*
 
 %files debuginfod-client-devel
 %{_libdir}/pkgconfig/libdebuginfod.pc
@@ -407,6 +410,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Thu May 27 2021 Mark Wielaard <mjw@fedoraproject.org> - 0.185-2
+- Disable debuginfod client by default for f34.
+
 * Wed May 26 2021 Mark Wielaard <mjw@fedoraproject.org> - 0.185-1
 - Upgrade to upstream 0.185
   - debuginfod-client: Simplify curl handle reuse so downloads which
