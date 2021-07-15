@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.185
-%global baserelease 1
+%global baserelease 3
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -407,6 +407,10 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Thu Jul 15 2021 Mark Wielaard <mjw@fedoraproject.org> - 0.185-3
+- Update version to 0.185-3 for rawhide/f35 upgrade from f34
+  This build enables debuginfod client by default
+
 * Wed May 26 2021 Mark Wielaard <mjw@fedoraproject.org> - 0.185-1
 - Upgrade to upstream 0.185
   - debuginfod-client: Simplify curl handle reuse so downloads which
