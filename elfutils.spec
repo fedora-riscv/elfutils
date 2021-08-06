@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.185
-%global baserelease 4
+%global baserelease 5
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -62,6 +62,7 @@ BuildRequires: gettext-devel
 %endif
 
 # Patches
+Patch1: elfutils-0.185-raise-pthread_kill-backtrace.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -228,9 +229,7 @@ The ELF/DWARF file searching functions in libdwfl can query
 such servers to download those files on demand.
 
 %prep
-%setup -q
-
-# Apply patches
+%autosetup -p1
 
 autoreconf -f -v -i
 
@@ -257,12 +256,12 @@ RPM_OPT_FLAGS="${RPM_OPT_FLAGS} -Wformat"
 
 
 trap 'cat config.log' EXIT
-%configure CFLAGS="$RPM_OPT_FLAGS -fexceptions" --enable-debuginfod-urls=https://debuginfod.fedoraproject.org/
+%configure CFLAGS="$RPM_OPT_FLAGS" --enable-debuginfod-urls=https://debuginfod.fedoraproject.org/
 trap '' EXIT
-%make_build -s
+%make_build
 
 %install
-%make_install -s
+%make_install
 
 chmod +x ${RPM_BUILD_ROOT}%{_prefix}/%{_lib}/lib*.so*
 # We don't want the static libraries
@@ -285,8 +284,8 @@ uname -r; rpm -q binutils gcc glibc || true
 
 # FIXME for 0.186
 # run-debuginfod-find.sh is a bad test
-# %%make_build -s check || (cat tests/test-suite.log; false)
-%make_build -s check || (cat tests/test-suite.log; true)
+# %%make_build check || (cat tests/test-suite.log; false)
+%make_build check || (cat tests/test-suite.log; true)
 
 # Only the latest Fedora and EPEL have these scriptlets,
 # older Fedora and plain RHEL don't.
@@ -410,6 +409,10 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Thu Aug  5 2021 Mark Wielaard <mjw@fedoraproject.org> - 0.185-5
+- Use autosetup
+- Add elfutils-0.185-raise-pthread_kill-backtrace.patch
+
 * Wed Jul 21 2021 Fedora Release Engineering <releng@fedoraproject.org> - 0.185-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
 
