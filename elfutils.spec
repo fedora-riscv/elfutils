@@ -1,6 +1,6 @@
 Name: elfutils
-Version: 0.185
-%global baserelease 5
+Version: 0.186
+%global baserelease 1
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -42,11 +42,11 @@ BuildRequires: pkgconfig(libarchive) >= 3.1.2
 # For tests need to bunzip2 test files.
 BuildRequires: bzip2
 BuildRequires: zstd
-# For the run-debuginfod-find.sh test case in %%check for /usr/sbin/ss
+# For the run-debuginfod-find.sh test case in %%check for /usr/sbin/ss etc.
 BuildRequires: iproute
+BuildRequires: procps
 BuildRequires: bsdtar
 BuildRequires: curl
-BuildRequires: procps
 
 BuildRequires: automake
 BuildRequires: autoconf
@@ -62,7 +62,6 @@ BuildRequires: gettext-devel
 %endif
 
 # Patches
-Patch1: elfutils-0.185-raise-pthread_kill-backtrace.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -238,14 +237,6 @@ autoreconf -f -v -i
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
-# This package uses top level ASM constructs which are incompatible with LTO.
-# Top level ASMs are often used to implement symbol versioning.  gcc-10
-# introduces a new mechanism for symbol versioning which works with LTO.
-# Converting packages to use that mechanism instead of toplevel ASMs is
-# recommended.
-# Disable LTO
-%define _lto_cflags %{nil}
-
 # Remove -Wall from default flags.  The makefiles enable enough warnings
 # themselves, and they use -Werror.  Appending -Wall defeats the cases where
 # the makefiles disable some specific warnings for specific code.
@@ -282,10 +273,7 @@ touch ${RPM_BUILD_ROOT}%{_localstatedir}/cache/debuginfod/debuginfod.sqlite
 # Record some build root versions in build.log
 uname -r; rpm -q binutils gcc glibc || true
 
-# FIXME for 0.186
-# run-debuginfod-find.sh is a bad test
-# %%make_build check || (cat tests/test-suite.log; false)
-%make_build check || (cat tests/test-suite.log; true)
+%make_build check || (cat tests/test-suite.log; false)
 
 # Only the latest Fedora and EPEL have these scriptlets,
 # older Fedora and plain RHEL don't.
@@ -377,7 +365,9 @@ fi
 %{_libdir}/libdebuginfod.so.*
 %{_bindir}/debuginfod-find
 %{_mandir}/man1/debuginfod-find.1*
+%{_mandir}/man7/debuginfod*.7*
 %config(noreplace) %{_sysconfdir}/profile.d/*
+%config(noreplace) %{_sysconfdir}/debuginfod/*
 
 %files debuginfod-client-devel
 %{_libdir}/pkgconfig/libdebuginfod.pc
@@ -409,6 +399,30 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Wed Nov 10 2021 Mark Wielaard <mjw@fedoraproject.org> - 0.186-1
+- Upgrade to upstream 0.186
+  - debuginfod-client: Default $DEBUGINFOD_URLS is computed from
+    drop-in files /etc/debuginfod/*.urls rather than
+    hardcoded into the /etc/profile.d/debuginfod*
+    scripts.
+    Add $DEBUGINFOD_MAXSIZE and $DEBUGINFOD_MAXTIME settings
+    for skipping large/slow transfers.
+    Add $DEBUGINFOD_RETRY for retrying aborted lookups.
+  - debuginfod: Supply extra HTTP response headers, describing
+    archive/file names that satisfy the requested buildid content.
+    Support -d :memory: option for in-memory databases.
+    Protect against loops in federated server configurations.
+    Add -r option to use -I/-X regexes for grooming stale files.
+    Protect against wasted CPU from duplicate concurrent requests.
+    Limit the duration of groom ops roughly to rescan (-t) times.
+    Add --passive mode for serving from read-only database.
+    Several other performance improvements & prometheus metrics.
+  - libdw: Support for the NVIDIA Cuda line map extensions.
+    DW_LNE_NVIDIA_inlined_call and DW_LNE_NVIDIA_set_function_name
+    are defined in dwarf.h. New functions dwarf_linecontext and
+    dwarf_linefunctionname.
+  - translations: Update Japanese translation.
+
 * Thu Aug  5 2021 Mark Wielaard <mjw@fedoraproject.org> - 0.185-5
 - Use autosetup
 - Add elfutils-0.185-raise-pthread_kill-backtrace.patch
