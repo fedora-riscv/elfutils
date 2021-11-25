@@ -237,6 +237,10 @@ autoreconf -f -v -i
 find . -name \*.sh ! -perm -0100 -print | xargs chmod +x
 
 %build
+# Disable LTO
+# See https://sourceware.org/pipermail/elfutils-devel/2021q4/004385.html
+%define _lto_cflags %{nil}
+
 # Remove -Wall from default flags.  The makefiles enable enough warnings
 # themselves, and they use -Werror.  Appending -Wall defeats the cases where
 # the makefiles disable some specific warnings for specific code.
