@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.186
-%global baserelease 1
+%global baserelease 2
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -399,6 +399,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Thu Jan 20 2022 Fedora Release Engineering <releng@fedoraproject.org> - 0.186-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
+
 * Wed Nov 10 2021 Mark Wielaard <mjw@fedoraproject.org> - 0.186-1
 - Upgrade to upstream 0.186
   - debuginfod-client: Default $DEBUGINFOD_URLS is computed from
