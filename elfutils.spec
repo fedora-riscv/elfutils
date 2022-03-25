@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.186
-%global baserelease 2
+%global baserelease 3
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -62,6 +62,16 @@ BuildRequires: gettext-devel
 %endif
 
 # Patches
+
+# Support for FDO packaging metadata
+Patch1: elfutils-0.186-elf-glibc.patch
+Patch2: elfutils-0.186-fdo-ebl.patch
+Patch3: elfutils-0.186-fdo-efllint.patch
+# For s390x...
+Patch4: elfutils-0.186-fdo-swap.patch
+# Workaround for gcc on ppc64le
+# error: potential null pointer dereference [-Werror=null-dereference]
+Patch5: elfutils-0.186-ppc64le-error-return-workaround.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -399,6 +409,13 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Fri Mar 25 2022 Mark Wielaard <mjw@fedoraproject.org> - 0.186-3
+- Add elfutils-0.186-elf-glibc.patch
+- Add elfutils-0.186-fdo-ebl.patch
+- Add elfutils-0.186-fdo-efllint.patch
+- Add elfutils-0.186-fdo-swap.patch
+- Add elfutils-0.186-ppc64le-error-return-workaround.patch
+
 * Thu Jan 20 2022 Fedora Release Engineering <releng@fedoraproject.org> - 0.186-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
 
