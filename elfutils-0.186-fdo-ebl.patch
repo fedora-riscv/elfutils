@@ -1,0 +1,46 @@
+commit 1e5302ad3cf02788339a340f6322d1af1f05d9f9
+Author: Luca Boccassi <bluca@debian.org>
+Date:   Sun Nov 21 19:43:18 2021 +0000
+
+    libebl: recognize FDO Packaging Metadata ELF note
+    
+    As defined on: https://systemd.io/COREDUMP_PACKAGE_METADATA/
+    this note will be used starting from Fedora 36. Allow
+    readelf --notes to pretty print it:
+    
+    Note section [ 3] '.note.package' of 76 bytes at offset 0x2e8:
+      Owner          Data size  Type
+      FDO                   57  FDO_PACKAGING_METADATA
+        Packaging Metadata: {"type":"deb","name":"fsverity-utils","version":"1.3-1"}
+    
+    Signed-off-by: Luca Boccassi <luca.boccassi@microsoft.com>
+
+diff --git a/libebl/eblobjnote.c b/libebl/eblobjnote.c
+index 36efe275..5a7c5c62 100644
+--- a/libebl/eblobjnote.c
++++ b/libebl/eblobjnote.c
+@@ -288,6 +288,10 @@ ebl_object_note (Ebl *ebl, uint32_t namesz, const char *name, uint32_t type,
+       if (descsz == 0 && type == NT_VERSION)
+ 	return;
+ 
++      if (strcmp ("FDO", name) == 0 && type == NT_FDO_PACKAGING_METADATA
++	  && descsz > 0 && desc[descsz - 1] == '\0')
++	printf("    Packaging Metadata: %.*s\n", (int) descsz, desc);
++
+       /* Everything else should have the "GNU" owner name.  */
+       if (strcmp ("GNU", name) != 0)
+ 	return;
+diff --git a/libebl/eblobjnotetypename.c b/libebl/eblobjnotetypename.c
+index 4662906d..473a1f2f 100644
+--- a/libebl/eblobjnotetypename.c
++++ b/libebl/eblobjnotetypename.c
+@@ -101,6 +101,9 @@ ebl_object_note_type_name (Ebl *ebl, const char *name, uint32_t type,
+ 	  return buf;
+ 	}
+ 
++      if (strcmp (name, "FDO") == 0 && type == NT_FDO_PACKAGING_METADATA)
++	return "FDO_PACKAGING_METADATA";
++
+       if (strcmp (name, "GNU") != 0)
+ 	{
+ 	  /* NT_VERSION is special, all data is in the name.  */

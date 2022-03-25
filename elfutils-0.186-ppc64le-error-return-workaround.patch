@@ -1,0 +1,97 @@
+diff --git a/src/readelf.c b/src/readelf.c
+index 93fb5989..43ae00b6 100644
+--- a/src/readelf.c
++++ b/src/readelf.c
+@@ -1661,10 +1661,13 @@ print_scngrp (Ebl *ebl)
+ 			elf_ndxscn (scn));
+ 	      shdr = gelf_getshdr (scn, &shdr_mem);
+ 	      if (unlikely (shdr == NULL))
++	      {
+ 		error (EXIT_FAILURE, 0,
+ 		       _("cannot get section [%zd] header: %s"),
+ 		       elf_ndxscn (scn),
+ 		       elf_errmsg (-1));
++		return;
++	      }
+ 	    }
+ 	  handle_scngrp (ebl, scn, shdr);
+ 	}
+@@ -2388,9 +2391,12 @@ print_symtab (Ebl *ebl, int type)
+ 			elf_ndxscn (scn));
+ 	      shdr = gelf_getshdr (scn, &shdr_mem);
+ 	      if (unlikely (shdr == NULL))
++	      {
+ 		error (EXIT_FAILURE, 0,
+ 		       _("cannot get section [%zd] header: %s"),
+ 		       elf_ndxscn (scn), elf_errmsg (-1));
++		return;
++	      }
+ 	    }
+ 	  handle_symtab (ebl, scn, shdr);
+ 	}
+@@ -2722,8 +2728,11 @@ handle_verneed (Ebl *ebl, Elf_Scn *scn, GElf_Shdr *shdr)
+   GElf_Shdr *glink = gelf_getshdr (elf_getscn (ebl->elf, shdr->sh_link),
+ 				   &glink_mem);
+   if (glink == NULL)
++  {
+     error (EXIT_FAILURE, 0, _("invalid sh_link value in section %zu"),
+ 	   elf_ndxscn (scn));
++    return;
++  }
+ 
+   printf (ngettext ("\
+ \nVersion needs section [%2u] '%s' contains %d entry:\n Addr: %#0*" PRIx64 "  Offset: %#08" PRIx64 "  Link to section: [%2u] '%s'\n",
+@@ -2798,8 +2807,11 @@ handle_verdef (Ebl *ebl, Elf_Scn *scn, GElf_Shdr *shdr)
+   GElf_Shdr *glink = gelf_getshdr (elf_getscn (ebl->elf, shdr->sh_link),
+ 				   &glink_mem);
+   if (glink == NULL)
++  {
+     error (EXIT_FAILURE, 0, _("invalid sh_link value in section %zu"),
+ 	   elf_ndxscn (scn));
++    return;
++  }
+ 
+   int class = gelf_getclass (ebl->elf);
+   printf (ngettext ("\
+@@ -3102,8 +3114,11 @@ handle_versym (Ebl *ebl, Elf_Scn *scn, GElf_Shdr *shdr)
+ 				   &glink_mem);
+   size_t sh_entsize = gelf_fsize (ebl->elf, ELF_T_HALF, 1, EV_CURRENT);
+   if (glink == NULL)
++  {
+     error (EXIT_FAILURE, 0, _("invalid sh_link value in section %zu"),
+ 	   elf_ndxscn (scn));
++    return;
++  }
+ 
+   /* Print the header.  */
+   printf (ngettext ("\
+@@ -3495,9 +3510,12 @@ handle_hash (Ebl *ebl)
+ 			elf_ndxscn (scn));
+ 	      shdr = gelf_getshdr (scn, &shdr_mem);
+ 	      if (unlikely (shdr == NULL))
++	      {
+ 		error (EXIT_FAILURE, 0,
+ 		       _("cannot get section [%zd] header: %s"),
+ 		       elf_ndxscn (scn), elf_errmsg (-1));
++		return;
++	      }
+ 	    }
+ 
+ 	  if (shdr->sh_type == SHT_HASH)
+diff --git a/src/unstrip.c b/src/unstrip.c
+index aacc9aad..0dc713aa 100644
+--- a/src/unstrip.c
++++ b/src/unstrip.c
+@@ -1552,9 +1552,12 @@ more sections in stripped file than debug file -- arguments reversed?"));
+ 	}
+ 
+       if (sec == NULL)
++      {
+ 	error (EXIT_FAILURE, 0,
+ 	       _("cannot find matching section for [%zu] '%s'"),
+ 	       elf_ndxscn (scn), name);
++	return;
++      }
+ 
+       sec->outscn = scn;
+     }

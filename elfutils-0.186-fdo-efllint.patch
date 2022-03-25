@@ -1,0 +1,26 @@
+commit 4a22e01277e37540d753e3513c4df3bd2b6e1246
+Author: Mark Wielaard <mark@klomp.org>
+Date:   Fri Mar 25 00:00:47 2022 +0100
+
+    elflint: Recognize NT_FDO_PACKAGING_METADATA
+    
+    Signed-off-by: Mark Wielaard <mark@klomp.org>
+
+diff --git a/src/elflint.c b/src/elflint.c
+index ef7725ce..d919936f 100644
+--- a/src/elflint.c
++++ b/src/elflint.c
+@@ -4384,6 +4384,13 @@ section [%2d] '%s': unknown core file note type %" PRIu32
+ 	    else
+ 	      goto unknown_note;
+ 
++	  case NT_FDO_PACKAGING_METADATA:
++	    if (nhdr.n_namesz == sizeof ELF_NOTE_FDO
++		&& strcmp (data->d_buf + name_offset, ELF_NOTE_FDO) == 0)
++	      break;
++	    else
++	      goto unknown_note;
++
+ 	  case 0:
+ 	    /* Linux vDSOs use a type 0 note for the kernel version word.  */
+ 	    if (nhdr.n_namesz == sizeof "Linux"
