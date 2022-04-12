@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.186
-%global baserelease 4
+%global baserelease 5
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -198,6 +198,7 @@ Provides: elfutils-debuginfod-client%{depsuffix} = %{version}-%{release}
 %endif
 # For debuginfod-find binary
 Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
+Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 
 %package debuginfod-client-devel
 Summary: Libraries and headers to build debuginfod client applications
@@ -411,6 +412,10 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Tue Apr 12 2022 Mark Wielaard <mjw@fedoraproject.org> - 0.186-5
+- Add an explicit versioned requires from elfutils-debuginfod-client
+  on elfutils-libelf.
+
 * Thu Apr  7 2022 Mark Wielaard <mjw@fedoraproject.org> - 0.186-4
 - Add an explicit versioned requires from elfutils-debuginfod-client
   on elfutils-libs.
