@@ -1,6 +1,6 @@
 Name: elfutils
-Version: 0.186
-%global baserelease 5
+Version: 0.187
+%global baserelease 1
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -63,15 +63,8 @@ BuildRequires: gettext-devel
 
 # Patches
 
-# Support for FDO packaging metadata
-Patch1: elfutils-0.186-elf-glibc.patch
-Patch2: elfutils-0.186-fdo-ebl.patch
-Patch3: elfutils-0.186-fdo-efllint.patch
-# For s390x...
-Patch4: elfutils-0.186-fdo-swap.patch
-# Workaround for gcc on ppc64le
-# error: potential null pointer dereference [-Werror=null-dereference]
-Patch5: elfutils-0.186-ppc64le-error-return-workaround.patch
+# For s390x... FDO package notes are bogus.
+Patch1: elfutils-0.186-fdo-swap.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -412,6 +405,21 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Tue Apr 26 2022 Mark Wielaard <mjw@fedoraproject.org> - 0.187-1
+- Upgrade to elfutils 0.187
+  - debuginfod: Support -C option for connection thread pooling.
+  - debuginfod-client: Negative cache file are now zero sized instead
+    of no-permission files.
+  - addr2line: The -A, --absolute option, which shows file names
+    includingthe full compilation directory is now the
+    default.  To get theold behavior use the new option --relative.
+  - readelf, elflint: Recognize FDO Packaging Metadata ELF notes
+  - libdw, debuginfo-client: Load libcurl lazily only when files need
+    to be fetched remotely. libcurl is now never loaded when
+    DEBUGINFOD_URLS is unset. And whenDEBUGINFOD_URLS is set,
+    libcurl is only loaded when the debuginfod_begin function is
+    called.
+
 * Tue Apr 12 2022 Mark Wielaard <mjw@fedoraproject.org> - 0.186-5
 - Add an explicit versioned requires from elfutils-debuginfod-client
   on elfutils-libelf.
