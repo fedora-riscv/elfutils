@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.187
-%global baserelease 2
+%global baserelease 3
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -65,7 +65,10 @@ BuildRequires: gettext-devel
 
 # For s390x... FDO package notes are bogus.
 Patch1: elfutils-0.186-fdo-swap.patch
+# https://bugzilla.redhat.com/show_bug.cgi?id=2080957
 Patch2: elfutils-0.187-csh-profile.patch
+# https://sourceware.org/bugzilla/show_bug.cgi?id=29117
+Patch3: elfutils-0.187-debuginfod-client-fd-leak.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -406,6 +409,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Thu May  5 2022 Mark Wielaard <mjw@fedoraproject.org> - 0.187-3
+- Add elfutils-0.187-debuginfod-client-fd-leak.patch
+
 * Tue May  3 2022 Mark Wielaard <mjw@fedoraproject.org> - 0.187-2
 - Add elfutils-0.187-csh-profile.patch
 
