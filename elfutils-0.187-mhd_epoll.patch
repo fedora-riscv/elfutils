@@ -1,0 +1,51 @@
+commit 28f9d86ea89f88b24f1d12c8e9d5ddc3f77da194
+Author: Mark Wielaard <mark@klomp.org>
+Date:   Fri May 6 00:29:28 2022 +0200
+
+    debuginfod: Use MHD_USE_EPOLL for libmicrohttpd version 0.9.51 or higher
+    
+    Also disable MHD_USE_THREAD_PER_CONNECTION when using MHD_USE_EPOLL.
+    
+    https://sourceware.org/bugzilla/show_bug.cgi?id=29123
+    
+    Signed-off-by: Mark Wielaard <mark@klomp.org>
+
+diff --git a/debuginfod/debuginfod.cxx b/debuginfod/debuginfod.cxx
+index c02540f1..d4f47bf7 100644
+--- a/debuginfod/debuginfod.cxx
++++ b/debuginfod/debuginfod.cxx
+@@ -1,6 +1,6 @@
+ /* Debuginfo-over-http server.
+    Copyright (C) 2019-2021 Red Hat, Inc.
+-   Copyright (C) 2021 Mark J. Wielaard <mark@klomp.org>
++   Copyright (C) 2021, 2022 Mark J. Wielaard <mark@klomp.org>
+    This file is part of elfutils.
+ 
+    This file is free software; you can redistribute it and/or modify
+@@ -3899,7 +3899,14 @@ main (int argc, char *argv[])
+         }
+     }
+ 
+-  unsigned int mhd_flags = ((connection_pool
++  /* Note that MHD_USE_EPOLL and MHD_USE_THREAD_PER_CONNECTION don't
++     work together.  */
++  unsigned int use_epoll = 0;
++#if MHD_VERSION >= 0x00095100
++  use_epoll = MHD_USE_EPOLL;
++#endif
++
++  unsigned int mhd_flags = ((connection_pool || use_epoll
+ 			     ? 0 : MHD_USE_THREAD_PER_CONNECTION)
+ #if MHD_VERSION >= 0x00095300
+ 			    | MHD_USE_INTERNAL_POLLING_THREAD
+@@ -3907,9 +3914,7 @@ main (int argc, char *argv[])
+ 			    | MHD_USE_SELECT_INTERNALLY
+ #endif
+ 			    | MHD_USE_DUAL_STACK
+-#ifdef MHD_USE_EPOLL
+-			    | MHD_USE_EPOLL
+-#endif
++			    | use_epoll
+ #if MHD_VERSION >= 0x00095200
+ 			    | MHD_USE_ITC
+ #endif

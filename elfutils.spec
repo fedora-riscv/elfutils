@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.187
-%global baserelease 3
+%global baserelease 4
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -69,6 +69,10 @@ Patch1: elfutils-0.186-fdo-swap.patch
 Patch2: elfutils-0.187-csh-profile.patch
 # https://sourceware.org/bugzilla/show_bug.cgi?id=29117
 Patch3: elfutils-0.187-debuginfod-client-fd-leak.patch
+# https://sourceware.org/bugzilla/show_bug.cgi?id=29122
+Patch4: elfutils-0.187-mhd_no_dual_stack.patch
+# https://sourceware.org/bugzilla/show_bug.cgi?id=29123
+Patch5: elfutils-0.187-mhd_epoll.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -409,6 +413,10 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Fri May  6 2022 Mark Wielaard <mjw@fedoraproject.org> - 0.187-4
+- Add elfutils-0.187-mhd_no_dual_stack.patch
+- Add elfutils-0.187-mhd_epoll.patch
+
 * Thu May  5 2022 Mark Wielaard <mjw@fedoraproject.org> - 0.187-3
 - Add elfutils-0.187-debuginfod-client-fd-leak.patch
 
