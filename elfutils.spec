@@ -1,11 +1,12 @@
 Name: elfutils
 Version: 0.187
-%global baserelease 4
+%global baserelease 5
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+) and GFDL
 Source: %{?source_url}%{name}-%{version}.tar.bz2
+Source1: elfutils-debuginfod.sysusers
 Summary: A collection of utilities and DSOs to handle ELF files and DWARF data
 
 # Needed for isa specific Provides and Requires.
@@ -59,6 +60,12 @@ BuildRequires: gettext-devel
 
 %if 0%{?fedora} >= 22 || 0%{?rhel} >= 7
 %global provide_yama_scope	1
+%endif
+
+%global with_sysusers		0
+
+%if 0%{?fedora} >= 32 || 0%{?rhel} >= 9
+%global with_sysusers		1
 %endif
 
 # Patches
@@ -216,6 +223,9 @@ Requires: elfutils-libs%{depsuffix} = %{version}-%{release}
 Requires: elfutils-libelf%{depsuffix} = %{version}-%{release}
 Requires: elfutils-debuginfod-client%{depsuffix} = %{version}-%{release}
 BuildRequires: systemd
+%if %{with_sysusers}
+BuildRequires: systemd-rpm-macros
+%endif
 BuildRequires: make
 Requires(post):   systemd
 Requires(preun):  systemd
@@ -282,6 +292,10 @@ install -Dm0644 config/debuginfod.service ${RPM_BUILD_ROOT}%{_unitdir}/debuginfo
 install -Dm0644 config/debuginfod.sysconfig ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig/debuginfod
 mkdir -p ${RPM_BUILD_ROOT}%{_localstatedir}/cache/debuginfod
 touch ${RPM_BUILD_ROOT}%{_localstatedir}/cache/debuginfod/debuginfod.sqlite
+
+%if %{with_sysusers}
+install -Dm0644 %{SOURCE1} %{buildroot}%{_sysusersdir}/elfutils-debuginfod.conf
+%endif
 
 %check
 # Record some build root versions in build.log
@@ -394,17 +408,24 @@ fi
 %config(noreplace) %{_sysconfdir}/sysconfig/debuginfod
 %{_unitdir}/debuginfod.service
 %{_sysconfdir}/sysconfig/debuginfod
+%if %{with_sysusers}
+%{_sysusersdir}/elfutils-debuginfod.conf
+%endif
 %{_mandir}/man8/debuginfod.8*
 
 %dir %attr(0700,debuginfod,debuginfod) %{_localstatedir}/cache/debuginfod
 %ghost %attr(0600,debuginfod,debuginfod) %{_localstatedir}/cache/debuginfod/debuginfod.sqlite
 
 %pre debuginfod
+%if %{with_sysusers}
+%sysusers_create_compat %{SOURCE1}
+%else
 getent group debuginfod >/dev/null || groupadd -r debuginfod
 getent passwd debuginfod >/dev/null || \
     useradd -r -g debuginfod -d /var/cache/debuginfod -s /sbin/nologin \
             -c "elfutils debuginfo server" debuginfod
 exit 0
+%endif
 
 %post debuginfod
 %systemd_post debuginfod.service
@@ -413,6 +434,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Tue Jun 14 2022 Mark Wielaard <mjw@fedoraproject.org> - 0.187-5
+- Add sysuser support for creating the debuginfod user
+
 * Fri May  6 2022 Mark Wielaard <mjw@fedoraproject.org> - 0.187-4
 - Add elfutils-0.187-mhd_no_dual_stack.patch
 - Add elfutils-0.187-mhd_epoll.patch
