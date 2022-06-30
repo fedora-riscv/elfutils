@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.187
-%global baserelease 6
+%global baserelease 7
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -67,6 +67,8 @@ BuildRequires: gettext-devel
 %if 0%{?fedora} >= 32 || 0%{?rhel} >= 9
 %global with_sysusers		1
 %endif
+
+%bcond with_debuginfod_url 1
 
 # Patches
 
@@ -271,7 +273,11 @@ RPM_OPT_FLAGS="${RPM_OPT_FLAGS} -Wformat"
 
 
 trap 'cat config.log' EXIT
+%if %{with with_debuginfod_url}
 %configure CFLAGS="$RPM_OPT_FLAGS" --enable-debuginfod-urls=https://debuginfod.fedoraproject.org/
+%else
+%configure CFLAGS="$RPM_OPT_FLAGS"
+%endif
 trap '' EXIT
 %make_build
 
@@ -395,7 +401,9 @@ fi
 %{_mandir}/man1/debuginfod-find.1*
 %{_mandir}/man7/debuginfod*.7*
 %config(noreplace) %{_sysconfdir}/profile.d/*
+%if %{with with_debuginfod_url}
 %config(noreplace) %{_sysconfdir}/debuginfod/*
+%endif
 
 %files debuginfod-client-devel
 %{_libdir}/pkgconfig/libdebuginfod.pc
@@ -434,6 +442,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Wed Jul 27 2022 Amit Shah <amitshah@fedoraproject.org> - 0.187-7
+- Allow building without default debuginfod URL
+
 * Thu Jul 21 2022 Fedora Release Engineering <releng@fedoraproject.org> - 0.187-6
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
 
