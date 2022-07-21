@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.187
-%global baserelease 5
+%global baserelease 6
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -434,6 +434,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Thu Jul 21 2022 Fedora Release Engineering <releng@fedoraproject.org> - 0.187-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
+
 * Tue Jun 14 2022 Mark Wielaard <mjw@fedoraproject.org> - 0.187-5
 - Add sysuser support for creating the debuginfod user
 
