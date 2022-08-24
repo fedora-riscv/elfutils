@@ -56,16 +56,16 @@ BuildRequires: gettext-devel
 %global _gnu %{nil}
 %global _program_prefix eu-
 
-%global provide_yama_scope	0
+%global provide_yama_scope      0
 
 %if 0%{?fedora} >= 22 || 0%{?rhel} >= 7
-%global provide_yama_scope	1
+%global provide_yama_scope      1
 %endif
 
-%global with_sysusers		0
+%global with_sysusers           0
 
 %if 0%{?fedora} >= 32 || 0%{?rhel} >= 9
-%global with_sysusers		1
+%global with_sysusers           1
 %endif
 
 %bcond with_debuginfod_url 1
