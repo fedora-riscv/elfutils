@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.187
-%global baserelease 7
+%global baserelease 8
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -232,7 +232,11 @@ BuildRequires: make
 Requires(post):   systemd
 Requires(preun):  systemd
 Requires(postun): systemd
+%if %{with_sysusers}
+%{?sysusers_requires_compat}
+%else
 Requires(pre): shadow-utils
+%endif
 # To extract .deb files with a bsdtar (= libarchive) subshell
 Requires: bsdtar
 
@@ -442,6 +446,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Wed Aug 24 2022 Debarshi Ray <rishi@fedoraproject.org> - 0.187-8
+- Use %%sysusers_requires_compat to match %%sysusers_create_compat
+
 * Wed Jul 27 2022 Amit Shah <amitshah@fedoraproject.org> - 0.187-7
 - Allow building without default debuginfod URL
 
