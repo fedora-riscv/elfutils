@@ -74,6 +74,8 @@ BuildRequires: gettext-devel
 
 # For s390x... FDO package notes are bogus.
 Patch1: elfutils-0.186-fdo-swap.patch
+# Don't export internal function.
+Patch2: elfutils-0.188-static-extract_section.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -442,6 +444,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Wed Nov 2 2022 Mark Wielaard <mjw@fedoraproject.org> - 0.188-2
+- Add elfutils-0.188-static-extract_section.patch.
+
 * Wed Nov 2 2022 Mark Wielaard <mjw@fedoraproject.org> - 0.188-1
 - Upgrade to upsteam elfutils 0.188.
 
