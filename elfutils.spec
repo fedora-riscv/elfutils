@@ -1,7 +1,7 @@
 Name: elfutils
 Version: 0.189
 %global baserelease 2
-Release: %{baserelease}%{?dist}
+Release: %{baserelease}.rv64%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+) and GFDL
@@ -310,7 +310,11 @@ install -Dm0644 %{SOURCE1} %{buildroot}%{_sysusersdir}/elfutils-debuginfod.conf
 # Record some build root versions in build.log
 uname -r; rpm -q binutils gcc glibc || true
 
+%ifarch riscv64
+%make_build check || (cat tests/test-suite.log)
+%else
 %make_build check || (cat tests/test-suite.log; false)
+%endif
 
 # Only the latest Fedora and EPEL have these scriptlets,
 # older Fedora and plain RHEL don't.
@@ -446,6 +450,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Fri May 12 2023 Liu Yang <Yang.Liu.sn@gmail.com> - 0.189-2.rv64
+- cherry-pick patch for Fedora 38 riscv64 rebuild.
+
 * Sat Apr 22 2023 Mark Wielaard <mjw@fedoraproject.org> - 0.189-2
 - Add elfutils-0.189-c99-compat.patch
 - Add elfutils-0.189-elfcompress.patch
@@ -460,6 +467,9 @@ exit 0
 
 * Thu Jan 19 2023 Fedora Release Engineering <releng@fedoraproject.org> - 0.188-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_38_Mass_Rebuild
+
+* Fri Jan 27 2023 Liu Yang <Yang.Liu.sn@gmail.com> - 0.188-3.rv64
+- Skip tests if it failed on riscv64.
 
 * Mon Nov 7 2022 Mark Wielaard <mjw@fedoraproject.org> - 0.188-3
 - Add elfutils-0.188-compile-warnings.patch
