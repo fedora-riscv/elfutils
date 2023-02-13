@@ -54,7 +54,7 @@ $(METADATA): Makefile
 	@echo "TestTime:        48h" >> $(METADATA)
 	@echo "RunFor:          elfutils" >> $(METADATA)
 	@echo "Requires:        elfutils" >> $(METADATA)
-	@echo "Requires:        bash" >> $(METADATA)
+	@echo "Requires:        bash bash-debuginfo" >> $(METADATA)
 	@echo "Priority:        Normal" >> $(METADATA)
 	@echo "License:         GPLv2+" >> $(METADATA)
 	@echo "Confidential:    no" >> $(METADATA)

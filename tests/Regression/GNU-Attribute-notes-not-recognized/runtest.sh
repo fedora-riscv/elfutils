@@ -32,12 +32,35 @@ PACKAGE="elfutils"
 
 rlJournalStart
     rlPhaseStartTest
-	# Rely on that /bin/bash is annobin-annotated per
-	# - https://fedoraproject.org/wiki/Toolchain/Watermark
-	# - https://fedoraproject.org/wiki/Changes/Annobin
-	# Seems to work fine with bash-4.4.19-6.el8 and elfutils-0.174-5.el8.
-	set -o pipefail
-	rlRun "eu-readelf -n /bin/bash | grep -2 '^  GA' | fgrep 'GNU Build Attribute' | tail -50"
+        # Rely on that /bin/bash is annobin-annotated per
+        # - https://fedoraproject.org/wiki/Toolchain/Watermark
+        # - https://fedoraproject.org/wiki/Changes/Annobin
+        # Seems to work fine with bash-4.4.19-6.el8 and elfutils-0.174-5.el8.
+        f="/bin/bash"
+
+        # Annobin notes originally used to reside in the binary itself.
+        # Later on they moved to debuginfo.
+        # Let's see if we can chase down needed debuginfo somewhere...
+
+        # Attempt getting the needed file using debuginfod
+        export DEBUGINFOD_URLS=http://debuginfod.usersys.redhat.com:3632/
+        rlRun "f=\"$f $(debuginfod-find debuginfo /bin/bash)\""
+
+        # Attempt getting the needed file by traditional means
+        rlRun "debuginfo-install -y bash"
+        rlRun "buildid=$(eu-readelf -n /bin/bash | awk '/Build ID:/ {print $NF}')"
+        for i in $(rpm -ql bash-debuginfo); do
+            test -f $i || continue
+            if eu-readelf -n $i | fgrep $buildid; then
+                rlRun "f=\"$f $i\""
+            fi
+        done
+
+        set -o pipefail
+        export f
+        # Check if eu-readelf can read the notes from at least one of files
+        # that can possibly contain it...
+        rlRun "(for i in $f; do eu-readelf -n $i; done ) | grep -2 '^  GA' | fgrep 'GNU Build Attribute' | tail -50"
     rlPhaseEnd
 rlJournalPrintText
 rlJournalEnd
