@@ -43,7 +43,7 @@ rlJournalStart
         # Let's see if we can chase down needed debuginfo somewhere...
 
         # Attempt getting the needed file using debuginfod
-        export DEBUGINFOD_URLS=http://debuginfod.usersys.redhat.com:3632/
+        export DEBUGINFOD_URLS=https://debuginfod.fedoraproject.org/
         rlRun "f=\"$f $(debuginfod-find debuginfo /bin/bash)\""
 
         # Attempt getting the needed file by traditional means
