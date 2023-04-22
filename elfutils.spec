@@ -1,6 +1,6 @@
 Name: elfutils
 Version: 0.189
-%global baserelease 1
+%global baserelease 2
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -446,7 +446,7 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
-* Sat Apr 22 2023 Mark Wielaard <mjw@fedoraproject.org>
+* Sat Apr 22 2023 Mark Wielaard <mjw@fedoraproject.org> - 0.189-2
 - Add elfutils-0.189-c99-compat.patch
 - Add elfutils-0.189-elfcompress.patch
 
