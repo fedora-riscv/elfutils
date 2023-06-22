@@ -1,0 +1,224 @@
+From 3aca5b5f1f1617db2220022d9061dcaf129e54c4 Mon Sep 17 00:00:00 2001
+From: Mark Wielaard <mark@klomp.org>
+Date: Wed, 21 Jun 2023 18:05:12 +0200
+Subject: [PATCH] libelf: Replace list of elf_getdata_rawchunk results with a
+ tree
+
+elf_getdata_rawchunks did a linear search to see if a chunk was
+already fetched. Replace this list with a binary search tree to make
+lookup faster when a lot of Elf_Data_Chunk were created.
+
+       * libelf/libelfP.h (Elf_Data_Chunk): Remove next field.
+       (struct Elf): Change the rawchunks type from Elf_Data_Chunk *
+       to void *.
+       * elf_getdata_rawchunk.c (chunk_compare): New static function.
+       (elf_getdata_rawchunk): Use tsearch instead of a manual linked
+       list.
+       * elf_end.c (free_chunk): New static function.
+       (elf_end): Call tdestroy instead of walking linked list.
+
+Signed-off-by: Mark Wielaard <mark@klomp.org>
+---
+ libelf/elf_end.c              | 22 +++++++++-------
+ libelf/elf_getdata_rawchunk.c | 47 +++++++++++++++++++++++++----------
+ libelf/libelfP.h              | 13 ++++------
+ 3 files changed, 52 insertions(+), 30 deletions(-)
+
+diff --git a/libelf/elf_end.c b/libelf/elf_end.c
+index 5c451f36..3e5d4c86 100644
+--- a/libelf/elf_end.c
++++ b/libelf/elf_end.c
+@@ -1,5 +1,6 @@
+ /* Free resources associated with Elf descriptor.
+    Copyright (C) 1998,1999,2000,2001,2002,2004,2005,2007,2015,2016 Red Hat, Inc.
++   Copyright (C) 2023 Mark J. Wielaard <mark@klomp.org>
+    This file is part of elfutils.
+    Written by Ulrich Drepper <drepper@redhat.com>, 1998.
+ 
+@@ -32,12 +33,22 @@
+ #endif
+ 
+ #include <assert.h>
++#include <search.h>
+ #include <stddef.h>
+ #include <stdlib.h>
+ 
+ #include "libelfP.h"
+ 
+ 
++static void
++free_chunk (void *n)
++{
++  Elf_Data_Chunk *rawchunk = (Elf_Data_Chunk *)n;
++  if (rawchunk->dummy_scn.flags & ELF_F_MALLOCED)
++    free (rawchunk->data.d.d_buf);
++  free (rawchunk);
++}
++
+ int
+ elf_end (Elf *elf)
+ {
+@@ -112,20 +123,13 @@ elf_end (Elf *elf)
+ 
+     case ELF_K_ELF:
+       {
+-	Elf_Data_Chunk *rawchunks
++	void *rawchunks
+ 	  = (elf->class == ELFCLASS32
+ 	     || (offsetof (struct Elf, state.elf32.rawchunks)
+ 		 == offsetof (struct Elf, state.elf64.rawchunks))
+ 	     ? elf->state.elf32.rawchunks
+ 	     : elf->state.elf64.rawchunks);
+-	while (rawchunks != NULL)
+-	  {
+-	    Elf_Data_Chunk *next = rawchunks->next;
+-	    if (rawchunks->dummy_scn.flags & ELF_F_MALLOCED)
+-	      free (rawchunks->data.d.d_buf);
+-	    free (rawchunks);
+-	    rawchunks = next;
+-	  }
++	tdestroy (rawchunks, free_chunk);
+ 
+ 	Elf_ScnList *list = (elf->class == ELFCLASS32
+ 			     || (offsetof (struct Elf, state.elf32.scns)
+diff --git a/libelf/elf_getdata_rawchunk.c b/libelf/elf_getdata_rawchunk.c
+index 5a35ccdc..cfd40396 100644
+--- a/libelf/elf_getdata_rawchunk.c
++++ b/libelf/elf_getdata_rawchunk.c
+@@ -1,6 +1,6 @@
+ /* Return converted data from raw chunk of ELF file.
+    Copyright (C) 2007, 2014, 2015 Red Hat, Inc.
+-   Copyright (C) 2022 Mark J. Wielaard <mark@klomp.org>
++   Copyright (C) 2022, 2023 Mark J. Wielaard <mark@klomp.org>
+    This file is part of elfutils.
+ 
+    This file is free software; you can redistribute it and/or modify
+@@ -33,12 +33,28 @@
+ 
+ #include <assert.h>
+ #include <errno.h>
++#include <search.h>
+ #include <stdlib.h>
+ #include <string.h>
+ 
+ #include "libelfP.h"
+ #include "common.h"
+ 
++static int
++chunk_compare (const void *a, const void *b)
++{
++  Elf_Data_Chunk *da = (Elf_Data_Chunk *)a;
++  Elf_Data_Chunk *db = (Elf_Data_Chunk *)b;
++
++  if (da->offset != db->offset)
++    return da->offset - db->offset;
++
++  if (da->data.d.d_size != db->data.d.d_size)
++    return da->data.d.d_size - db->data.d.d_size;
++
++  return da->data.d.d_type - db->data.d.d_type;
++}
++
+ Elf_Data *
+ elf_getdata_rawchunk (Elf *elf, int64_t offset, size_t size, Elf_Type type)
+ {
+@@ -75,19 +91,25 @@ elf_getdata_rawchunk (Elf *elf, int64_t offset, size_t size, Elf_Type type)
+   rwlock_rdlock (elf->lock);
+ 
+   /* Maybe we already got this chunk?  */
+-  Elf_Data_Chunk *rawchunks = elf->state.elf.rawchunks;
+-  while (rawchunks != NULL)
++  Elf_Data_Chunk key;
++  key.offset = offset;
++  key.data.d.d_size = size;
++  key.data.d.d_type = type;
++  Elf_Data_Chunk **found = tsearch (&key, &elf->state.elf.rawchunks,
++				    &chunk_compare);
++  if (found == NULL)
++    goto nomem;
++
++  /* Existing entry.  */
++  if (*found != &key && *found != NULL)
+     {
+-      if ((rawchunks->offset == offset || size == 0)
+-	  && rawchunks->data.d.d_size == size
+-	  && rawchunks->data.d.d_type == type)
+-	{
+-	  result = &rawchunks->data.d;
+-	  goto out;
+-	}
+-      rawchunks = rawchunks->next;
++      result = &(*found)->data.d;
++      goto out;
+     }
+ 
++  /* New entry.  */
++  *found = NULL;
++
+   size_t align = __libelf_type_align (elf->class, type);
+   if (elf->map_address != NULL)
+     {
+@@ -189,8 +211,7 @@ elf_getdata_rawchunk (Elf *elf, int64_t offset, size_t size, Elf_Type type)
+   rwlock_unlock (elf->lock);
+   rwlock_wrlock (elf->lock);
+ 
+-  chunk->next = elf->state.elf.rawchunks;
+-  elf->state.elf.rawchunks = chunk;
++  *found = chunk;
+   result = &chunk->data.d;
+ 
+  out:
+diff --git a/libelf/libelfP.h b/libelf/libelfP.h
+index 6624f38a..d3c241e5 100644
+--- a/libelf/libelfP.h
++++ b/libelf/libelfP.h
+@@ -1,5 +1,6 @@
+ /* Internal interfaces for libelf.
+    Copyright (C) 1998-2010, 2015, 2016 Red Hat, Inc.
++   Copyright (C) 2023 Mark J. Wielaard <mark@klomp.org>
+    This file is part of elfutils.
+    Contributed by Ulrich Drepper <drepper@redhat.com>, 1998.
+ 
+@@ -262,11 +263,7 @@ typedef struct Elf_ScnList
+ typedef struct Elf_Data_Chunk
+ {
+   Elf_Data_Scn data;
+-  union
+-  {
+-    Elf_Scn dummy_scn;
+-    struct Elf_Data_Chunk *next;
+-  };
++  Elf_Scn dummy_scn;
+   int64_t offset;		/* The original raw offset in the Elf image.  */
+ } Elf_Data_Chunk;
+ 
+@@ -324,7 +321,7 @@ struct Elf
+       Elf_ScnList *scns_last;	/* Last element in the section list.
+ 				   If NULL the data has not yet been
+ 				   read from the file.  */
+-      Elf_Data_Chunk *rawchunks; /* List of elf_getdata_rawchunk results.  */
++      void *rawchunks;		/* Tree of elf_getdata_rawchunk results.  */
+       unsigned int scnincr;	/* Number of sections allocate the last
+ 				   time.  */
+       int ehdr_flags;		/* Flags (dirty) for ELF header.  */
+@@ -343,7 +340,7 @@ struct Elf
+       Elf_ScnList *scns_last;	/* Last element in the section list.
+ 				   If NULL the data has not yet been
+ 				   read from the file.  */
+-      Elf_Data_Chunk *rawchunks; /* List of elf_getdata_rawchunk results.  */
++      void *rawchunks;		/* Tree of elf_getdata_rawchunk results.  */
+       unsigned int scnincr;	/* Number of sections allocate the last
+ 				   time.  */
+       int ehdr_flags;		/* Flags (dirty) for ELF header.  */
+@@ -368,7 +365,7 @@ struct Elf
+       Elf_ScnList *scns_last;	/* Last element in the section list.
+ 				   If NULL the data has not yet been
+ 				   read from the file.  */
+-      Elf_Data_Chunk *rawchunks; /* List of elf_getdata_rawchunk results.  */
++      void *rawchunks;		/* Tree of elf_getdata_rawchunk results.  */
+       unsigned int scnincr;	/* Number of sections allocate the last
+ 				   time.  */
+       int ehdr_flags;		/* Flags (dirty) for ELF header.  */
+-- 
+2.40.1
+
