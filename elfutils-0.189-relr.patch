@@ -1,4 +1,4 @@
-commit 6ba977ed6c7ac6e51350f2093ebe0b90ff89f90c
+commit e7648c87478ccc337c92841c7785387dd391f954
 Author: Mark Wielaard <mark@klomp.org>
 Date:   Sun Jul 23 23:14:31 2023 +0200
 
@@ -10,17 +10,18 @@ Date:   Sun Jul 23 23:14:31 2023 +0200
     Introduce new ELF_T_RELR Elf_Type and handle it for SHT_RELR.  Check
     various properties in elflint.  Print RELR relocations in
     readelf. Just the entries with -U.  Just the addresses with -N. And
-    addresses pluse symbol/offsets by default.
+    addresses plus symbol/offsets by default.
     
             * libebl/eblsectiontypename.c (ebl_section_type_name): Add RELR
             to knownstype.
             * libelf/elf32_updatenull.c (updatenull_wrlock): Handle
             sh_entsize for SHT_RELR.
-            * libelf/gelf.h (Gelf_Relr): New typedef for Elf64_Relr.
+            * libelf/gelf.h (GElf_Relr): New typedef for Elf64_Relr.
             * libelf/gelf_fsize.c (__libelf_type_sizes): Add ELF_T_RELR.
             * libelf/gelf_xlate.c (__elf_xfctstom): Likewise.
             * libelf/gelf_xlate.h: Add RELR as FUNDAMENTAL.
-            * libelf/libelf.h (Elf_Type): Add ELF_T_RELR.
+            * libelf/libelf.h (Elf_Type): Add ELF_T_RELR. Add RELR
+            defines/typedefs if undefined in system elf.h.
             * libelf/libelfP.h: Define ELF32_FSZ_RELR and ELF64_FSZ_RELR.
             * src/elflint.c (check_reloc_shdr): Check she_entsize for
             ELF_T_RELR.
@@ -33,6 +34,8 @@ Date:   Sun Jul 23 23:14:31 2023 +0200
             (print_dwarf_addr): Make static and declare early.
             (process_elf_file): Pass dwflmod to print_relocs.
             (handle_dynamic): Handle DT_RELRSZ and DTRELRENT.
+    
+    https://sourceware.org/bugzilla/show_bug.cgi?id=28495
     
     Signed-off-by: Mark Wielaard <mark@klomp.org>
 
@@ -65,7 +68,7 @@ index 6c06e5e4..c5d26b00 100644
  		  break;
  		}
 diff --git a/libelf/gelf.h b/libelf/gelf.h
-index 7a3c87aa..f032d7e1 100644
+index 7a3c87aa..1847021e 100644
 --- a/libelf/gelf.h
 +++ b/libelf/gelf.h
 @@ -82,6 +82,9 @@ typedef Elf64_Rel GElf_Rel;
@@ -73,7 +76,7 @@ index 7a3c87aa..f032d7e1 100644
  typedef Elf64_Rela GElf_Rela;
  
 +/* Relative relocation entry (in section of type SHT_RELR).  */
-+typedef Elf64_Relr Gelf_Relr;
++typedef Elf64_Relr GElf_Relr;
 +
  /* Program segment header.  */
  typedef Elf64_Phdr GElf_Phdr;
@@ -119,10 +122,30 @@ index 3c0e4bf6..d5511c34 100644
  /* The structured types.  */
  TYPE (Ehdr, LIBELFBITS)
 diff --git a/libelf/libelf.h b/libelf/libelf.h
-index 2374a48a..2837db72 100644
+index 2374a48a..458a1fad 100644
 --- a/libelf/libelf.h
 +++ b/libelf/libelf.h
-@@ -124,6 +124,7 @@ typedef enum
+@@ -69,6 +69,19 @@
+  #define ELFCOMPRESS_ZSTD       2          /* Zstandard algorithm.  */
+ #endif
+ 
++#ifndef SHT_RELR
++ /* So RELR defines/typedefs can be used even with an old system elf.h.  */
++ #define SHT_RELR       19      /* RELR relative relocations */
++
++ /* RELR relocation table entry */
++ typedef Elf32_Word     Elf32_Relr;
++ typedef Elf64_Xword    Elf64_Relr;
++
++ #define DT_RELRSZ      35      /* Total size of RELR relative relocations */
++ #define DT_RELR        36      /* Address of RELR relative relocations */
++ #define DT_RELRENT     37      /* Size of one RELR relative relocaction */
++#endif
++
+ #if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3)
+ # define __nonnull_attribute__(...) __attribute__ ((__nonnull__ (__VA_ARGS__)))
+ # define __deprecated_attribute__ __attribute__ ((__deprecated__))
+@@ -124,6 +137,7 @@ typedef enum
    ELF_T_CHDR,			/* Compressed, Elf32_Chdr, Elf64_Chdr, ... */
    ELF_T_NHDR8,			/* Special GNU Properties note.  Same as Nhdr,
  				   except padding.  */
