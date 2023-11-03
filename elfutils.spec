@@ -1,6 +1,6 @@
 Name: elfutils
-Version: 0.189
-%global baserelease 6
+Version: 0.190
+%global baserelease 1
 Release: %{baserelease}%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
@@ -74,16 +74,6 @@ BuildRequires: gettext-devel
 
 # For s390x... FDO package notes are bogus.
 Patch1: elfutils-0.186-fdo-swap.patch
-# testsuite: Avoid C99 compatibility issues in run-native-test.sh
-Patch2: elfutils-0.189-c99-compat.patch
-# elfcompress: Don't compress if section already compressed unless forced
-Patch3: elfutils-0.189-elfcompress.patch
-# libelf: Replace list of elf_getdata_rawchunk results with a tree
-Patch4: elfutils-0.189-elf_getdata_rawchunk.patch
-# PR29696: Removed secondary fd close in cache config causing race condition
-Patch5: elfutils-0.189-debuginfod_config_cache-double-close.patch
-# Bug 28495 - Add support for SHT_RELR to eu-readelf
-Patch6: elfutils-0.189-relr.patch
 
 %description
 Elfutils is a collection of utilities, including stack (to show
@@ -358,6 +348,7 @@ fi
 %{_bindir}/eu-ranlib
 %{_bindir}/eu-readelf
 %{_bindir}/eu-size
+%{_bindir}/eu-srcfiles
 %{_bindir}/eu-stack
 %{_bindir}/eu-strings
 %{_bindir}/eu-strip
@@ -428,7 +419,6 @@ fi
 %{_sysusersdir}/elfutils-debuginfod.conf
 %endif
 %{_mandir}/man8/debuginfod*.8*
-%{_mandir}/man7/debuginfod*.7*
 
 
 %dir %attr(0700,debuginfod,debuginfod) %{_localstatedir}/cache/debuginfod
@@ -452,6 +442,17 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Fri Nov  3 2023 Mark Wielaard <mjw@fedoraproject.org> - 0.190-1
+- Upgrade to upstream elfutils 0.190
+- Add eu-srcfiles
+- Drop upstreamed patches
+  elfutils-0.189-relr.patch
+  elfutils-0.189-debuginfod_config_cache-double-close.patch
+  elfutils-0.189-elf_getdata_rawchunk.patch
+  elfutils-0.189-elfcompress.patch
+  elfutils-0.189-c99-compat.patch
+- Only package debuginfod-client-config.7 manpage for debuginfod-client
+
 * Thu Aug 24 2023 Mark Wielaard <mjw@fedoraproject.org> - 0.189-6
 - Update elfutils-0.189-relr.patch
 
