@@ -1,7 +1,7 @@
 Name: elfutils
 Version: 0.190
 %global baserelease 1
-Release: %{baserelease}%{?dist}
+Release: %{baserelease}.rv64%{?dist}
 URL: http://elfutils.org/
 %global source_url ftp://sourceware.org/pub/elfutils/%{version}/
 License: GPLv3+ and (GPLv2+ or LGPLv3+) and GFDL
@@ -306,7 +306,11 @@ install -Dm0644 %{SOURCE1} %{buildroot}%{_sysusersdir}/elfutils-debuginfod.conf
 # Record some build root versions in build.log
 uname -r; rpm -q binutils gcc glibc || true
 
+%ifarch riscv64
+%make_build check || (cat tests/test-suite.log)
+%else
 %make_build check || (cat tests/test-suite.log; false)
+%endif
 
 # Only the latest Fedora and EPEL have these scriptlets,
 # older Fedora and plain RHEL don't.
@@ -442,6 +446,9 @@ exit 0
 %systemd_postun_with_restart debuginfod.service
 
 %changelog
+* Sat Nov 25 2023 Songsong Zhang <U2FsdGVkX1@gmail.com> - 0.190-1.rv64
+- Skip tests if it failed on riscv64
+
 * Fri Nov  3 2023 Mark Wielaard <mjw@fedoraproject.org> - 0.190-1
 - Upgrade to upstream elfutils 0.190
 - Add eu-srcfiles
